@@ -268,6 +268,9 @@ export const INITIAL_COMPANY_DRIVERS = [
     companyName: "GreenRoute Logistics Pvt Ltd",
     assignedVehicleNumber: "TN 01 AB 1234 (Demo)",
     assignedVehicleType: "Tata Ace EV",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
+    rating: 4.9,
+    experienceYears: 6,
     status: "On Delivery",
     completedTripsCount: 48,
     password: "Driver@123"
@@ -283,6 +286,9 @@ export const INITIAL_COMPANY_DRIVERS = [
     companyName: "GreenRoute Logistics Pvt Ltd",
     assignedVehicleNumber: "TN 09 CB 4512 (Demo)",
     assignedVehicleType: "Mahindra Zor EV",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80",
+    rating: 4.8,
+    experienceYears: 4,
     status: "Available",
     completedTripsCount: 32,
     password: "Driver@123"
@@ -298,8 +304,29 @@ export const INITIAL_COMPANY_DRIVERS = [
     companyName: "EcoMove Transport Services",
     assignedVehicleNumber: "KA 05 CD 5678 (Demo)",
     assignedVehicleType: "Eicher Pro 2049 EV",
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=300&q=80",
+    rating: 4.7,
+    experienceYears: 5,
     status: "On Pickup",
     completedTripsCount: 65,
+    password: "Driver@123"
+  },
+  {
+    id: "driver-4",
+    driverId: "DRV004",
+    name: "Vikram Shinde",
+    phone: "+91 98200 44332",
+    licenseNumber: "MH12-2017-003321",
+    licenseType: "Heavy Tipper",
+    transportCompanyId: "comp-bharat",
+    companyName: "Bharat Green Logistics",
+    assignedVehicleNumber: "MH 12 EF 3456 (Demo)",
+    assignedVehicleType: "Commercial Tipper",
+    avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80",
+    rating: 4.9,
+    experienceYears: 7,
+    status: "Available",
+    completedTripsCount: 92,
     password: "Driver@123"
   }
 ];

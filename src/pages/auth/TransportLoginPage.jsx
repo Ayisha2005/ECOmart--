@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import EcoMartLogo from '../../components/common/EcoMartLogo';
+import DemoCredentialsBox from '../../components/common/DemoCredentialsBox';
 import { Building2, ShieldAlert, Lock, ArrowRight, KeyRound } from 'lucide-react';
 
 export const TransportLoginPage = () => {
@@ -19,7 +20,7 @@ export const TransportLoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md bg-slate-900 border border-cyan-500/30 rounded-3xl p-8 shadow-2xl text-white">
         <div className="flex flex-col items-center text-center mb-6">
           <EcoMartLogo size="md" showTagline={true} className="mb-4" />
@@ -83,6 +84,10 @@ export const TransportLoginPage = () => {
           <p>Truck Drivers: Use <Link to="/transport/driver/login" className="text-cyan-400 font-bold hover:underline">Driver Mobile Portal</Link></p>
           <p>Return to <Link to="/register" className="text-emerald-400 font-bold hover:underline">Marketplace Registration</Link></p>
         </div>
+      </div>
+
+      <div className="w-full max-w-md mt-4">
+        <DemoCredentialsBox />
       </div>
     </div>
   );

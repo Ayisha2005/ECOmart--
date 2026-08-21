@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import EcoMartLogo from '../../components/common/EcoMartLogo';
+import DemoCredentialsBox from '../../components/common/DemoCredentialsBox';
 import { INDIAN_STATES, MAJOR_CITIES_BY_STATE } from '../../data/indianLocations';
-import { Store, ShoppingBag, ShieldCheck, ArrowRight, Truck, Lock, Phone, Mail, MapPin, User, CheckSquare } from 'lucide-react';
+import { Store, ShoppingBag, ShieldCheck, ArrowRight, Truck, Lock, Phone, Mail, User } from 'lucide-react';
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
   const { registerSellerBuyer } = useAuth();
 
-  const [selectedRole, setSelectedRole] = useState('SELLER'); // 'SELLER' or 'BUYER'
+  const [selectedRole, setSelectedRole] = useState('SELLER');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -114,20 +115,12 @@ export const RegisterPage = () => {
                 <span className="text-xs font-semibold text-slate-200">AI Scrap Pricing & OpenStreetMap Tracking</span>
               </div>
             </div>
-          </div>
 
-          {/* Quick Access Portals Footer Links */}
-          <div className="mt-8 pt-6 border-t border-slate-800/80 flex flex-wrap items-center gap-2 text-xs">
-            <span className="text-slate-400 font-bold uppercase text-[10px]">Portals:</span>
-            <Link to="/seller/login" className="text-emerald-400 hover:underline font-bold">Seller Login</Link>
-            <span className="text-slate-600">•</span>
-            <Link to="/buyer/login" className="text-emerald-400 hover:underline font-bold">Buyer Login</Link>
-            <span className="text-slate-600">•</span>
-            <Link to="/admin/login" className="text-amber-400 hover:underline font-bold">Admin Portal</Link>
-            <span className="text-slate-600">•</span>
-            <Link to="/transport/login" className="text-cyan-400 hover:underline font-bold">Transportation Partner Portal</Link>
-            <span className="text-slate-600">•</span>
-            <Link to="/transport/driver/login" className="text-teal-400 hover:underline font-bold">Driver Login</Link>
+            {/* Demo Login Credentials Box */}
+            <div className="mt-6">
+              <DemoCredentialsBox />
+            </div>
+
           </div>
         </div>
 
@@ -335,7 +328,7 @@ export const RegisterPage = () => {
           <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
             <span className="text-slate-500 font-medium">Need Platform Administration?</span>
             <Link to="/admin/register" className="font-extrabold text-amber-600 hover:text-amber-700">
-              Admin Registration Portal &rarr;
+              Admin Registration Portal →
             </Link>
           </div>
         </div>

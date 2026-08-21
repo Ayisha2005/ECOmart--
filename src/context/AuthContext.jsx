@@ -61,7 +61,8 @@ const PRESEEDED_USERS = [
     transportCompanyId: "comp-greenroute",
     companyName: "GreenRoute Logistics Pvt Ltd",
     state: "Tamil Nadu",
-    city: "Chennai"
+    city: "Chennai",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80"
   },
   {
     id: "TRM002",
@@ -89,7 +90,12 @@ const PRESEEDED_USERS = [
     role: "TRANSPORT_DRIVER",
     transportCompanyId: "comp-greenroute",
     companyName: "GreenRoute Logistics Pvt Ltd",
-    assignedVehicleNumber: "TN 01 AB 1234 (Demo)"
+    assignedVehicleNumber: "TN 01 AB 1234 (Demo)",
+    licenseNumber: "TN-01-2022-8765432",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
+    rating: 4.9,
+    tripsCompleted: 142,
+    experienceYears: 6
   },
   {
     id: "DRV002",
@@ -102,8 +108,13 @@ const PRESEEDED_USERS = [
     role: "TRANSPORT_DRIVER",
     transportCompanyId: "comp-greenroute",
     companyName: "GreenRoute Logistics Pvt Ltd",
-    assignedVehicleNumber: "TN 09 CB 4512 (Demo)"
-  }
+    assignedVehicleNumber: "TN 09 CB 5678 (Demo)",
+    licenseNumber: "TN-09-2021-1234567",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80",
+    rating: 4.8,
+    tripsCompleted: 98,
+    experienceYears: 4
+  },
 ];
 
 export const AuthProvider = ({ children }) => {
@@ -292,6 +303,16 @@ export const AuthProvider = ({ children }) => {
     return { success: true, user: updatedUser };
   };
 
+  const updateUserProfile = (updatedFields) => {
+    if (!currentUser) return;
+    const updated = { ...currentUser, ...updatedFields };
+    setCurrentUser(updated);
+    setUsers(prev => prev.map(u => u.id === updated.id ? updated : u));
+    localStorage.setItem('ecoMartUser', JSON.stringify(updated));
+    showNotification("Driver Profile updated successfully! ✅", 'success');
+    return updated;
+  };
+
   const logout = () => {
     setCurrentUser(null);
     setRole(null);
@@ -314,6 +335,7 @@ export const AuthProvider = ({ children }) => {
         registerAdmin,
         createCompanyManagerByAdmin,
         createDriverByManager,
+        updateUserProfile,
         login,
         logout
       }}

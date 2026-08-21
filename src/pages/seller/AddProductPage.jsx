@@ -7,7 +7,7 @@ import Navbar from '../../components/common/Navbar';
 import AIWasteScanner from '../../components/ai/AIWasteScanner';
 import AISuggestedPrice from '../../components/ai/AISuggestedPrice';
 import { INDIAN_STATES, MAJOR_CITIES_BY_STATE } from '../../data/indianLocations';
-import { Package, PlusCircle, ArrowLeft, Image, MapPin, IndianRupee, Edit3 } from 'lucide-react';
+import { Package, PlusCircle, ArrowLeft, Image, MapPin, IndianRupee, Edit3, Sparkles } from 'lucide-react';
 
 export const AddProductPage = () => {
   const navigate = useNavigate();
@@ -54,6 +54,7 @@ export const AddProductPage = () => {
       weightKg: result.weight,
       price: result.recommendedPrice,
       condition: result.condition,
+      description: `${result.name} - ${result.condition}.\n\n🤖 AI Vision Analysis Breakdown:\n• Category: ${result.categoryLabel}\n• Predicted Weight: ${result.weight} kg (${(result.weight / 1000).toFixed(2)} Metric Tons)\n• Estimated Item Count: ~${result.unitCount} items\n• Volume: ${result.volumeM3} m³\n• Purity Grade: ${result.purity}%\n• Market Rate: ₹${result.pricePerKg}/kg\n• Composition: ${result.breakdown}`,
       imageUrl: result.image
     }));
   };
@@ -104,6 +105,13 @@ export const AddProductPage = () => {
                 <h3 className="font-extrabold text-lg text-slate-900">Listing Information & Location</h3>
                 <p className="text-xs text-slate-500">Manual edits allowed anytime. AI classifications can be customized.</p>
               </div>
+
+              {aiAnalysis && (
+                <div className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-extrabold rounded-xl flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>AI Auto-Synced ({aiAnalysis.weight} kg)</span>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -148,19 +156,34 @@ export const AddProductPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Quantity / Weight (kg) *</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-slate-700">Quantity / Weight (kg) *</label>
+                  {aiAnalysis && (
+                    <span className="text-[10px] text-emerald-700 bg-emerald-50 font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1 border border-emerald-200">
+                      <Sparkles className="w-3 h-3 text-emerald-600" />
+                      AI Predicted: {aiAnalysis.weight} kg (~{aiAnalysis.unitCount} units)
+                    </span>
+                  )}
+                </div>
                 <input
                   type="number"
                   name="weightKg"
                   value={formData.weightKg}
                   onChange={handleChange}
                   required
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-hidden"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-hidden"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Selling Price (INR ₹) *</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-slate-700">Selling Price (INR ₹) *</label>
+                  {aiAnalysis && (
+                    <span className="text-[10px] text-emerald-700 bg-emerald-50 font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1 border border-emerald-200">
+                      Rate: ₹{aiAnalysis.pricePerKg}/kg
+                    </span>
+                  )}
+                </div>
                 <input
                   type="number"
                   name="price"
@@ -178,9 +201,9 @@ export const AddProductPage = () => {
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                rows={3}
+                rows={5}
                 placeholder="Describe material purity, moisture level, compression state, and pickup accessibility..."
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-hidden"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-hidden font-mono text-xs leading-relaxed"
               />
             </div>
 

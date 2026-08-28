@@ -165,23 +165,17 @@ export const AuthProvider = ({ children }) => {
       if (res.success) {
         if (res.token) localStorage.setItem('eco_token', res.token);
         const newUser = res.user;
-        setUsers(prev => [...prev, newUser]);
+        setUsers(prev => [...prev.filter(u => u.email !== newUser.email), newUser]);
         showNotification(`Registration successful via REST API as ${normalizedSelectedRole}! Please login.`, 'success');
         return { success: true, user: newUser };
       }
+      showNotification(res.error || "Registration failed on Backend API", 'error');
+      return { success: false, error: res.error || "Registration failed" };
     } catch (apiErr) {
-      console.warn("Backend REST API register failed, using local context state fallback:", apiErr.message);
+      console.error("Backend REST API register failed:", apiErr.message);
+      showNotification(apiErr.message || "Registration failed: Unable to connect to API server", 'error');
+      return { success: false, error: apiErr.message || "Unable to connect to REST API" };
     }
-
-    // Local Fallback
-    const newUser = {
-      id: `user-${normalizedSelectedRole.toLowerCase()}-${Date.now()}`,
-      ...formData,
-      role: normalizedSelectedRole
-    };
-    setUsers(prev => [...prev, newUser]);
-    showNotification(`Registration successful as ${normalizedSelectedRole}! Please login.`, 'success');
-    return { success: true, user: newUser };
   };
 
   const registerAdmin = async (formData) => {
@@ -200,23 +194,17 @@ export const AuthProvider = ({ children }) => {
       if (res.success) {
         if (res.token) localStorage.setItem('eco_token', res.token);
         const newAdmin = res.user;
-        setUsers(prev => [...prev, newAdmin]);
+        setUsers(prev => [...prev.filter(u => u.email !== newAdmin.email), newAdmin]);
         showNotification("Admin registered successfully via REST API! Please login.", 'success');
         return { success: true, user: newAdmin };
       }
+      showNotification(res.error || "Admin registration failed", 'error');
+      return { success: false, error: res.error || "Registration failed" };
     } catch (apiErr) {
-      console.warn("Backend REST API admin register failed, using local fallback:", apiErr.message);
+      console.error("Backend REST API admin register failed:", apiErr.message);
+      showNotification(apiErr.message || "Admin registration failed: Unable to connect to API server", 'error');
+      return { success: false, error: apiErr.message || "Unable to connect to REST API" };
     }
-
-    // Local Fallback
-    const newAdmin = {
-      id: `user-admin-${Date.now()}`,
-      ...formData,
-      role: "ADMIN"
-    };
-    setUsers(prev => [...prev, newAdmin]);
-    showNotification("Admin registered successfully! Please login at Admin Portal.", 'success');
-    return { success: true, user: newAdmin };
   };
 
   const createCompanyManagerByAdmin = (partner, managerData) => {

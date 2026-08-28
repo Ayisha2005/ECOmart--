@@ -33,7 +33,7 @@ export const AdminRegisterPage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -57,10 +57,10 @@ export const AdminRegisterPage = () => {
       return;
     }
 
-    const res = registerAdmin(formData);
-    if (res.success) {
+    const res = await registerAdmin(formData);
+    if (res && res.success) {
       navigate('/admin/login');
-    } else if (res.error) {
+    } else if (res?.error) {
       setError(res.error);
     }
   };

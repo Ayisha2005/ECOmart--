@@ -21,7 +21,7 @@ export const DriverLoginPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-slate-900 border border-cyan-500/30 rounded-3xl p-8 shadow-2xl text-white">
+      <div className="w-full max-w-md bg-slate-900 border border-cyan-500/30 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl text-white">
         <div className="flex flex-col items-center text-center mb-6">
           <EcoMartLogo size="md" showTagline={true} className="mb-4" />
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-cyan-500/20 text-cyan-400 rounded-full border border-cyan-500/30 text-xs font-bold uppercase">

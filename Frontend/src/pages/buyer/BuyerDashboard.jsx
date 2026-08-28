@@ -54,10 +54,10 @@ export const BuyerDashboard = () => {
   }));
 
   return (
-    <div className="flex h-screen bg-slate-950 text-white overflow-hidden">
+    <div className="flex min-h-screen bg-slate-950 text-white overflow-x-hidden">
       <Sidebar role="BUYER" />
 
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
         <Navbar title="Buyer Marketplace & Orders" />
 
         {/* Scrollable Main Container */}

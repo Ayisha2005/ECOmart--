@@ -19,13 +19,13 @@ export const AdminUsers = () => {
   });
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="flex min-h-screen bg-slate-100 overflow-x-hidden">
       <Sidebar role="ADMIN" />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
         <Navbar title="Users Directory (Admin Only)" />
 
-        <main className="p-6 space-y-6 overflow-y-auto">
+        <main className="p-3 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto">
           {/* Header */}
           <div className="bg-slate-900 text-white rounded-2xl p-6 border border-slate-800 shadow-xl flex items-center justify-between">
             <div>

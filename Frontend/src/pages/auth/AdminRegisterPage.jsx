@@ -74,7 +74,7 @@ export const AdminRegisterPage = () => {
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
 
       {/* Main Glassmorphic Card Container with Smooth Scroll */}
-      <div className="relative z-10 w-full max-w-xl bg-slate-900/90 border border-slate-800 rounded-3xl p-6 md:p-10 shadow-[0_0_50px_rgba(245,158,11,0.15)] backdrop-blur-xl text-white max-h-[95vh] overflow-y-auto custom-scrollbar">
+      <div className="relative z-10 w-full max-w-xl bg-slate-900/90 border border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-10 shadow-[0_0_50px_rgba(245,158,11,0.15)] backdrop-blur-xl text-white max-h-[95vh] overflow-y-auto custom-scrollbar">
         
         {/* Header Header */}
         <div className="flex flex-col items-center text-center mb-6">

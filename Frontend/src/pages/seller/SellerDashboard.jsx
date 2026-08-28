@@ -30,14 +30,14 @@ export const SellerDashboard = () => {
   const pendingOrders = myOrders.filter(o => o.status === 'Pending');
 
   return (
-    <div className="flex h-screen bg-slate-950 text-white overflow-hidden">
+    <div className="flex min-h-screen bg-slate-950 text-white overflow-x-hidden">
       <Sidebar role="SELLER" />
 
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
         <Navbar title="Seller Dashboard" />
 
         {/* Scrollable Main Container */}
-        <main className="flex-1 p-6 space-y-6 overflow-y-auto custom-scrollbar">
+        <main className="flex-1 p-3 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto custom-scrollbar">
           
           {/* Top Banner */}
           <div className="bg-gradient-to-r from-slate-900 via-amber-950/50 to-slate-900 rounded-3xl p-6 text-white shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-amber-500/30 relative overflow-hidden">

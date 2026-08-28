@@ -107,10 +107,10 @@ export const RegisterPage = () => {
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: '7s' }} />
 
-        <div className="relative z-10 w-full max-w-6xl bg-slate-900/90 rounded-3xl shadow-[0_0_60px_rgba(16,185,129,0.15)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 border border-slate-800 backdrop-blur-xl">
+        <div className="relative z-10 w-full max-w-6xl bg-slate-900/90 rounded-2xl sm:rounded-3xl shadow-[0_0_60px_rgba(16,185,129,0.15)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 border border-slate-800 backdrop-blur-xl">
           
           {/* Left Visual Branding Side */}
-          <div className="lg:col-span-5 bg-gradient-to-br from-slate-950 via-emerald-950/80 to-slate-950 p-6 md:p-10 text-white flex flex-col justify-between relative overflow-y-auto max-h-[92vh] custom-scrollbar border-b lg:border-b-0 lg:border-r border-slate-800">
+          <div className="lg:col-span-5 bg-gradient-to-br from-slate-950 via-emerald-950/80 to-slate-950 p-4 sm:p-6 md:p-10 text-white flex flex-col justify-between relative lg:max-h-[92vh] lg:overflow-y-auto custom-scrollbar border-b lg:border-b-0 lg:border-r border-slate-800">
             <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
             <div>
@@ -133,7 +133,7 @@ export const RegisterPage = () => {
               </div>
 
               <div className="space-y-4 my-6">
-                <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight leading-tight text-white">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight leading-tight text-white">
                   India's Premier Eco Marketplace & Green Logistics Platform
                 </h2>
                 <p className="text-xs md:text-sm text-slate-300 leading-relaxed">
@@ -170,13 +170,13 @@ export const RegisterPage = () => {
           </div>
 
           {/* Right Form Side with Modern Glassmorphism & Top Logo */}
-          <div className="lg:col-span-7 p-6 md:p-10 bg-gradient-to-br from-slate-950 via-slate-900/90 to-emerald-950/30 text-white flex flex-col justify-center max-h-[92vh] overflow-y-auto custom-scrollbar relative">
+          <div className="lg:col-span-7 p-4 sm:p-6 md:p-10 bg-gradient-to-br from-slate-950 via-slate-900/90 to-emerald-950/30 text-white flex flex-col justify-center lg:max-h-[92vh] lg:overflow-y-auto custom-scrollbar relative">
             
             {/* Top Form Header with Logo */}
             <div className="mb-6 flex flex-col items-start pb-4 border-b border-slate-800/80">
               <EcoMartLogo size="md" showTagline={true} className="mb-3" />
               <div className="flex items-center gap-2">
-                <h2 className="text-xl md:text-2xl font-extrabold text-white tracking-tight">Create your ECO MART Account</h2>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold text-white tracking-tight">Create your ECO MART Account</h2>
                 <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30 uppercase">
                   India Portal
                 </span>
@@ -185,7 +185,7 @@ export const RegisterPage = () => {
             </div>
 
             {/* Ultra-Modern Role Toggle Selector */}
-            <div className="mb-6 bg-slate-950/90 p-1.5 rounded-2xl grid grid-cols-2 gap-2 border border-slate-800/90 shadow-inner">
+            <div className="mb-6 bg-slate-950/90 p-1.5 rounded-2xl grid grid-cols-1 sm:grid-cols-2 gap-2 border border-slate-800/90 shadow-inner">
               <button
                 type="button"
                 onClick={() => setSelectedRole('SELLER')}

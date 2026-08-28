@@ -25,9 +25,9 @@ export const BuyerBrowsePage = () => {
       <div className="flex-1 flex flex-col min-w-0">
         <Navbar title="Browse Recyclable Marketplace Catalog" />
 
-        <main className="p-6 space-y-6 overflow-y-auto">
+        <main className="p-3 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto">
           {/* Controls */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center gap-3">
+          <div className="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center gap-3">
             <div className="relative flex-1 w-full">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
@@ -43,7 +43,7 @@ export const BuyerBrowsePage = () => {
               <select
                 value={selectedCat}
                 onChange={(e) => setSelectedCat(e.target.value)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 capitalize"
+                className="w-full md:w-auto px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 capitalize"
               >
                 <option value="all">All Categories ({products.length})</option>
                 {categories.map(c => (
@@ -54,7 +54,7 @@ export const BuyerBrowsePage = () => {
           </div>
 
           {/* Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
             {filteredProducts.map((prod) => (
               <div key={prod.id} className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow">
                 <div>

@@ -76,7 +76,7 @@ export const Sidebar = ({ role }) => {
   const currentMenu = menuConfigs[role] || [];
 
   return (
-    <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col h-screen sticky top-0 border-r border-slate-800 shadow-xl z-20 shrink-0">
+    <aside className="hidden md:flex w-64 bg-slate-900 text-slate-300 flex-col h-screen sticky top-0 border-r border-slate-800 shadow-xl z-20 shrink-0">
       {/* Header Logo */}
       <div className="p-5 border-b border-slate-800 bg-slate-950/50">
         <EcoMartLogo size="sm" showTagline={true} />

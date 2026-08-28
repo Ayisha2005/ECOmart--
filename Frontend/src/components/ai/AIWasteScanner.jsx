@@ -173,7 +173,7 @@ export const AIWasteScanner = ({ onApplyAiResult }) => {
   };
 
   return (
-    <div className="bg-slate-900 text-white rounded-3xl p-6 border border-emerald-500/30 shadow-2xl relative overflow-hidden">
+    <div className="bg-slate-900 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-emerald-500/30 shadow-2xl relative overflow-hidden">
       {/* Glow background accent */}
       <div className="absolute -top-24 -right-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />

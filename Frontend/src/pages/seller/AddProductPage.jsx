@@ -75,13 +75,13 @@ export const AddProductPage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-slate-950 text-white overflow-hidden">
+    <div className="flex min-h-screen bg-slate-950 text-white overflow-x-hidden">
       <Sidebar role="SELLER" />
 
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
         <Navbar title="Add Product / Waste Listing" />
 
-        <main className="flex-1 p-6 space-y-6 overflow-y-auto max-w-5xl mx-auto w-full custom-scrollbar">
+        <main className="flex-1 p-3 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto max-w-5xl mx-auto w-full custom-scrollbar">
           <div className="flex items-center justify-between">
             <button
               onClick={() => navigate(-1)}
@@ -99,7 +99,7 @@ export const AddProductPage = () => {
           <AIWasteScanner onApplyAiResult={handleApplyAiResult} />
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="bg-slate-900/90 rounded-3xl p-6 md:p-8 border border-slate-800 shadow-2xl space-y-6 backdrop-blur-xl">
+          <form onSubmit={handleSubmit} className="bg-slate-900/90 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 border border-slate-800 shadow-2xl space-y-6 backdrop-blur-xl">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-slate-800 gap-3">
               <div>
                 <h3 className="font-extrabold text-lg text-white">Listing Information & Location</h3>

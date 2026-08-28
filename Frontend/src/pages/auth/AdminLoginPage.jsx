@@ -36,7 +36,7 @@ export const AdminLoginPage = () => {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-rose-950/30 via-slate-950 to-amber-950/30 pointer-events-none" />
       <div className="absolute top-1/3 left-1/3 w-80 h-80 bg-rose-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
 
-      <div className="relative z-10 w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-[0_0_50px_rgba(244,63,94,0.15)] backdrop-blur-xl text-white">
+      <div className="relative z-10 w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-[0_0_50px_rgba(244,63,94,0.15)] backdrop-blur-xl text-white">
         
         {/* Header */}
         <div className="flex flex-col items-center text-center mb-6">

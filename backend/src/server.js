@@ -121,7 +121,7 @@ async function connectDatabase() {
     return;
   }
   try {
-    await mongoose.connect(MONGODB_URI);
+    await mongoose.connect(MONGODB_URI, { dbName: 'ecomart' });
     for (const [name, schema] of Object.entries(schemas)) {
       stores[name.toLowerCase()] = mongoose.models[name] || mongoose.model(name, schema);
     }

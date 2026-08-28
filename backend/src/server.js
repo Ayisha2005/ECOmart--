@@ -9,6 +9,7 @@ import mongoose from 'mongoose';
 import swaggerUi from 'swagger-ui-express';
 import { randomUUID } from 'node:crypto';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -554,9 +555,11 @@ app.use((req, res, next) => {
   if (req.originalUrl.startsWith('/api') || req.originalUrl.startsWith('/api-docs')) {
     return next();
   }
-  res.sendFile(path.join(frontendDistPath, 'index.html'), (err) => {
-    if (err) next();
-  });
+  const indexPath = path.join(frontendDistPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  next();
 });
 
 /* 404 & Centralized Error Middleware */

@@ -1,11 +1,30 @@
 /**
- * Middleware: 404 Route Not Found Handler
+ * Middleware: 404 Route Not Found & Root Welcome Handler
  */
 export const notFoundHandler = (req, res, next) => {
+  const host = req.get('host') || 'localhost:5000';
+  const protocol = req.protocol || 'http';
+  const baseUrl = `${protocol}://${host}`;
+
+  // If root / is accessed directly
+  if (req.originalUrl === '/' || req.originalUrl === '') {
+    return res.status(200).json({
+      success: true,
+      service: 'ECO MART REST API',
+      version: '2.5.0',
+      message: 'Welcome to ECO MART Eco Marketplace & Green Logistics Platform API',
+      status: 'OPERATIONAL',
+      swaggerDocs: `${baseUrl}/api-docs`,
+      healthCheck: `${baseUrl}/api/health`,
+      apiEndpoints: `${baseUrl}/api`
+    });
+  }
+
   res.status(404).json({
     success: false,
     error: `API Route Not Found: [${req.method}] ${req.originalUrl}`,
-    swaggerDocs: 'http://localhost:5000/api-docs'
+    swaggerDocs: `${baseUrl}/api-docs`,
+    healthCheck: `${baseUrl}/api/health`
   });
 };
 

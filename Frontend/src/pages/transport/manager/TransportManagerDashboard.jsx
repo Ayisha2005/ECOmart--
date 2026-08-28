@@ -23,26 +23,21 @@ import {
 export const TransportManagerDashboard = () => {
   const { currentUser } = useAuth();
   const {
-    fleetVehicles,
-    companyDrivers,
-    orders,
+    fleetVehicles = [],
+    companyDrivers = [],
+    orders = [],
     partnerAcceptOrder,
     partnerRejectOrder,
-    assignDriverAndVehicleToOrder,
-    appNotifications
+    assignDriverAndVehicleToOrder
   } = useData();
 
   const companyId = currentUser?.transportCompanyId || 'comp-greenroute';
 
-  // Company Data Isolation: Manager ONLY sees their own company data!
   const myVehicles = (fleetVehicles || []).filter(v => v.transportCompanyId === companyId);
   const myDrivers = (companyDrivers || []).filter(d => d.transportCompanyId === companyId);
   const myOrders = (orders || []).filter(o => o.transportCompanyId === companyId);
 
-  // Incoming assignments from Admin needing partner acceptance
   const incomingAssignments = myOrders.filter(o => o.status === 'TRANSPORT_PARTNER_REQUESTED');
-  
-  // Accepted orders needing Driver & Vehicle assignment
   const pendingDispatchOrders = myOrders.filter(o => o.status === 'PARTNER_ACCEPTED');
 
   const availableVehicles = myVehicles.filter(v => v.currentStatus === 'Available').length;
@@ -75,41 +70,45 @@ export const TransportManagerDashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="flex h-screen bg-slate-950 text-white overflow-hidden">
       <ManagerSidebar />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <Navbar title="Transport Partner Control Dashboard" />
 
-        <main className="p-6 space-y-6 overflow-y-auto">
+        {/* Scrollable Main Container */}
+        <main className="flex-1 p-6 space-y-6 overflow-y-auto custom-scrollbar">
+          
           {/* Company Banner */}
-          <div className="bg-gradient-to-r from-slate-900 via-cyan-950 to-slate-900 rounded-2xl p-6 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-cyan-500/30">
-            <div>
+          <div className="bg-gradient-to-r from-slate-900 via-cyan-950/50 to-slate-900 rounded-3xl p-6 text-white shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-cyan-500/30 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10">
               <div className="flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-cyan-400" />
                 <h2 className="text-xl font-extrabold tracking-tight">{currentUser?.companyName || 'GreenRoute Logistics Pvt Ltd'}</h2>
               </div>
               <p className="text-xs text-slate-300 mt-1">
-                Transport Manager: <span className="font-bold text-white">{currentUser?.name || 'Santhosh Kumar'}</span> | Company ID: <span className="font-mono text-cyan-300 font-bold">{companyId}</span>
+                Transport Manager: <span className="font-bold text-white">{currentUser?.name || 'Santhosh Kumar'}</span> | Company ID: <span className="font-mono text-cyan-400 font-bold">{companyId}</span>
               </p>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2 relative z-10">
               <Link
                 to="/transport/manager/fleet"
-                className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-xs rounded-xl border border-cyan-500/30 cursor-pointer"
+                className="px-3.5 py-2 bg-slate-950 hover:bg-slate-800 text-cyan-300 font-bold text-xs rounded-xl border border-cyan-500/30 cursor-pointer"
               >
                 Manage Fleet Lorries
               </Link>
               <Link
                 to="/transport/manager/drivers"
-                className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-xs rounded-xl border border-cyan-500/30 cursor-pointer"
+                className="px-3.5 py-2 bg-slate-950 hover:bg-slate-800 text-cyan-300 font-bold text-xs rounded-xl border border-cyan-500/30 cursor-pointer"
               >
                 Manage Drivers
               </Link>
               <Link
                 to="/transport/manager/live-tracking"
-                className="px-4 py-2 bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-md cursor-pointer flex items-center gap-1.5"
+                className="px-4 py-2 bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-md cursor-pointer flex items-center gap-1.5"
               >
                 <Navigation className="w-4 h-4 text-slate-950" />
                 <span>Live GPS Tracking &rarr;</span>
@@ -117,37 +116,37 @@ export const TransportManagerDashboard = () => {
             </div>
           </div>
 
-          {/* Incoming ECO MART Assignments Card (Critical Workflow) */}
+          {/* Incoming ECO MART Assignments Card */}
           {incomingAssignments.length > 0 && (
-            <div className="bg-amber-50 rounded-2xl p-5 border border-amber-200 shadow-md space-y-3">
+            <div className="bg-amber-950/40 rounded-2xl p-5 border border-amber-500/40 shadow-xl space-y-3 backdrop-blur-xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5 text-amber-600" />
-                  <h3 className="font-extrabold text-slate-900 text-sm">
+                  <AlertCircle className="w-5 h-5 text-amber-400" />
+                  <h3 className="font-extrabold text-white text-sm">
                     Incoming ECO MART Transportation Assignments ({incomingAssignments.length})
                   </h3>
                 </div>
-                <span className="px-2.5 py-0.5 text-xs font-bold bg-amber-200 text-amber-900 rounded-full">
+                <span className="px-2.5 py-0.5 text-xs font-bold bg-amber-500/20 text-amber-400 rounded-full border border-amber-500/30">
                   Action Required
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {incomingAssignments.map(ord => (
-                  <div key={ord.id} className="bg-white p-4 rounded-xl border border-amber-200 space-y-2 text-xs">
+                  <div key={ord.id} className="bg-slate-950/80 p-4 rounded-xl border border-amber-500/30 space-y-2 text-xs">
                     <div className="flex items-center justify-between">
-                      <span className="font-mono font-extrabold text-cyan-700 text-sm">{ord.id}</span>
-                      <span className="font-bold text-slate-900">₹{ord.totalPrice}</span>
+                      <span className="font-mono font-extrabold text-cyan-400 text-sm">{ord.id}</span>
+                      <span className="font-bold text-amber-400">₹{ord.totalPrice}</span>
                     </div>
-                    <p className="font-bold text-slate-800">{ord.productTitle} ({ord.quantityKg} kg)</p>
-                    <p className="text-slate-600">From: {ord.sellerAddress}</p>
-                    <p className="text-slate-600">To: {ord.buyerAddress}</p>
+                    <p className="font-bold text-white">{ord.productTitle} ({ord.quantityKg} kg)</p>
+                    <p className="text-slate-400">From: {ord.sellerAddress}</p>
+                    <p className="text-slate-400">To: {ord.buyerAddress}</p>
 
                     <div className="pt-2 flex gap-2">
                       <button
                         type="button"
                         onClick={() => partnerRejectOrder(ord.id)}
-                        className="w-1/2 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg cursor-pointer flex items-center justify-center gap-1"
+                        className="w-1/2 py-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/30 font-bold rounded-lg cursor-pointer flex items-center justify-center gap-1"
                       >
                         <X className="w-3.5 h-3.5" />
                         <span>Decline</span>
@@ -155,7 +154,7 @@ export const TransportManagerDashboard = () => {
                       <button
                         type="button"
                         onClick={() => partnerAcceptOrder(ord.id)}
-                        className="w-1/2 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg cursor-pointer flex items-center justify-center gap-1"
+                        className="w-1/2 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold rounded-lg cursor-pointer flex items-center justify-center gap-1 shadow-md"
                       >
                         <Check className="w-3.5 h-3.5" />
                         <span>Accept Assignment</span>
@@ -169,11 +168,11 @@ export const TransportManagerDashboard = () => {
 
           {/* Pending Dispatch Orders */}
           {pendingDispatchOrders.length > 0 && (
-            <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-200 shadow-md space-y-3">
+            <div className="bg-emerald-950/40 rounded-2xl p-5 border border-emerald-500/40 shadow-xl space-y-3 backdrop-blur-xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Package className="w-5 h-5 text-emerald-700" />
-                  <h3 className="font-extrabold text-slate-900 text-sm">
+                  <Package className="w-5 h-5 text-emerald-400" />
+                  <h3 className="font-extrabold text-white text-sm">
                     Accepted Assignments - Select Driver & Vehicle ({pendingDispatchOrders.length})
                   </h3>
                 </div>
@@ -181,14 +180,14 @@ export const TransportManagerDashboard = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {pendingDispatchOrders.map(ord => (
-                  <div key={ord.id} className="bg-white p-4 rounded-xl border border-emerald-200 space-y-2 text-xs">
+                  <div key={ord.id} className="bg-slate-950/80 p-4 rounded-xl border border-emerald-500/30 space-y-2 text-xs">
                     <div className="flex items-center justify-between">
-                      <span className="font-mono font-extrabold text-cyan-700 text-sm">{ord.id}</span>
-                      <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-bold">Accepted</span>
+                      <span className="font-mono font-extrabold text-cyan-400 text-sm">{ord.id}</span>
+                      <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded border border-emerald-500/30 font-bold">Accepted</span>
                     </div>
-                    <p className="font-bold text-slate-800">{ord.productTitle}</p>
-                    <p className="text-slate-600">Pickup: {ord.sellerAddress}</p>
-                    <p className="text-slate-600">Delivery: {ord.buyerAddress}</p>
+                    <p className="font-bold text-white">{ord.productTitle}</p>
+                    <p className="text-slate-400">Pickup: {ord.sellerAddress}</p>
+                    <p className="text-slate-400">Delivery: {ord.buyerAddress}</p>
 
                     <button
                       type="button"
@@ -197,9 +196,9 @@ export const TransportManagerDashboard = () => {
                         setSelectedDriverId(myDrivers[0]?.driverId || '');
                         setSelectedVehicleNumber(myVehicles[0]?.vehicleNumber || '');
                       }}
-                      className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg cursor-pointer flex items-center justify-center gap-1.5"
+                      className="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-teal-600 text-slate-950 font-extrabold rounded-lg cursor-pointer flex items-center justify-center gap-1.5 shadow-md"
                     >
-                      <Send className="w-3.5 h-3.5 text-cyan-400" />
+                      <Send className="w-3.5 h-3.5 text-slate-950" />
                       <span>Assign Driver & Lorry</span>
                     </button>
                   </div>
@@ -210,59 +209,59 @@ export const TransportManagerDashboard = () => {
 
           {/* Metrics Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div className="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
               <div>
-                <p className="text-xs font-bold text-slate-500 uppercase">Company Lorries</p>
-                <h3 className="text-2xl font-extrabold text-slate-900 mt-1">{myVehicles.length}</h3>
-                <p className="text-[11px] text-emerald-600 font-semibold mt-1">Available: {availableVehicles} | On Trip: {vehiclesOnTrip}</p>
+                <p className="text-xs font-bold text-slate-400 uppercase">Company Lorries</p>
+                <h3 className="text-2xl font-extrabold text-white mt-1">{myVehicles.length}</h3>
+                <p className="text-[11px] text-emerald-400 font-semibold mt-1">Available: {availableVehicles} | On Trip: {vehiclesOnTrip}</p>
               </div>
-              <div className="p-3 bg-cyan-50 text-cyan-700 rounded-xl">
+              <div className="p-3 bg-cyan-500/20 text-cyan-400 rounded-xl border border-cyan-500/30">
                 <Truck className="w-6 h-6" />
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div className="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
               <div>
-                <p className="text-xs font-bold text-slate-500 uppercase">Company Drivers</p>
-                <h3 className="text-2xl font-extrabold text-slate-900 mt-1">{myDrivers.length}</h3>
+                <p className="text-xs font-bold text-slate-400 uppercase">Company Drivers</p>
+                <h3 className="text-2xl font-extrabold text-white mt-1">{myDrivers.length}</h3>
                 <p className="text-[11px] text-slate-400 font-semibold mt-1">Active: {availableDrivers} | On Trip: {driversOnTrip}</p>
               </div>
-              <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
+              <div className="p-3 bg-blue-500/20 text-blue-400 rounded-xl border border-blue-500/30">
                 <Users className="w-6 h-6" />
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div className="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
               <div>
-                <p className="text-xs font-bold text-slate-500 uppercase">Active Deliveries</p>
-                <h3 className="text-2xl font-extrabold text-cyan-700 mt-1">{activeDeliveries}</h3>
+                <p className="text-xs font-bold text-slate-400 uppercase">Active Deliveries</p>
+                <h3 className="text-2xl font-extrabold text-cyan-400 mt-1">{activeDeliveries}</h3>
                 <p className="text-[11px] text-slate-400 font-semibold mt-1">In Transit</p>
               </div>
-              <div className="p-3 bg-teal-50 text-teal-600 rounded-xl">
+              <div className="p-3 bg-teal-500/20 text-teal-400 rounded-xl border border-teal-500/30">
                 <Navigation className="w-6 h-6" />
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div className="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
               <div>
-                <p className="text-xs font-bold text-slate-500 uppercase">Completed Trips</p>
-                <h3 className="text-2xl font-extrabold text-emerald-700 mt-1">{completedDeliveries}</h3>
-                <p className="text-[11px] text-emerald-600 font-semibold mt-1">100% Verified</p>
+                <p className="text-xs font-bold text-slate-400 uppercase">Completed Trips</p>
+                <h3 className="text-2xl font-extrabold text-emerald-400 mt-1">{completedDeliveries}</h3>
+                <p className="text-[11px] text-emerald-400 font-semibold mt-1">100% Verified</p>
               </div>
-              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+              <div className="p-3 bg-emerald-500/20 text-emerald-400 rounded-xl border border-emerald-500/30">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
             </div>
           </div>
 
           {/* Live Fleet Map Section */}
-          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-3">
+          <div className="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 shadow-xl space-y-3 backdrop-blur-xl">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-slate-900">Company Live Fleet Map (OpenStreetMap)</h3>
-                <p className="text-xs text-slate-500">Real-time GPS visibility for trucks owned by {currentUser?.companyName}</p>
+                <h3 className="font-bold text-white">Company Live Fleet Map (OpenStreetMap)</h3>
+                <p className="text-xs text-slate-400">Real-time GPS visibility for trucks owned by {currentUser?.companyName}</p>
               </div>
-              <span className="px-2.5 py-1 text-xs font-bold bg-cyan-50 text-cyan-800 rounded-full border border-cyan-200">
+              <span className="px-3 py-1 text-xs font-bold bg-cyan-500/20 text-cyan-400 rounded-full border border-cyan-500/30">
                 {myVehicles.length} Lorries Monitored
               </span>
             </div>
@@ -274,40 +273,40 @@ export const TransportManagerDashboard = () => {
 
       {/* Dispatch Driver & Lorry Modal */}
       {selectedOrderForDispatch && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <h3 className="font-extrabold text-slate-900 text-sm">Assign Driver & Lorry for {selectedOrderForDispatch.id}</h3>
-              <button onClick={() => setSelectedOrderForDispatch(null)} className="font-bold text-slate-400">✕</button>
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 text-white">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <h3 className="font-extrabold text-white text-sm">Assign Driver & Lorry for {selectedOrderForDispatch.id}</h3>
+              <button onClick={() => setSelectedOrderForDispatch(null)} className="font-bold text-slate-400 hover:text-white cursor-pointer">✕</button>
             </div>
 
             <form onSubmit={handleDispatchSubmit} className="space-y-3 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Select Driver *</label>
+                <label className="block font-bold text-slate-300 mb-1">Select Driver *</label>
                 <select
                   value={selectedDriverId}
                   onChange={(e) => setSelectedDriverId(e.target.value)}
                   required
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-medium"
+                  className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl font-medium text-white focus:ring-2 focus:ring-cyan-500 outline-hidden"
                 >
-                  <option value="">-- Select Driver --</option>
+                  <option value="" className="bg-slate-900">-- Select Driver --</option>
                   {myDrivers.map(d => (
-                    <option key={d.id} value={d.driverId}>{d.name} ({d.driverId})</option>
+                    <option key={d.id} value={d.driverId} className="bg-slate-900">{d.name} ({d.driverId})</option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Select Truck / Lorry *</label>
+                <label className="block font-bold text-slate-300 mb-1">Select Truck / Lorry *</label>
                 <select
                   value={selectedVehicleNumber}
                   onChange={(e) => setSelectedVehicleNumber(e.target.value)}
                   required
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-mono"
+                  className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl font-mono text-cyan-300 focus:ring-2 focus:ring-cyan-500 outline-hidden"
                 >
-                  <option value="">-- Select Vehicle --</option>
+                  <option value="" className="bg-slate-900">-- Select Vehicle --</option>
                   {myVehicles.map(v => (
-                    <option key={v.id} value={v.vehicleNumber}>{v.vehicleNumber} ({v.vehicleType})</option>
+                    <option key={v.id} value={v.vehicleNumber} className="bg-slate-900">{v.vehicleNumber} ({v.vehicleType})</option>
                   ))}
                 </select>
               </div>
@@ -316,13 +315,13 @@ export const TransportManagerDashboard = () => {
                 <button
                   type="button"
                   onClick={() => setSelectedOrderForDispatch(null)}
-                  className="w-1/2 py-2.5 rounded-xl border border-slate-300 font-bold"
+                  className="w-1/2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 py-2.5 rounded-xl bg-cyan-600 text-slate-950 font-bold hover:bg-cyan-500"
+                  className="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 font-extrabold hover:from-cyan-300 hover:to-teal-300 cursor-pointer shadow-md"
                 >
                   Confirm Dispatch
                 </button>

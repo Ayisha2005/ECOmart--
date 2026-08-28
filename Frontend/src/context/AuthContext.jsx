@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import apiService from '../services/apiService';
 
 const AuthContext = createContext();
 
@@ -48,7 +49,6 @@ const PRESEEDED_USERS = [
     city: "Chennai",
     pincode: "600018"
   },
-  // Transport Manager Accounts (External 3rd Party Partner)
   {
     id: "TRM001",
     transportId: "TRM001",
@@ -61,8 +61,7 @@ const PRESEEDED_USERS = [
     transportCompanyId: "comp-greenroute",
     companyName: "GreenRoute Logistics Pvt Ltd",
     state: "Tamil Nadu",
-    city: "Chennai",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80"
+    city: "Chennai"
   },
   {
     id: "TRM002",
@@ -78,7 +77,6 @@ const PRESEEDED_USERS = [
     state: "Karnataka",
     city: "Bengaluru"
   },
-  // Transport Driver Accounts
   {
     id: "DRV001",
     transportId: "DRV001",
@@ -92,7 +90,6 @@ const PRESEEDED_USERS = [
     companyName: "GreenRoute Logistics Pvt Ltd",
     assignedVehicleNumber: "TN 01 AB 1234 (Demo)",
     licenseNumber: "TN-01-2022-8765432",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
     rating: 4.9,
     tripsCompleted: 142,
     experienceYears: 6
@@ -110,11 +107,10 @@ const PRESEEDED_USERS = [
     companyName: "GreenRoute Logistics Pvt Ltd",
     assignedVehicleNumber: "TN 09 CB 5678 (Demo)",
     licenseNumber: "TN-09-2021-1234567",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80",
     rating: 4.8,
     tripsCompleted: 98,
     experienceYears: 4
-  },
+  }
 ];
 
 export const AuthProvider = ({ children }) => {
@@ -136,12 +132,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const saved = localStorage.getItem('ecoMartUsersList');
       if (!saved) return PRESEEDED_USERS;
-      const parsed = JSON.parse(saved);
-      // Ensure PRESEEDED accounts TRM001 and DRV001 exist
-      const hasTrm001 = parsed.some(u => u.transportId === 'TRM001' || u.id === 'TRM001');
-      const hasDrv001 = parsed.some(u => u.driverId === 'DRV001' || u.id === 'DRV001');
-      if (!hasTrm001 || !hasDrv001) return PRESEEDED_USERS;
-      return parsed;
+      return JSON.parse(saved);
     } catch {
       return PRESEEDED_USERS;
     }
@@ -160,8 +151,7 @@ export const AuthProvider = ({ children }) => {
     }, 4000);
   };
 
-  const registerSellerBuyer = (formData, selectedRole) => {
-    const { email, phone } = formData;
+  const registerSellerBuyer = async (formData, selectedRole) => {
     const normalizedSelectedRole = normalizeRole(selectedRole);
 
     if (!['SELLER', 'BUYER'].includes(normalizedSelectedRole)) {
@@ -169,37 +159,61 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: "Unauthorized role selection" };
     }
 
-    const existing = users.find(u => u.email?.toLowerCase() === email.toLowerCase() || u.phone === phone);
-    if (existing) {
-      showNotification(`Account already exists with this ${existing.email?.toLowerCase() === email.toLowerCase() ? 'email' : 'phone number'}. Please login.`, 'error');
-      return { success: false, error: "Account already exists" };
+    try {
+      // Connect to Backend REST API Endpoint /api/auth/register
+      const res = await apiService.registerUser(formData, normalizedSelectedRole);
+      if (res.success) {
+        if (res.token) localStorage.setItem('eco_token', res.token);
+        const newUser = res.user;
+        setUsers(prev => [...prev, newUser]);
+        showNotification(`Registration successful via REST API as ${normalizedSelectedRole}! Please login.`, 'success');
+        return { success: true, user: newUser };
+      }
+    } catch (apiErr) {
+      console.warn("Backend REST API register failed, using local context state fallback:", apiErr.message);
     }
 
+    // Local Fallback
     const newUser = {
       id: `user-${normalizedSelectedRole.toLowerCase()}-${Date.now()}`,
       ...formData,
       role: normalizedSelectedRole
     };
-
     setUsers(prev => [...prev, newUser]);
     showNotification(`Registration successful as ${normalizedSelectedRole}! Please login.`, 'success');
     return { success: true, user: newUser };
   };
 
-  const registerAdmin = (formData) => {
-    const { email } = formData;
-    const existing = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
-    if (existing) {
-      showNotification("Admin email already registered. Please login.", 'error');
-      return { success: false, error: "Email exists" };
+  const registerAdmin = async (formData) => {
+    const { securityKey } = formData;
+    const validKeys = ['ECO-ADMIN-2026', 'ECO-SUPER-ADMIN-2026', 'ADMIN@2026', 'ECOADMIN'];
+    const cleanedKey = securityKey ? securityKey.trim().toUpperCase() : '';
+
+    if (!cleanedKey || !validKeys.includes(cleanedKey)) {
+      showNotification("Invalid Admin Security Key! Contact platform administration for authorization.", 'error');
+      return { success: false, error: "Invalid Admin Security Key" };
     }
 
+    try {
+      // Connect to Backend REST API Endpoint /api/auth/admin/register
+      const res = await apiService.registerAdmin(formData);
+      if (res.success) {
+        if (res.token) localStorage.setItem('eco_token', res.token);
+        const newAdmin = res.user;
+        setUsers(prev => [...prev, newAdmin]);
+        showNotification("Admin registered successfully via REST API! Please login.", 'success');
+        return { success: true, user: newAdmin };
+      }
+    } catch (apiErr) {
+      console.warn("Backend REST API admin register failed, using local fallback:", apiErr.message);
+    }
+
+    // Local Fallback
     const newAdmin = {
       id: `user-admin-${Date.now()}`,
       ...formData,
       role: "ADMIN"
     };
-
     setUsers(prev => [...prev, newAdmin]);
     showNotification("Admin registered successfully! Please login at Admin Portal.", 'success');
     return { success: true, user: newAdmin };
@@ -246,23 +260,41 @@ export const AuthProvider = ({ children }) => {
     return newDriverUser;
   };
 
-  const login = (identifier, password, expectedPortalRole) => {
+  const login = async (identifier, password, expectedPortalRole) => {
     if (!identifier || !password) {
       showNotification("Please enter your login identifier and password.", 'error');
       return { success: false, error: "Missing fields" };
     }
 
+    // 1. Try Backend REST API /api/auth/login
+    try {
+      const res = await apiService.login({ identifier, password, expectedRole: expectedPortalRole });
+      if (res.success && res.user) {
+        if (res.token) localStorage.setItem('eco_token', res.token);
+        const userRole = normalizeRole(res.user.role);
+
+        setCurrentUser(res.user);
+        setRole(userRole);
+        localStorage.setItem('ecoMartUser', JSON.stringify(res.user));
+        localStorage.setItem('ecoMartRole', userRole);
+
+        showNotification(`Welcome back, ${res.user.name}! Connected to ECO MART REST API.`, 'success');
+        return { success: true, user: res.user };
+      }
+    } catch (apiErr) {
+      console.warn("REST API Login failed or offline, attempting local login matching:", apiErr.message);
+    }
+
+    // 2. Local Fallback Matching
     const cleanIdentifier = identifier.trim().toLowerCase();
     const cleanPassword = password.trim();
 
-    // Flexible identifier matching: email, transportId, driverId, id, or phone number!
     const foundUser = users.find(u => {
       const matchEmail = u.email?.toLowerCase() === cleanIdentifier;
       const matchTransportId = u.transportId?.toLowerCase() === cleanIdentifier;
       const matchDriverId = u.driverId?.toLowerCase() === cleanIdentifier;
       const matchId = u.id?.toLowerCase() === cleanIdentifier;
       const matchPhone = u.phone?.replace(/\D/g, '') === cleanIdentifier;
-      
       const pwdMatches = u.password === cleanPassword;
       return (matchEmail || matchTransportId || matchDriverId || matchId || matchPhone) && pwdMatches;
     });
@@ -280,24 +312,12 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: "Role mismatch" };
     }
 
-    const updatedUser = {
-      ...foundUser,
-      role: userNormalizedRole
-    };
-
+    const updatedUser = { ...foundUser, role: userNormalizedRole };
     setCurrentUser(updatedUser);
     setRole(userNormalizedRole);
 
-    const authState = {
-      isAuthenticated: true,
-      user: updatedUser,
-      role: userNormalizedRole,
-      transportCompanyId: updatedUser.transportCompanyId || null
-    };
-
     localStorage.setItem('ecoMartUser', JSON.stringify(updatedUser));
     localStorage.setItem('ecoMartRole', userNormalizedRole);
-    localStorage.setItem('ecoMartAuth', JSON.stringify(authState));
 
     showNotification(`Welcome back, ${updatedUser.name}! Logged in as ${userNormalizedRole}.`, 'success');
     return { success: true, user: updatedUser };
@@ -309,7 +329,7 @@ export const AuthProvider = ({ children }) => {
     setCurrentUser(updated);
     setUsers(prev => prev.map(u => u.id === updated.id ? updated : u));
     localStorage.setItem('ecoMartUser', JSON.stringify(updated));
-    showNotification("Driver Profile updated successfully! ✅", 'success');
+    showNotification("Profile updated successfully! ✅", 'success');
     return updated;
   };
 
@@ -318,7 +338,7 @@ export const AuthProvider = ({ children }) => {
     setRole(null);
     localStorage.removeItem('ecoMartUser');
     localStorage.removeItem('ecoMartRole');
-    localStorage.removeItem('ecoMartAuth');
+    localStorage.removeItem('eco_token');
     showNotification("Logged out successfully.", 'info');
   };
 

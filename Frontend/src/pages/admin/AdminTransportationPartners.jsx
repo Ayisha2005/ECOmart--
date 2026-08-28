@@ -48,15 +48,15 @@ export const AdminTransportationPartners = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="flex h-screen bg-slate-950 text-white overflow-hidden">
       <Sidebar role="ADMIN" />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <Navbar title="3rd Party Transportation Partner Directory & Oversight" />
 
-        <main className="p-6 space-y-6 overflow-y-auto">
+        <main className="flex-1 p-6 space-y-6 overflow-y-auto custom-scrollbar">
           {/* Header Banner */}
-          <div className="bg-gradient-to-r from-slate-900 via-cyan-950 to-slate-900 rounded-2xl p-6 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-cyan-500/30">
+          <div className="bg-gradient-to-r from-slate-900 via-cyan-950/60 to-slate-900 rounded-3xl p-6 text-white shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-cyan-500/30">
             <div>
               <div className="flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-cyan-400" />

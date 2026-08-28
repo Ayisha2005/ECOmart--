@@ -1,14 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import EcoMartLogo from '../../components/common/EcoMartLogo';
 import DemoCredentialsBox from '../../components/common/DemoCredentialsBox';
+import LogoSplashScreen from '../../components/common/LogoSplashScreen';
+import TermsModal from '../../components/common/TermsModal';
 import { INDIAN_STATES, MAJOR_CITIES_BY_STATE } from '../../data/indianLocations';
-import { Store, ShoppingBag, ShieldCheck, ArrowRight, Truck, Lock, Phone, Mail, User } from 'lucide-react';
+import { Store, ShoppingBag, ShieldCheck, ArrowRight, Truck, Lock, Phone, Mail, User, Sparkles, FileText, CheckCircle2, Play } from 'lucide-react';
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
   const { registerSellerBuyer } = useAuth();
+
+  // Logo Splash Intro State
+  const [showSplash, setShowSplash] = useState(() => {
+    return !sessionStorage.getItem('ecoMartSplashSeen');
+  });
 
   const [selectedRole, setSelectedRole] = useState('SELLER');
   const [formData, setFormData] = useState({
@@ -25,6 +32,16 @@ export const RegisterPage = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+
+  const handleSplashComplete = () => {
+    sessionStorage.setItem('ecoMartSplashSeen', 'true');
+    setShowSplash(false);
+  };
+
+  const handleReplayIntro = () => {
+    setShowSplash(true);
+  };
 
   const handleStateChange = (e) => {
     const newState = e.target.value;
@@ -47,7 +64,7 @@ export const RegisterPage = () => {
   const validate = () => {
     const errs = {};
     if (!formData.name.trim()) errs.name = "Full Name is required";
-    if (!formData.email.trim() || !formData.email.includes('@')) errs.email = "Valid email is required";
+    if (!formData.email.trim() || !formData.email.includes('@')) errs.email = "Valid email address is required";
     
     const phoneClean = formData.phone.replace(/\D/g, '');
     if (phoneClean.length < 10) errs.phone = "Valid 10-digit Indian mobile number required";
@@ -55,7 +72,7 @@ export const RegisterPage = () => {
     if (formData.password.length < 6) errs.password = "Password must be at least 6 characters";
     if (formData.password !== formData.confirmPassword) errs.confirmPassword = "Passwords do not match";
     if (!formData.pincode.trim() || formData.pincode.length < 6) errs.pincode = "Valid 6-digit Indian Pincode required";
-    if (!formData.agreedTerms) errs.agreedTerms = "You must agree to Terms & Conditions";
+    if (!formData.agreedTerms) errs.agreedTerms = "You must read and agree to the Terms & Conditions";
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -76,264 +93,324 @@ export const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 md:p-8">
-      <div className="w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 border border-slate-800">
+    <>
+      {/* 1. Gradient Logo Intro Splash Screen */}
+      {showSplash && <LogoSplashScreen onComplete={handleSplashComplete} />}
+
+      {/* 2. Main Scrollable Register Page */}
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
         
-        {/* Left Visual Branding Side */}
-        <div className="lg:col-span-5 bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-950 p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        {/* Dynamic Background Mesh Gradients */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-950/40 via-slate-950 to-amber-950/30 pointer-events-none" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: '7s' }} />
 
-          <div>
-            <EcoMartLogo size="lg" showTagline={true} className="mb-8" />
-
-            <div className="space-y-4 my-8">
-              <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight leading-tight">
-                India's Premier Eco Marketplace & Green Logistics Platform
-              </h2>
-              <p className="text-sm text-slate-300 leading-relaxed">
-                Connect directly as a verified Seller or Buyer. Trade recyclable materials, manage industrial scrap, and dispatch 3rd-party logistics fleets across Indian cities.
-              </p>
-            </div>
-
-            <div className="space-y-3 pt-4 border-t border-slate-800/80">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/20 text-lime-400">
-                  <ShieldCheck className="w-4 h-4" />
-                </div>
-                <span className="text-xs font-semibold text-slate-200">Strict Role-Based Authorization</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/20 text-lime-400">
-                  <Truck className="w-4 h-4" />
-                </div>
-                <span className="text-xs font-semibold text-slate-200">3rd Party Transport Partner Network</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/20 text-lime-400">
-                  <Store className="w-4 h-4" />
-                </div>
-                <span className="text-xs font-semibold text-slate-200">AI Scrap Pricing & OpenStreetMap Tracking</span>
-              </div>
-            </div>
-
-            {/* Demo Login Credentials Box */}
-            <div className="mt-6">
-              <DemoCredentialsBox />
-            </div>
-
-          </div>
-        </div>
-
-        {/* Right Form Side */}
-        <div className="lg:col-span-7 p-8 md:p-12 bg-white flex flex-col justify-center">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-slate-900">Create your ECO MART account</h2>
-            <p className="text-xs text-slate-500 mt-1">Select your role to get started with India-only eco trading</p>
-          </div>
-
-          {/* Role Toggle Selector */}
-          <div className="mb-6 bg-slate-100 p-1.5 rounded-2xl grid grid-cols-2 gap-2 border border-slate-200">
-            <button
-              type="button"
-              onClick={() => setSelectedRole('SELLER')}
-              className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                selectedRole === 'SELLER'
-                  ? 'bg-slate-900 text-white shadow-md'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Store className="w-4 h-4 text-emerald-400" />
-              <span>I want to SELL</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedRole('BUYER')}
-              className={`py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                selectedRole === 'BUYER'
-                  ? 'bg-slate-900 text-white shadow-md'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <ShoppingBag className="w-4 h-4 text-lime-400" />
-              <span>I want to BUY</span>
-            </button>
-          </div>
-
-          {/* Registration Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="e.g. Ramesh Kumar"
-                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-hidden"
-                  />
-                </div>
-                {errors.name && <p className="text-[11px] text-rose-500 font-semibold mt-1">{errors.name}</p>}
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Email Address *</label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="name@company.in"
-                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-hidden"
-                  />
-                </div>
-                {errors.email && <p className="text-[11px] text-rose-500 font-semibold mt-1">{errors.email}</p>}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Mobile Number (India +91) *</label>
-                <div className="relative">
-                  <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                  <input
-                    type="text"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    placeholder="+91 98765 43210"
-                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-hidden"
-                  />
-                </div>
-                {errors.phone && <p className="text-[11px] text-rose-500 font-semibold mt-1">{errors.phone}</p>}
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Pincode *</label>
-                <input
-                  type="text"
-                  name="pincode"
-                  value={formData.pincode}
-                  onChange={handleChange}
-                  placeholder="e.g. 600001"
-                  maxLength={6}
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-hidden"
-                />
-                {errors.pincode && <p className="text-[11px] text-rose-500 font-semibold mt-1">{errors.pincode}</p>}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">State (Fixed: India) *</label>
-                <select
-                  name="state"
-                  value={formData.state}
-                  onChange={handleStateChange}
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-hidden"
-                >
-                  {INDIAN_STATES.map(s => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">District / City *</label>
-                <input
-                  type="text"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  placeholder="e.g. Chennai"
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-hidden"
-                />
-              </div>
-            </div>
+        <div className="relative z-10 w-full max-w-6xl bg-slate-900/90 rounded-3xl shadow-[0_0_60px_rgba(16,185,129,0.15)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 border border-slate-800 backdrop-blur-xl">
+          
+          {/* Left Visual Branding Side */}
+          <div className="lg:col-span-5 bg-gradient-to-br from-slate-950 via-emerald-950/80 to-slate-950 p-6 md:p-10 text-white flex flex-col justify-between relative overflow-y-auto max-h-[92vh] custom-scrollbar border-b lg:border-b-0 lg:border-r border-slate-800">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Address / Industrial Area</label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                placeholder="Plot No / Street / Zone"
-                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-hidden"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Password *</label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="••••••••"
-                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-hidden"
-                  />
-                </div>
-                {errors.password && <p className="text-[11px] text-rose-500 font-semibold mt-1">{errors.password}</p>}
+              <div className="flex items-center justify-between mb-8">
+                <EcoMartLogo size="lg" showTagline={true} />
+                <button
+                  type="button"
+                  onClick={handleReplayIntro}
+                  title="Replay Logo Intro Animation"
+                  className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-emerald-400 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
+                >
+                  <Play className="w-3.5 h-3.5 fill-emerald-400" />
+                  <span className="hidden sm:inline">Replay Intro</span>
+                </button>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Confirm Password *</label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    placeholder="••••••••"
-                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-emerald-500 outline-hidden"
-                  />
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold uppercase tracking-wider mb-6">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                <span>ECO MART RECYCLING ECOSYSTEM</span>
+              </div>
+
+              <div className="space-y-4 my-6">
+                <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight leading-tight text-white">
+                  India's Premier Eco Marketplace & Green Logistics Platform
+                </h2>
+                <p className="text-xs md:text-sm text-slate-300 leading-relaxed">
+                  Connect directly as a verified Seller or Buyer. Trade recyclable materials, manage industrial scrap, and dispatch 3rd-party logistics fleets across Indian cities.
+                </p>
+              </div>
+
+              <div className="space-y-3 pt-4 border-t border-slate-800/80">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-emerald-500/20 text-lime-400 border border-emerald-500/30">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-semibold text-slate-200">Strict Role-Based Authorization</span>
                 </div>
-                {errors.confirmPassword && <p className="text-[11px] text-rose-500 font-semibold mt-1">{errors.confirmPassword}</p>}
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-emerald-500/20 text-lime-400 border border-emerald-500/30">
+                    <Truck className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-semibold text-slate-200">3rd Party Transport Partner Network</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-emerald-500/20 text-lime-400 border border-emerald-500/30">
+                    <Store className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-semibold text-slate-200">OpenStreetMap Live Tracking & AI Scrap Price</span>
+                </div>
+              </div>
+
+              {/* Role Portals Box */}
+              <div className="mt-8">
+                <DemoCredentialsBox />
               </div>
             </div>
-
-            <div className="flex items-center gap-2 pt-2">
-              <input
-                type="checkbox"
-                id="agreedTerms"
-                name="agreedTerms"
-                checked={formData.agreedTerms}
-                onChange={handleChange}
-                className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-slate-300 cursor-pointer"
-              />
-              <label htmlFor="agreedTerms" className="text-xs text-slate-600 font-medium">
-                I agree to the <span className="font-bold text-slate-900">ECO MART India Terms of Service</span> & Privacy Policy
-              </label>
-            </div>
-            {errors.agreedTerms && <p className="text-[11px] text-rose-500 font-semibold">{errors.agreedTerms}</p>}
-
-            <button
-              type="submit"
-              className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-700 to-slate-900 text-white font-extrabold text-sm shadow-lg shadow-emerald-950/20 hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>Create {selectedRole} Account</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </form>
-
-          <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
-            <span className="text-slate-500 font-medium">Need Platform Administration?</span>
-            <Link to="/admin/register" className="font-extrabold text-amber-600 hover:text-amber-700">
-              Admin Registration Portal →
-            </Link>
           </div>
+
+          {/* Right Form Side with Modern Glassmorphism & Top Logo */}
+          <div className="lg:col-span-7 p-6 md:p-10 bg-gradient-to-br from-slate-950 via-slate-900/90 to-emerald-950/30 text-white flex flex-col justify-center max-h-[92vh] overflow-y-auto custom-scrollbar relative">
+            
+            {/* Top Form Header with Logo */}
+            <div className="mb-6 flex flex-col items-start pb-4 border-b border-slate-800/80">
+              <EcoMartLogo size="md" showTagline={true} className="mb-3" />
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl md:text-2xl font-extrabold text-white tracking-tight">Create your ECO MART Account</h2>
+                <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30 uppercase">
+                  India Portal
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">Select your role to get started with India-only eco scrap trading</p>
+            </div>
+
+            {/* Ultra-Modern Role Toggle Selector */}
+            <div className="mb-6 bg-slate-950/90 p-1.5 rounded-2xl grid grid-cols-2 gap-2 border border-slate-800/90 shadow-inner">
+              <button
+                type="button"
+                onClick={() => setSelectedRole('SELLER')}
+                className={`py-3 px-4 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  selectedRole === 'SELLER'
+                    ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-slate-950 shadow-lg shadow-emerald-950/80 scale-[1.01]'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Store className={`w-4 h-4 ${selectedRole === 'SELLER' ? 'text-slate-950' : 'text-emerald-400'}`} />
+                <span>I want to SELL Scrap / Recyclables</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedRole('BUYER')}
+                className={`py-3 px-4 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  selectedRole === 'BUYER'
+                    ? 'bg-gradient-to-r from-cyan-400 via-teal-400 to-cyan-500 text-slate-950 shadow-lg shadow-cyan-950/80 scale-[1.01]'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <ShoppingBag className={`w-4 h-4 ${selectedRole === 'BUYER' ? 'text-slate-950' : 'text-cyan-400'}`} />
+                <span>I want to BUY Scrap Materials</span>
+              </button>
+            </div>
+
+            {/* Registration Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-200 mb-1">Full Name *</label>
+                  <div className="relative">
+                    <User className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="e.g. Ramesh Kumar"
+                      className="w-full pl-10 pr-3 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm font-bold text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500/80 outline-hidden transition-all placeholder:text-slate-500"
+                    />
+                  </div>
+                  {errors.name && <p className="text-[11px] text-rose-400 font-semibold mt-1">{errors.name}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-200 mb-1">Email Address *</label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="name@company.in"
+                      className="w-full pl-10 pr-3 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm font-bold text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500/80 outline-hidden transition-all placeholder:text-slate-500"
+                    />
+                  </div>
+                  {errors.email && <p className="text-[11px] text-rose-400 font-semibold mt-1">{errors.email}</p>}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-200 mb-1">Mobile Number (India +91) *</label>
+                  <div className="relative">
+                    <Phone className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
+                    <input
+                      type="text"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="+91 98765 43210"
+                      className="w-full pl-10 pr-3 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm font-bold text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500/80 outline-hidden transition-all placeholder:text-slate-500"
+                    />
+                  </div>
+                  {errors.phone && <p className="text-[11px] text-rose-400 font-semibold mt-1">{errors.phone}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-200 mb-1">Pincode *</label>
+                  <input
+                    type="text"
+                    name="pincode"
+                    value={formData.pincode}
+                    onChange={handleChange}
+                    placeholder="e.g. 600001"
+                    maxLength={6}
+                    className="w-full px-3.5 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm font-bold text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500/80 outline-hidden transition-all placeholder:text-slate-500"
+                  />
+                  {errors.pincode && <p className="text-[11px] text-rose-400 font-semibold mt-1">{errors.pincode}</p>}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-200 mb-1">State (Fixed: India) *</label>
+                  <select
+                    name="state"
+                    value={formData.state}
+                    onChange={handleStateChange}
+                    className="w-full px-3.5 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm font-bold text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500/80 outline-hidden cursor-pointer"
+                  >
+                    {INDIAN_STATES.map(s => (
+                      <option key={s} value={s} className="bg-slate-900 text-white">{s}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-200 mb-1">District / City *</label>
+                  <input
+                    type="text"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleChange}
+                    placeholder="e.g. Chennai"
+                    className="w-full px-3.5 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm font-bold text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500/80 outline-hidden transition-all placeholder:text-slate-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-200 mb-1">Address / Industrial Area</label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="Plot No / Street / Zone"
+                  className="w-full px-3.5 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm font-bold text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500/80 outline-hidden transition-all placeholder:text-slate-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-200 mb-1">Password *</label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
+                    <input
+                      type="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="••••••••"
+                      className="w-full pl-10 pr-3 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm font-bold text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500/80 outline-hidden transition-all placeholder:text-slate-500"
+                    />
+                  </div>
+                  {errors.password && <p className="text-[11px] text-rose-400 font-semibold mt-1">{errors.password}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-200 mb-1">Confirm Password *</label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
+                    <input
+                      type="password"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="••••••••"
+                      className="w-full pl-10 pr-3 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm font-bold text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500/80 outline-hidden transition-all placeholder:text-slate-500"
+                    />
+                  </div>
+                  {errors.confirmPassword && <p className="text-[11px] text-rose-400 font-semibold mt-1">{errors.confirmPassword}</p>}
+                </div>
+              </div>
+
+              {/* Terms & Conditions Box with Modal Link */}
+              <div className="p-4 bg-slate-950/90 border border-slate-800 rounded-2xl space-y-2 shadow-inner">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="agreedTerms"
+                    name="agreedTerms"
+                    checked={formData.agreedTerms}
+                    onChange={handleChange}
+                    className="w-4 h-4 text-emerald-500 rounded focus:ring-emerald-500 border-slate-700 bg-slate-900 cursor-pointer accent-emerald-500"
+                  />
+                  <label htmlFor="agreedTerms" className="text-xs text-slate-200 font-medium leading-tight cursor-pointer">
+                    I agree to the <span className="font-extrabold text-white">ECO MART India Terms of Service</span> & Privacy Policy
+                  </label>
+                </div>
+
+                <div className="pl-7">
+                  <button
+                    type="button"
+                    onClick={() => setIsTermsModalOpen(true)}
+                    className="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Read Full Terms & Conditions Document →</span>
+                  </button>
+                </div>
+              </div>
+              {errors.agreedTerms && <p className="text-[11px] text-rose-400 font-semibold">{errors.agreedTerms}</p>}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 text-slate-950 font-black text-sm uppercase tracking-wider shadow-xl shadow-emerald-950/80 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.99]"
+              >
+                <span>Create {selectedRole} Account</span>
+                <ArrowRight className="w-4.5 h-4.5 text-slate-950" />
+              </button>
+            </form>
+
+            {/* Bottom Links */}
+            <div className="mt-6 pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
+              <span className="font-medium">Need Platform Administration?</span>
+              <Link to="/admin/register" className="font-extrabold text-amber-400 hover:text-amber-300 flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                <span>Admin Registration Portal (Key Required) →</span>
+              </Link>
+            </div>
+          </div>
+
         </div>
       </div>
-    </div>
+
+      {/* Terms & Conditions Modal */}
+      <TermsModal
+        isOpen={isTermsModalOpen}
+        onClose={() => setIsTermsModalOpen(false)}
+        onAccept={() => setFormData(prev => ({ ...prev, agreedTerms: true }))}
+      />
+    </>
   );
 };
 

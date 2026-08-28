@@ -57,13 +57,13 @@ export const AddPartnerPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="flex h-screen bg-slate-950 text-white overflow-hidden">
       <Sidebar role="ADMIN" />
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <Navbar title="Send Transportation Partnership Invitation" />
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        <Navbar title="Add 3rd-Party Transportation Partner Company" />
 
-        <main className="p-6 space-y-6 overflow-y-auto max-w-4xl mx-auto w-full">
+        <main className="flex-1 p-6 space-y-6 overflow-y-auto max-w-4xl mx-auto w-full custom-scrollbar">
           <div className="flex items-center justify-between">
             <button
               type="button"

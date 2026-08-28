@@ -19,7 +19,8 @@ import {
   CheckCircle2,
   TrendingUp,
   ShieldCheck,
-  Building2
+  Building2,
+  Sparkles
 } from 'lucide-react';
 
 export const AdminDashboard = () => {
@@ -61,16 +62,20 @@ export const AdminDashboard = () => {
   ];
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="flex h-screen bg-slate-950 text-white overflow-hidden">
       <Sidebar role="ADMIN" />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <Navbar title="Admin Control Center" />
 
-        <main className="p-6 space-y-6 overflow-y-auto">
+        {/* Scrollable Container with Custom Scrollbar */}
+        <main className="flex-1 p-6 space-y-6 overflow-y-auto custom-scrollbar">
+          
           {/* Header Banner */}
-          <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 rounded-2xl p-6 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-slate-800">
-            <div>
+          <div className="bg-gradient-to-r from-slate-900 via-rose-950/40 to-slate-900 rounded-3xl p-6 text-white shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-slate-800 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
+            
+            <div className="relative z-10">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-rose-400" />
                 <h2 className="text-xl font-extrabold tracking-tight">ECO MART Platform Oversight</h2>
@@ -79,10 +84,10 @@ export const AdminDashboard = () => {
                 Full administration control over India Sellers, Buyers, 3rd-party Transportation Partners & OpenStreetMap logistics.
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 relative z-10">
               <Link
                 to="/admin/transportation-partners"
-                className="px-4 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+                className="px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-400 hover:to-teal-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg transition-all flex items-center gap-2 shrink-0 cursor-pointer"
               >
                 <Building2 className="w-4 h-4 text-slate-950" />
                 <span>Transportation Partners &rarr;</span>
@@ -92,96 +97,96 @@ export const AdminDashboard = () => {
 
           {/* Metrics Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div className="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
               <div>
-                <p className="text-xs font-bold text-slate-500 uppercase">Total Users</p>
-                <h3 className="text-2xl font-extrabold text-slate-900 mt-1">{safeUsers.length}</h3>
+                <p className="text-xs font-bold text-slate-400 uppercase">Total Users</p>
+                <h3 className="text-2xl font-extrabold text-white mt-1">{safeUsers.length}</h3>
                 <p className="text-[11px] text-slate-400 font-semibold mt-1">Sellers: {totalSellers} | Buyers: {totalBuyers}</p>
               </div>
-              <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
+              <div className="p-3 bg-blue-500/20 text-blue-400 rounded-xl border border-blue-500/30">
                 <Users className="w-6 h-6" />
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div className="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
               <div>
-                <p className="text-xs font-bold text-slate-500 uppercase">Partner Fleets</p>
-                <h3 className="text-2xl font-extrabold text-cyan-700 mt-1">{safePartners.length}</h3>
-                <p className="text-[11px] text-emerald-600 font-semibold mt-1">{safeFleetVehicles.length} Trucks Monitored</p>
+                <p className="text-xs font-bold text-slate-400 uppercase">Partner Fleets</p>
+                <h3 className="text-2xl font-extrabold text-cyan-400 mt-1">{safePartners.length}</h3>
+                <p className="text-[11px] text-emerald-400 font-semibold mt-1">{safeFleetVehicles.length} Trucks Monitored</p>
               </div>
-              <div className="p-3 bg-cyan-50 text-cyan-600 rounded-xl">
+              <div className="p-3 bg-cyan-500/20 text-cyan-400 rounded-xl border border-cyan-500/30">
                 <Truck className="w-6 h-6" />
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div className="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
               <div>
-                <p className="text-xs font-bold text-slate-500 uppercase">Active Listings</p>
-                <h3 className="text-2xl font-extrabold text-emerald-700 mt-1">{safeProducts.length}</h3>
+                <p className="text-xs font-bold text-slate-400 uppercase">Active Listings</p>
+                <h3 className="text-2xl font-extrabold text-emerald-400 mt-1">{safeProducts.length}</h3>
                 <p className="text-[11px] text-slate-400 font-semibold mt-1">Across Indian States</p>
               </div>
-              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+              <div className="p-3 bg-emerald-500/20 text-emerald-400 rounded-xl border border-emerald-500/30">
                 <Package className="w-6 h-6" />
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div className="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
               <div>
-                <p className="text-xs font-bold text-slate-500 uppercase">Gross Platform Volume</p>
-                <h3 className="text-2xl font-extrabold text-slate-900 mt-1">₹{totalRevenue.toLocaleString('en-IN')}</h3>
-                <p className="text-[11px] text-emerald-600 font-semibold mt-1">Verified Escrow</p>
+                <p className="text-xs font-bold text-slate-400 uppercase">Gross Platform Volume</p>
+                <h3 className="text-2xl font-extrabold text-amber-400 mt-1">₹{totalRevenue.toLocaleString('en-IN')}</h3>
+                <p className="text-[11px] text-emerald-400 font-semibold mt-1">Verified Escrow</p>
               </div>
-              <div className="p-3 bg-amber-50 text-amber-600 rounded-xl">
+              <div className="p-3 bg-amber-500/20 text-amber-400 rounded-xl border border-amber-500/30">
                 <IndianRupee className="w-6 h-6" />
               </div>
             </div>
           </div>
 
           {/* Environmental Impact Summary */}
-          <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 rounded-2xl p-6 text-white shadow-lg border border-emerald-500/30 grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-gradient-to-r from-emerald-950/80 via-teal-950/80 to-slate-950 rounded-2xl p-6 text-white shadow-xl border border-emerald-500/30 grid grid-cols-1 md:grid-cols-4 gap-4 backdrop-blur-xl">
             <div>
               <div className="flex items-center gap-2 text-lime-400 text-xs font-bold uppercase">
                 <Leaf className="w-4 h-4" />
                 <span>Waste Recycled</span>
               </div>
-              <p className="text-2xl font-extrabold mt-1">{(environmentalImpact?.totalWasteRecycledKg || 48520).toLocaleString('en-IN')} kg</p>
+              <p className="text-2xl font-extrabold mt-1 text-white">{(environmentalImpact?.totalWasteRecycledKg || 48520).toLocaleString('en-IN')} kg</p>
             </div>
             <div>
               <div className="flex items-center gap-2 text-lime-400 text-xs font-bold uppercase">
                 <TrendingUp className="w-4 h-4" />
                 <span>CO₂ Offset Saved</span>
               </div>
-              <p className="text-2xl font-extrabold mt-1">{(environmentalImpact?.co2SavedKg || 72780).toLocaleString('en-IN')} kg</p>
+              <p className="text-2xl font-extrabold mt-1 text-white">{(environmentalImpact?.co2SavedKg || 72780).toLocaleString('en-IN')} kg</p>
             </div>
             <div>
               <div className="flex items-center gap-2 text-lime-400 text-xs font-bold uppercase">
                 <Activity className="w-4 h-4" />
                 <span>Active Pickups</span>
               </div>
-              <p className="text-2xl font-extrabold mt-1">{activePickups} Orders</p>
+              <p className="text-2xl font-extrabold mt-1 text-white">{activePickups} Orders</p>
             </div>
             <div>
               <div className="flex items-center gap-2 text-lime-400 text-xs font-bold uppercase">
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Completed Deliveries</span>
               </div>
-              <p className="text-2xl font-extrabold mt-1">{completedDeliveries} Trips</p>
+              <p className="text-2xl font-extrabold mt-1 text-white">{completedDeliveries} Trips</p>
             </div>
           </div>
 
           {/* Map Overview */}
-          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-3">
+          <div className="bg-slate-900/90 rounded-2xl p-5 border border-slate-800 shadow-xl space-y-3 backdrop-blur-xl">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-slate-900">Pan-India Seller & Partner Transport Fleet Map</h3>
-                <p className="text-xs text-slate-500">Live locations of active scrap sellers and 3rd-party logistics trucks</p>
+                <h3 className="font-bold text-white">Pan-India Seller & Partner Transport Fleet Map</h3>
+                <p className="text-xs text-slate-400">Live locations of active scrap sellers and 3rd-party logistics trucks</p>
               </div>
-              <span className="px-2.5 py-1 text-xs font-bold bg-emerald-100 text-emerald-800 rounded-full border border-emerald-300">
+              <span className="px-3 py-1 text-xs font-bold bg-emerald-500/20 text-emerald-400 rounded-full border border-emerald-500/30">
                 OpenStreetMap Active
               </span>
             </div>
 
-            <MapView markers={mapMarkers} height="360px" />
+            <MapView markers={mapMarkers} height="380px" />
           </div>
         </main>
       </div>

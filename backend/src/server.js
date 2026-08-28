@@ -179,8 +179,11 @@ const remove = async (type, filter) => {
 const issueToken = user => jwt.sign({ id: user.id, role: user.role, transportCompanyId: user.transportCompanyId || null }, jwtSecret, { expiresIn: '7d' });
 const roleMatches = (user, identifier) => [user.email, user.id, user.transportId, user.driverId, user.phone?.replace(/\D/g, '')].filter(Boolean).some(val => val.toLowerCase?.() === identifier.toLowerCase() || val === identifier.replace(/\D/g, ''));
 
+/* Create API Router supporting both /api/* and /* aliases */
+const apiRouter = express.Router();
+
 /* API Health Check */
-app.get('/api/health', (req, res) => {
+apiRouter.get('/health', (req, res) => {
   res.json({
     ok: true,
     service: 'ECO MART REST API',
@@ -192,7 +195,7 @@ app.get('/api/health', (req, res) => {
 });
 
 /* Auth Endpoints */
-app.post('/api/auth/register', validateRegistration, async (req, res, next) => {
+apiRouter.post('/auth/register', validateRegistration, async (req, res, next) => {
   try {
     const { name, email, phone, password, role = 'BUYER', ...profile } = req.body;
     const normalized = role.toUpperCase();
@@ -218,7 +221,7 @@ app.post('/api/auth/register', validateRegistration, async (req, res, next) => {
   }
 });
 
-app.post('/api/auth/admin/register', requireAdminSecurityKey, validateRegistration, async (req, res, next) => {
+apiRouter.post('/auth/admin/register', requireAdminSecurityKey, validateRegistration, async (req, res, next) => {
   try {
     const { name, email, phone, password, ...profile } = req.body;
     const existing = await one('user', { email: email.toLowerCase() });
@@ -240,7 +243,7 @@ app.post('/api/auth/admin/register', requireAdminSecurityKey, validateRegistrati
   }
 });
 
-app.post('/api/auth/login', validateLogin, async (req, res, next) => {
+apiRouter.post('/auth/login', validateLogin, async (req, res, next) => {
   try {
     const identifier = String(req.body.identifier || req.body.email || '').trim();
     const candidates = await all('user');
@@ -280,7 +283,7 @@ app.post('/api/auth/login', validateLogin, async (req, res, next) => {
   }
 });
 
-app.get('/api/auth/me', verifyToken, async (req, res, next) => {
+apiRouter.get('/auth/me', verifyToken, async (req, res, next) => {
   try {
     const user = await one('user', { id: req.user.id });
     res.json({ success: true, user: cleanUser(user) });
@@ -289,7 +292,7 @@ app.get('/api/auth/me', verifyToken, async (req, res, next) => {
   }
 });
 
-app.patch('/api/auth/profile', verifyToken, async (req, res, next) => {
+apiRouter.patch('/auth/profile', verifyToken, async (req, res, next) => {
   try {
     const user = await update('user', { id: req.user.id }, req.body);
     res.json({ success: true, user: cleanUser(user) });
@@ -299,7 +302,7 @@ app.patch('/api/auth/profile', verifyToken, async (req, res, next) => {
 });
 
 /* User Management */
-app.get('/api/users', verifyToken, authorizeRoles('ADMIN'), async (req, res, next) => {
+apiRouter.get('/users', verifyToken, authorizeRoles('ADMIN'), async (req, res, next) => {
   try {
     const users = await all('user');
     res.json({ success: true, users: users.map(cleanUser) });
@@ -309,7 +312,7 @@ app.get('/api/users', verifyToken, authorizeRoles('ADMIN'), async (req, res, nex
 });
 
 /* Product Marketplace Endpoints */
-app.get('/api/products', async (req, res, next) => {
+apiRouter.get('/products', async (req, res, next) => {
   try {
     let products = await all('product');
     if (req.query.category) products = products.filter(p => p.category === req.query.category);
@@ -320,7 +323,7 @@ app.get('/api/products', async (req, res, next) => {
   }
 });
 
-app.post('/api/products', verifyToken, authorizeRoles('SELLER', 'ADMIN'), validateProduct, async (req, res, next) => {
+apiRouter.post('/products', verifyToken, authorizeRoles('SELLER', 'ADMIN'), validateProduct, async (req, res, next) => {
   try {
     const product = await insert('product', {
       id: id('PROD'),
@@ -334,7 +337,7 @@ app.post('/api/products', verifyToken, authorizeRoles('SELLER', 'ADMIN'), valida
   }
 });
 
-app.delete('/api/products/:id', verifyToken, authorizeRoles('SELLER', 'ADMIN'), async (req, res, next) => {
+apiRouter.delete('/products/:id', verifyToken, authorizeRoles('SELLER', 'ADMIN'), async (req, res, next) => {
   try {
     await remove('product', { id: req.params.id });
     res.status(200).json({ success: true, message: 'Product listing deleted' });
@@ -344,7 +347,7 @@ app.delete('/api/products/:id', verifyToken, authorizeRoles('SELLER', 'ADMIN'), 
 });
 
 /* Transport Partner Directory & Logistics */
-app.get('/api/partners', verifyToken, async (req, res, next) => {
+apiRouter.get('/partners', verifyToken, async (req, res, next) => {
   try {
     res.json({ success: true, partners: await all('partner') });
   } catch (err) {
@@ -352,7 +355,7 @@ app.get('/api/partners', verifyToken, async (req, res, next) => {
   }
 });
 
-app.post('/api/partners', verifyToken, authorizeRoles('ADMIN'), async (req, res, next) => {
+apiRouter.post('/partners', verifyToken, authorizeRoles('ADMIN'), async (req, res, next) => {
   try {
     const partner = await insert('partner', {
       id: id('comp'),
@@ -367,7 +370,7 @@ app.post('/api/partners', verifyToken, authorizeRoles('ADMIN'), async (req, res,
   }
 });
 
-app.patch('/api/partners/:id/status', verifyToken, authorizeRoles('ADMIN'), async (req, res, next) => {
+apiRouter.patch('/partners/:id/status', verifyToken, authorizeRoles('ADMIN'), async (req, res, next) => {
   try {
     const partner = await update('partner', { id: req.params.id }, { partnerStatus: req.body.status });
     res.json({ success: true, partner });
@@ -376,7 +379,7 @@ app.patch('/api/partners/:id/status', verifyToken, authorizeRoles('ADMIN'), asyn
   }
 });
 
-app.get('/api/fleet', verifyToken, async (req, res, next) => {
+apiRouter.get('/fleet', verifyToken, async (req, res, next) => {
   try {
     const fleet = await all('fleet');
     const filtered = req.user.role === 'TRANSPORT_MANAGER' ? fleet.filter(f => f.transportCompanyId === req.user.transportCompanyId) : fleet;
@@ -386,7 +389,7 @@ app.get('/api/fleet', verifyToken, async (req, res, next) => {
   }
 });
 
-app.post('/api/fleet', verifyToken, authorizeRoles('TRANSPORT_MANAGER', 'ADMIN'), async (req, res, next) => {
+apiRouter.post('/fleet', verifyToken, authorizeRoles('TRANSPORT_MANAGER', 'ADMIN'), async (req, res, next) => {
   try {
     const fleetItem = await insert('fleet', {
       id: id('veh'),
@@ -403,7 +406,7 @@ app.post('/api/fleet', verifyToken, authorizeRoles('TRANSPORT_MANAGER', 'ADMIN')
   }
 });
 
-app.get('/api/drivers', verifyToken, async (req, res, next) => {
+apiRouter.get('/drivers', verifyToken, async (req, res, next) => {
   try {
     const drivers = await all('driver');
     const filtered = req.user.role === 'TRANSPORT_MANAGER' ? drivers.filter(d => d.transportCompanyId === req.user.transportCompanyId) : drivers;
@@ -413,7 +416,7 @@ app.get('/api/drivers', verifyToken, async (req, res, next) => {
   }
 });
 
-app.post('/api/drivers', verifyToken, authorizeRoles('TRANSPORT_MANAGER', 'ADMIN'), async (req, res, next) => {
+apiRouter.post('/drivers', verifyToken, authorizeRoles('TRANSPORT_MANAGER', 'ADMIN'), async (req, res, next) => {
   try {
     const driverId = req.body.driverId || id('DRV');
     const driver = await insert('driver', {
@@ -438,7 +441,7 @@ app.post('/api/drivers', verifyToken, authorizeRoles('TRANSPORT_MANAGER', 'ADMIN
 });
 
 /* Order Management Endpoints */
-app.get('/api/orders', verifyToken, async (req, res, next) => {
+apiRouter.get('/orders', verifyToken, async (req, res, next) => {
   try {
     let orders = await all('order');
     if (req.user.role === 'BUYER') orders = orders.filter(o => o.buyerId === req.user.id);
@@ -451,7 +454,7 @@ app.get('/api/orders', verifyToken, async (req, res, next) => {
   }
 });
 
-app.post('/api/orders', verifyToken, authorizeRoles('BUYER'), async (req, res, next) => {
+apiRouter.post('/orders', verifyToken, authorizeRoles('BUYER'), async (req, res, next) => {
   try {
     const product = await one('product', { id: req.body.productId });
     if (!product) return res.status(404).json({ success: false, error: 'Product not found' });
@@ -486,7 +489,7 @@ app.post('/api/orders', verifyToken, authorizeRoles('BUYER'), async (req, res, n
   }
 });
 
-app.patch('/api/orders/:id/status', verifyToken, async (req, res, next) => {
+apiRouter.patch('/orders/:id/status', verifyToken, async (req, res, next) => {
   try {
     const changes = { status: req.body.status, transportRequestStatus: req.body.transportRequestStatus || req.body.status, ...req.body };
     const order = await update('order', { id: req.params.id }, changes);
@@ -500,7 +503,7 @@ app.patch('/api/orders/:id/status', verifyToken, async (req, res, next) => {
   }
 });
 
-app.patch('/api/orders/:id/assign-partner', verifyToken, authorizeRoles('ADMIN'), async (req, res, next) => {
+apiRouter.patch('/orders/:id/assign-partner', verifyToken, authorizeRoles('ADMIN'), async (req, res, next) => {
   try {
     const partner = await one('partner', { id: req.body.transportCompanyId });
     if (!partner) return res.status(404).json({ success: false, error: 'Transportation Partner not found' });
@@ -518,7 +521,7 @@ app.patch('/api/orders/:id/assign-partner', verifyToken, authorizeRoles('ADMIN')
 });
 
 /* Dashboard & Analytics */
-app.get('/api/impact', verifyToken, async (req, res, next) => {
+apiRouter.get('/impact', verifyToken, async (req, res, next) => {
   try {
     res.json({ success: true, impact: memory.impact });
   } catch (err) {
@@ -526,7 +529,7 @@ app.get('/api/impact', verifyToken, async (req, res, next) => {
   }
 });
 
-app.get('/api/dashboard', verifyToken, async (req, res, next) => {
+apiRouter.get('/dashboard', verifyToken, async (req, res, next) => {
   try {
     const [users, products, orders, partners, fleet] = await Promise.all([
       all('user'),
@@ -550,6 +553,10 @@ app.get('/api/dashboard', verifyToken, async (req, res, next) => {
     next(err);
   }
 });
+
+/* Mount API Router under both /api and / prefixes */
+app.use('/api', apiRouter);
+app.use('/', apiRouter);
 
 /* Serve Static Frontend App for Single-Server Fullstack Deployment */
 app.use(express.static(frontendDistPath));

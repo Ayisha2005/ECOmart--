@@ -103,13 +103,15 @@ const schemas = {
 
 let db = null;
 const stores = {};
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://ayishaparveen932_db_user:KGDagtAhfC5TZqRF@ecomart.k6qvvps.mongodb.net/ecomart?retryWrites=true&w=majority&appName=ECOMART';
+
 async function connectDatabase() {
-  if (!process.env.MONGODB_URI) {
+  if (!MONGODB_URI) {
     seedMemory();
     return;
   }
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
+    await mongoose.connect(MONGODB_URI);
     for (const [name, schema] of Object.entries(schemas)) {
       stores[name.toLowerCase()] = mongoose.models[name] || mongoose.model(name, schema);
     }
@@ -121,6 +123,7 @@ async function connectDatabase() {
       await stores.driver.insertMany(demoDrivers);
     }
     db = 'mongo';
+    console.log('🍃 Successfully connected to MongoDB Atlas Database: ecomart.k6qvvps.mongodb.net');
   } catch (err) {
     console.error('MongoDB Connection Failed, using in-memory store:', err.message);
     seedMemory();
@@ -163,7 +166,7 @@ app.get('/api/health', (req, res) => {
     ok: true,
     service: 'ECO MART REST API',
     version: '2.5.0',
-    database: db ? 'MongoDB' : 'In-Memory Store',
+    database: db ? 'MongoDB Atlas (ecomart.k6qvvps.mongodb.net)' : 'In-Memory Store',
     swaggerDocs: 'http://localhost:5000/api-docs',
     timestamp: new Date().toISOString()
   });
@@ -517,7 +520,7 @@ app.get('/api/dashboard', verifyToken, async (req, res, next) => {
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-/* Start Server */
+/* Start Server with Live MongoDB Atlas Connection */
 connectDatabase().then(() => {
   app.listen(port, () => {
     console.log(`🚀 ECO MART REST API running on http://localhost:${port}/api`);

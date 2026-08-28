@@ -8,6 +8,12 @@ import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import swaggerUi from 'swagger-ui-express';
 import { randomUUID } from 'node:crypto';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const frontendDistPath = path.join(__dirname, '../../Frontend/dist');
 
 // Import Custom Middlewares & Swagger Config
 import { verifyToken, authorizeRoles, requireAdminSecurityKey } from './middleware/authMiddleware.js';
@@ -19,7 +25,7 @@ import { swaggerSpec } from './config/swagger.js';
 const app = express();
 const port = Number(process.env.PORT || 5000);
 const jwtSecret = process.env.JWT_SECRET || 'eco-mart-secret-key-2026';
-const allowedOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+const allowedOrigin = process.env.CLIENT_ORIGIN || '*';
 
 // Base Middlewares
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -539,6 +545,16 @@ app.get('/api/dashboard', verifyToken, async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+/* Serve Static Frontend App for Single-Server Fullstack Deployment */
+app.use(express.static(frontendDistPath));
+
+app.get('*', (req, res, next) => {
+  if (req.originalUrl.startsWith('/api')) return next();
+  res.sendFile(path.join(frontendDistPath, 'index.html'), (err) => {
+    if (err) next();
+  });
 });
 
 /* 404 & Centralized Error Middleware */

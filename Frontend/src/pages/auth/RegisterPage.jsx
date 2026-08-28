@@ -6,7 +6,7 @@ import DemoCredentialsBox from '../../components/common/DemoCredentialsBox';
 import LogoSplashScreen from '../../components/common/LogoSplashScreen';
 import TermsModal from '../../components/common/TermsModal';
 import { INDIAN_STATES, MAJOR_CITIES_BY_STATE } from '../../data/indianLocations';
-import { Store, ShoppingBag, ShieldCheck, ArrowRight, Truck, Lock, Phone, Mail, User, Sparkles, FileText, CheckCircle2, Play } from 'lucide-react';
+import { Store, ShoppingBag, ShieldCheck, ArrowRight, Truck, Lock, Phone, Mail, User, Sparkles, FileText, CheckCircle2, Play, Eye, EyeOff } from 'lucide-react';
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -18,6 +18,8 @@ export const RegisterPage = () => {
   });
 
   const [selectedRole, setSelectedRole] = useState('SELLER');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -324,13 +326,21 @@ export const RegisterPage = () => {
                   <div className="relative">
                     <Lock className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
                     <input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
                       placeholder="••••••••"
-                      className="w-full pl-10 pr-3 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm font-bold text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500/80 outline-hidden transition-all placeholder:text-slate-500"
+                      className="w-full pl-10 pr-10 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm font-bold text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500/80 outline-hidden transition-all placeholder:text-slate-500"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-2.5 text-slate-400 hover:text-white cursor-pointer p-1"
+                      title={showPassword ? "Hide Password" : "Show Password"}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4 text-emerald-400" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                   {errors.password && <p className="text-[11px] text-rose-400 font-semibold mt-1">{errors.password}</p>}
                 </div>
@@ -340,13 +350,21 @@ export const RegisterPage = () => {
                   <div className="relative">
                     <Lock className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
                     <input
-                      type="password"
+                      type={showConfirmPassword ? "text" : "password"}
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       placeholder="••••••••"
-                      className="w-full pl-10 pr-3 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm font-bold text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500/80 outline-hidden transition-all placeholder:text-slate-500"
+                      className="w-full pl-10 pr-10 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm font-bold text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500/80 outline-hidden transition-all placeholder:text-slate-500"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-2.5 text-slate-400 hover:text-white cursor-pointer p-1"
+                      title={showConfirmPassword ? "Hide Password" : "Show Password"}
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4 text-emerald-400" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                   {errors.confirmPassword && <p className="text-[11px] text-rose-400 font-semibold mt-1">{errors.confirmPassword}</p>}
                 </div>

@@ -3,13 +3,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import EcoMartLogo from '../../components/common/EcoMartLogo';
 import DemoCredentialsBox from '../../components/common/DemoCredentialsBox';
-import { ShoppingBag, Mail, Lock, ArrowRight, Store, Truck, ShieldAlert } from 'lucide-react';
+import { ShoppingBag, Mail, Lock, ArrowRight, Store, Truck, ShieldAlert, Eye, EyeOff } from 'lucide-react';
 
 export const BuyerLoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [email, setEmail] = useState('buyer@ecomart.in');
   const [password, setPassword] = useState('Buyer@123');
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleSubmit = async (e) => {
@@ -72,13 +73,21 @@ export const BuyerLoginPage = () => {
             <div className="relative">
               <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-3.5" />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="w-full pl-9 pr-3 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-medium focus:ring-2 focus:ring-cyan-500 text-white outline-hidden transition-all"
+                className="w-full pl-9 pr-10 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-medium focus:ring-2 focus:ring-cyan-500 text-white outline-hidden transition-all"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer p-1"
+                title={showPassword ? "Hide Password" : "Show Password"}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4 text-cyan-400" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 

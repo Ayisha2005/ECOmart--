@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "cd ../Frontend && npm install && npm run build",
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
     "check": "node --check src/server.js"
@@ -17,7 +18,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.0",
     "morgan": "^1.10.1",
-    "swagger-jsdoc": "^6.3.0",
+    "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   }
 }

@@ -550,8 +550,10 @@ app.get('/api/dashboard', verifyToken, async (req, res, next) => {
 /* Serve Static Frontend App for Single-Server Fullstack Deployment */
 app.use(express.static(frontendDistPath));
 
-app.get('*', (req, res, next) => {
-  if (req.originalUrl.startsWith('/api')) return next();
+app.use((req, res, next) => {
+  if (req.originalUrl.startsWith('/api') || req.originalUrl.startsWith('/api-docs')) {
+    return next();
+  }
   res.sendFile(path.join(frontendDistPath, 'index.html'), (err) => {
     if (err) next();
   });

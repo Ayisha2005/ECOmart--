@@ -115,15 +115,24 @@ async function connectDatabase() {
     for (const [name, schema] of Object.entries(schemas)) {
       stores[name.toLowerCase()] = mongoose.models[name] || mongoose.model(name, schema);
     }
-    if (process.env.SEED_DEMO !== 'false' && (await stores.user.countDocuments()) === 0) {
-      await stores.user.insertMany(demoUsers.map(user => ({ ...user, password: bcrypt.hashSync(user.password, 10) })));
+
+    // Ensure preseeded demo accounts (Admin, Seller, Buyer, Managers, Drivers) exist in MongoDB Atlas
+    for (const demoUser of demoUsers) {
+      const existing = await stores.user.findOne({ email: demoUser.email.toLowerCase() });
+      if (!existing) {
+        const hashedPassword = bcrypt.hashSync(demoUser.password, 10);
+        await stores.user.create({ ...demoUser, password: hashedPassword });
+      }
+    }
+
+    if (process.env.SEED_DEMO !== 'false' && (await stores.product.countDocuments()) === 0) {
       await stores.product.insertMany(demoProducts);
       await stores.partner.insertMany(demoPartners);
       await stores.fleet.insertMany(demoFleet);
       await stores.driver.insertMany(demoDrivers);
     }
     db = 'mongo';
-    console.log('🍃 Successfully connected to MongoDB Atlas Database: ecomart.k6qvvps.mongodb.net');
+    console.log('🍃 Successfully connected & seeded MongoDB Atlas Database: ecomart.k6qvvps.mongodb.net');
   } catch (err) {
     console.error('MongoDB Connection Failed, using in-memory store:', err.message);
     seedMemory();
@@ -227,8 +236,24 @@ app.post('/api/auth/login', validateLogin, async (req, res, next) => {
     const candidates = await all('user');
     const user = candidates.find(v => roleMatches(v, identifier));
 
-    if (!user || !(await bcrypt.compare(String(req.body.password || ''), user.password))) {
-      return res.status(401).json({ success: false, error: 'Invalid user credentials or password' });
+    if (!user) {
+      return res.status(401).json({ success: false, error: 'Invalid user credentials or account not found.' });
+    }
+
+    // Password Verification: bcrypt or plain-text fallback
+    const inputPassword = String(req.body.password || '').trim();
+    let pwdValid = false;
+
+    if (user.password) {
+      if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$')) {
+        pwdValid = await bcrypt.compare(inputPassword, user.password);
+      } else {
+        pwdValid = (user.password === inputPassword);
+      }
+    }
+
+    if (!pwdValid) {
+      return res.status(401).json({ success: false, error: 'Invalid password. Please check your login credentials.' });
     }
 
     const expected = req.body.expectedRole?.toUpperCase();

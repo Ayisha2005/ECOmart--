@@ -12,15 +12,15 @@ export const BuyerLoginPage = () => {
   const [password, setPassword] = useState('Buyer@123');
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
-    const res = login(email, password, 'BUYER');
-    if (res.success) {
+    const res = await login(email, password, 'BUYER');
+    if (res && res.success) {
       navigate('/buyer/dashboard');
     } else {
-      setErrorMsg(res.error || "Invalid Buyer credentials.");
+      setErrorMsg(res?.error || "Invalid Buyer credentials.");
     }
   };
 

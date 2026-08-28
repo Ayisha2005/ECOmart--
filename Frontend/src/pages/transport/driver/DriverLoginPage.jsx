@@ -10,10 +10,10 @@ export const DriverLoginPage = () => {
   const [driverId, setDriverId] = useState('DRV001');
   const [password, setPassword] = useState('Driver@123');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = login(driverId, password, 'TRANSPORT_DRIVER');
-    if (res.success) {
+    const res = await login(driverId, password, 'TRANSPORT_DRIVER');
+    if (res && res.success) {
       navigate('/transport/driver/dashboard');
     }
   };

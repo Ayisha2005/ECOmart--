@@ -12,18 +12,18 @@ export const AdminLoginPage = () => {
   const [password, setPassword] = useState('Admin@123');
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
-    const res = login(email, password, 'ADMIN');
-    if (res.success) {
+    const res = await login(email, password, 'ADMIN');
+    if (res && res.success) {
       navigate('/admin/dashboard');
     } else {
-      if (res.error === "Role mismatch") {
+      if (res?.error === "Role mismatch") {
         setErrorMsg("Access Denied: This account is a regular user and is NOT authorized to enter the Admin Portal.");
       } else {
-        setErrorMsg(res.error || "Invalid Admin login credentials.");
+        setErrorMsg(res?.error || "Invalid Admin login credentials.");
       }
     }
   };

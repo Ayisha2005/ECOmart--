@@ -11,10 +11,10 @@ export const TransportLoginPage = () => {
   const [transportId, setTransportId] = useState('TRM001');
   const [password, setPassword] = useState('Manager@123');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = login(transportId, password, 'TRANSPORT_MANAGER');
-    if (res.success) {
+    const res = await login(transportId, password, 'TRANSPORT_MANAGER');
+    if (res && res.success) {
       navigate('/transport/manager/dashboard');
     }
   };

@@ -12,15 +12,15 @@ export const SellerLoginPage = () => {
   const [password, setPassword] = useState('Seller@123');
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
-    const res = login(email, password, 'SELLER');
-    if (res.success) {
+    const res = await login(email, password, 'SELLER');
+    if (res && res.success) {
       navigate('/seller/dashboard');
     } else {
-      setErrorMsg(res.error || "Invalid Seller credentials.");
+      setErrorMsg(res?.error || "Invalid Seller credentials.");
     }
   };
 

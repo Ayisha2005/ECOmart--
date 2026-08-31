@@ -78,7 +78,7 @@ export const App = () => {
 
               {/* Public Auth Routes */}
               <Route path="/register" element={<RegisterPage />} />
-              <Route path="/admin/register" element={<AdminRegisterPage />} />
+              <Route path="/admin/register" element={<Navigate to="/admin/login" replace />} />
               <Route path="/seller/login" element={<SellerLoginPage />} />
               <Route path="/buyer/login" element={<BuyerLoginPage />} />
               <Route path="/admin/login" element={<AdminLoginPage />} />

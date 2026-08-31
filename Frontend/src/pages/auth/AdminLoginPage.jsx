@@ -53,7 +53,7 @@ export const AdminLoginPage = () => {
         <div className="mb-5 p-3 bg-slate-950/80 border border-slate-800 rounded-2xl flex items-start gap-2.5 text-xs text-slate-300">
           <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
           <p className="leading-relaxed text-[11px]">
-            <span className="font-bold text-amber-400">Admin Only Area:</span> Regular users (Buyers, Sellers, Drivers) cannot log in here.
+            <span className="font-bold text-amber-400">Super Admin Access:</span> Access strictly restricted to Super Admin AYISHA PARVEEN A.
           </p>
         </div>
 
@@ -92,7 +92,7 @@ export const AdminLoginPage = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@ecomart.in"
+                placeholder="ayishaparveena36@gmail.com"
                 required
                 className="w-full pl-9 pr-3 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-medium focus:ring-2 focus:ring-rose-500 text-white outline-hidden transition-all"
               />

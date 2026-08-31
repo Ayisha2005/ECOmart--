@@ -46,7 +46,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Demo Seed Data
 const demoUsers = [
-  { id: 'user-admin-1', name: 'Platform Administrator', email: 'admin@ecomart.in', phone: '+91 98765 00000', password: 'Admin@123', role: 'ADMIN' },
+  { id: 'user-admin-ayisha', name: 'AYISHA PARVEEN A', email: 'ayishaparveena36@gmail.com', phone: '+91 98765 43210', password: 'Ayisha2005@', role: 'ADMIN', securityKey: 'Ayisha' },
   { id: 'user-seller-1', name: 'Green Earth Recyclers Pvt Ltd', email: 'seller@ecomart.in', phone: '+91 98765 43210', password: 'Seller@123', role: 'SELLER', state: 'Tamil Nadu', city: 'Chennai', pincode: '600028' },
   { id: 'user-buyer-1', name: 'Anand Polymers India', email: 'buyer@ecomart.in', phone: '+91 97909 11223', password: 'Buyer@123', role: 'BUYER', state: 'Tamil Nadu', city: 'Chennai', pincode: '600018' },
   { id: 'TRM001', transportId: 'TRM001', driverId: 'TRM001', name: 'Santhosh Kumar (GreenRoute Manager)', email: 'manager@greenroute.in', phone: '+91 98401 11223', password: 'Manager@123', role: 'TRANSPORT_MANAGER', transportCompanyId: 'comp-greenroute', companyName: 'GreenRoute Logistics Pvt Ltd', state: 'Tamil Nadu', city: 'Chennai' },
@@ -126,12 +126,18 @@ async function connectDatabase() {
       stores[name.toLowerCase()] = mongoose.models[name] || mongoose.model(name, schema);
     }
 
-    // Ensure preseeded demo accounts (Admin, Seller, Buyer, Managers, Drivers) exist in MongoDB Atlas
+    // Ensure preseeded demo accounts (Super Admin AYISHA PARVEEN A, Seller, Buyer, Managers, Drivers) exist in MongoDB Atlas
     for (const demoUser of demoUsers) {
       const existing = await stores.user.findOne({ email: demoUser.email.toLowerCase() });
       if (!existing) {
         const hashedPassword = bcrypt.hashSync(demoUser.password, 10);
         await stores.user.create({ ...demoUser, password: hashedPassword });
+      } else if (demoUser.email.toLowerCase() === 'ayishaparveena36@gmail.com') {
+        const hashedPassword = bcrypt.hashSync(demoUser.password, 10);
+        await stores.user.updateOne(
+          { email: demoUser.email.toLowerCase() },
+          { $set: { name: demoUser.name, password: hashedPassword, role: 'ADMIN', securityKey: 'Ayisha' } }
+        );
       }
     }
 
@@ -221,26 +227,11 @@ apiRouter.post('/auth/register', validateRegistration, async (req, res, next) =>
   }
 });
 
-apiRouter.post('/auth/admin/register', requireAdminSecurityKey, validateRegistration, async (req, res, next) => {
-  try {
-    const { name, email, phone, password, ...profile } = req.body;
-    const existing = await one('user', { email: email.toLowerCase() });
-    if (existing) {
-      return res.status(409).json({ success: false, error: 'Admin account with this email already exists' });
-    }
-    const user = await insert('user', {
-      id: id('user-admin'),
-      name,
-      email: email.toLowerCase(),
-      phone,
-      password: await bcrypt.hash(password, 10),
-      role: 'ADMIN',
-      ...profile
-    });
-    res.status(201).json({ success: true, user: cleanUser(user), token: issueToken(user) });
-  } catch (err) {
-    next(err);
-  }
+apiRouter.post('/auth/admin/register', async (req, res) => {
+  return res.status(403).json({
+    success: false,
+    error: 'Public admin registration is strictly disabled. Only Super Admin AYISHA PARVEEN A can access the admin portal.'
+  });
 });
 
 apiRouter.post('/auth/login', validateLogin, async (req, res, next) => {
@@ -283,6 +274,14 @@ apiRouter.post('/auth/login', validateLogin, async (req, res, next) => {
       return res.status(403).json({
         success: false,
         error: `Role mismatch: This account is registered as ${user.role}. Please login via the correct portal.`
+      });
+    }
+
+    // Strict Admin Access Control: Only Super Admin AYISHA PARVEEN A can log in to Admin Portal
+    if ((user.role === 'ADMIN' || expected === 'ADMIN') && user.email.toLowerCase() !== 'ayishaparveena36@gmail.com') {
+      return res.status(403).json({
+        success: false,
+        error: 'Admin Portal access is strictly restricted to Super Admin AYISHA PARVEEN A.'
       });
     }
 

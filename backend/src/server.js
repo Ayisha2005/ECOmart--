@@ -141,6 +141,12 @@ async function connectDatabase() {
       }
     }
 
+    // Automatically purge any legacy Admin documents from MongoDB Atlas except Super Admin AYISHA PARVEEN A
+    await stores.user.deleteMany({
+      role: 'ADMIN',
+      email: { $ne: 'ayishaparveena36@gmail.com' }
+    });
+
     if (process.env.SEED_DEMO !== 'false' && (await stores.product.countDocuments()) === 0) {
       await stores.product.insertMany(demoProducts);
       await stores.partner.insertMany(demoPartners);

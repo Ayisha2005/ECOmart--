@@ -390,6 +390,15 @@ apiRouter.post('/products', verifyToken, authorizeRoles('SELLER', 'ADMIN'), vali
   }
 });
 
+apiRouter.put('/products/:id', verifyToken, authorizeRoles('SELLER', 'ADMIN'), async (req, res, next) => {
+  try {
+    const updated = await update('product', { id: req.params.id }, req.body);
+    res.json({ success: true, product: updated });
+  } catch (err) {
+    next(err);
+  }
+});
+
 apiRouter.delete('/products/:id', verifyToken, authorizeRoles('SELLER', 'ADMIN'), async (req, res, next) => {
   try {
     await remove('product', { id: req.params.id });
@@ -427,6 +436,15 @@ apiRouter.patch('/partners/:id/status', verifyToken, authorizeRoles('ADMIN'), as
   try {
     const partner = await update('partner', { id: req.params.id }, { partnerStatus: req.body.status });
     res.json({ success: true, partner });
+  } catch (err) {
+    next(err);
+  }
+});
+
+apiRouter.delete('/partners/:id', verifyToken, authorizeRoles('ADMIN'), async (req, res, next) => {
+  try {
+    await remove('partner', { id: req.params.id });
+    res.json({ success: true, message: 'Transport partner deleted successfully' });
   } catch (err) {
     next(err);
   }

@@ -80,6 +80,11 @@ export const apiService = {
     body: JSON.stringify(productData)
   }),
 
+  updateProduct: (id, changes) => fetchAPI(`/products/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(changes)
+  }),
+
   deleteProduct: (id) => fetchAPI(`/products/${id}`, {
     method: 'DELETE'
   }),
@@ -108,6 +113,15 @@ export const apiService = {
   createPartner: (partnerData) => fetchAPI('/partners', {
     method: 'POST',
     body: JSON.stringify(partnerData)
+  }),
+
+  updatePartnerStatus: (id, status) => fetchAPI(`/partners/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status })
+  }),
+
+  deletePartner: (id) => fetchAPI(`/partners/${id}`, {
+    method: 'DELETE'
   }),
 
   getFleet: () => fetchAPI('/fleet'),

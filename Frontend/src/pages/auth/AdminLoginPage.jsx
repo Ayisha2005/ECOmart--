@@ -17,15 +17,17 @@ export const AdminLoginPage = () => {
     e.preventDefault();
     setErrorMsg('');
 
+    const cleanEmail = email.trim().toLowerCase();
+    if (cleanEmail !== 'ayishaparveena36@gmail.com') {
+      setErrorMsg("Access Denied: Admin Portal is strictly restricted to Super Admin AYISHA PARVEEN A (ayishaparveena36@gmail.com).");
+      return;
+    }
+
     const res = await login(email, password, 'ADMIN');
     if (res && res.success) {
       navigate('/admin/dashboard');
     } else {
-      if (res?.error === "Role mismatch") {
-        setErrorMsg("Access Denied: This account is a regular user and is NOT authorized to enter the Admin Portal.");
-      } else {
-        setErrorMsg(res?.error || "Invalid Admin login credentials.");
-      }
+      setErrorMsg(res?.error || "Invalid Admin password or credentials.");
     }
   };
 

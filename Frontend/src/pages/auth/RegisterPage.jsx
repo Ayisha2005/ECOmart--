@@ -102,18 +102,52 @@ export const RegisterPage = () => {
       {/* 2. Main Scrollable Register Page */}
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 md:p-8 relative overflow-hidden">
         
-        {/* Dynamic Background Mesh Gradients */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-950/40 via-slate-950 to-amber-950/30 pointer-events-none" />
+        {/* Background Ambient Cinematic Eco Video Layer */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover opacity-30 scale-105 filter blur-[1px]"
+            poster="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1920&q=80"
+          >
+            <source
+              src="https://cdn.coverr.co/videos/coverr-green-leaves-in-a-forest-4416/1080p.mp4"
+              type="video/mp4"
+            />
+          </video>
+          {/* Dynamic Glassmorphism Mesh Gradients over Ambient Video */}
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/85 via-slate-950/90 to-slate-950 pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-950/60 via-transparent to-amber-950/50 pointer-events-none" />
+        </div>
+
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: '7s' }} />
 
-        <div className="relative z-10 w-full max-w-6xl bg-slate-900/90 rounded-2xl sm:rounded-3xl shadow-[0_0_60px_rgba(16,185,129,0.15)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 border border-slate-800 backdrop-blur-xl">
+        <div className="relative z-10 w-full max-w-6xl bg-slate-900/90 rounded-2xl sm:rounded-3xl shadow-[0_0_70px_rgba(16,185,129,0.2)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 border border-slate-800 backdrop-blur-xl">
           
-          {/* Left Visual Branding Side */}
-          <div className="lg:col-span-5 bg-gradient-to-br from-slate-950 via-emerald-950/80 to-slate-950 p-4 sm:p-6 md:p-10 text-white flex flex-col justify-between relative lg:max-h-[92vh] lg:overflow-y-auto custom-scrollbar border-b lg:border-b-0 lg:border-r border-slate-800">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+          {/* Left Visual Branding Side with Ambient Panel Video */}
+          <div className="lg:col-span-5 bg-gradient-to-br from-slate-950/95 via-emerald-950/90 to-slate-950 p-4 sm:p-6 md:p-10 text-white flex flex-col justify-between relative lg:max-h-[92vh] lg:overflow-y-auto custom-scrollbar border-b lg:border-b-0 lg:border-r border-slate-800 overflow-hidden">
+            
+            {/* Embedded Panel Video Background */}
+            <div className="absolute inset-0 pointer-events-none opacity-25 z-0">
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover scale-110 filter blur-[1px]"
+              >
+                <source
+                  src="https://assets.mixkit.co/videos/preview/mixkit-sun-shining-through-the-leaves-of-a-tree-11855-large.mp4"
+                  type="video/mp4"
+                />
+              </video>
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-emerald-950/60" />
+            </div>
 
-            <div>
+            <div className="relative z-10">
               <div className="flex items-center justify-between mb-8">
                 <EcoMartLogo size="lg" showTagline={true} />
                 <button

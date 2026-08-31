@@ -8,8 +8,9 @@ import { ShieldCheck, Mail, Lock, ArrowRight, ShieldAlert, Store, ShoppingBag, T
 export const AdminLoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [email, setEmail] = useState('admin@ecomart.in');
-  const [password, setPassword] = useState('Admin@123');
+  const [email, setEmail] = useState('ayishaparveena36@gmail.com');
+  const [password, setPassword] = useState('Ayisha2005@');
+  const [securityKey, setSecurityKey] = useState('Ayisha');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -20,6 +21,11 @@ export const AdminLoginPage = () => {
     const cleanEmail = email.trim().toLowerCase();
     if (cleanEmail !== 'ayishaparveena36@gmail.com') {
       setErrorMsg("Access Denied: Admin Portal is strictly restricted to Super Admin AYISHA PARVEEN A (ayishaparveena36@gmail.com).");
+      return;
+    }
+
+    if (securityKey.trim() !== 'Ayisha') {
+      setErrorMsg("Invalid Admin Security Key! Access strictly restricted to Super Admin AYISHA PARVEEN A.");
       return;
     }
 
@@ -124,6 +130,21 @@ export const AdminLoginPage = () => {
             </div>
           </div>
 
+          <div>
+            <label className="block text-xs font-bold text-slate-300 mb-1">Admin Security Key *</label>
+            <div className="relative">
+              <KeyRound className="w-4 h-4 text-slate-500 absolute left-3 top-3.5" />
+              <input
+                type="text"
+                value={securityKey}
+                onChange={(e) => setSecurityKey(e.target.value)}
+                placeholder="Ayisha"
+                required
+                className="w-full pl-9 pr-3 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-medium focus:ring-2 focus:ring-amber-500 text-white outline-hidden transition-all"
+              />
+            </div>
+          </div>
+
           <button
             type="submit"
             className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-rose-600 via-amber-600 to-rose-700 hover:from-rose-500 hover:to-amber-500 text-white font-extrabold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-rose-950/60 active:scale-[0.99]"
@@ -132,14 +153,6 @@ export const AdminLoginPage = () => {
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
-
-        <div className="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
-          <span>Need an Admin Account?</span>
-          <Link to="/admin/register" className="text-amber-400 font-extrabold hover:underline flex items-center gap-1">
-            <KeyRound className="w-3.5 h-3.5" />
-            <span>Admin Register (Key Required) →</span>
-          </Link>
-        </div>
       </div>
 
       <div className="w-full max-w-md mt-6 relative z-10">

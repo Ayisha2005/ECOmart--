@@ -105,7 +105,15 @@ export const DemoCredentialsBox = ({ className = "" }) => {
       {/* Footer Info */}
       <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
         <span>Click Login to navigate to any role portal</span>
-        <span className="text-emerald-400 font-extrabold">ECO MART Platform</span>
+        <button
+          type="button"
+          onClick={() => navigate('/admin/login')}
+          className="text-emerald-400 font-extrabold hover:underline cursor-pointer flex items-center gap-1"
+          title="Go to Admin Portal"
+        >
+          <span>ECO MART Platform</span>
+          <ArrowRight className="w-3 h-3 text-emerald-400" />
+        </button>
       </div>
 
     </div>

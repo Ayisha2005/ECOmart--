@@ -446,9 +446,9 @@ export const RegisterPage = () => {
             {/* Bottom Links */}
             <div className="mt-6 pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
               <span className="font-medium">Need Platform Administration?</span>
-              <Link to="/admin/register" className="font-extrabold text-amber-400 hover:text-amber-300 flex items-center gap-1">
+              <Link to="/admin/login" className="font-extrabold text-amber-400 hover:text-amber-300 flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                <span>Admin Registration Portal (Key Required) →</span>
+                <span>Admin Login Portal →</span>
               </Link>
             </div>
           </div>

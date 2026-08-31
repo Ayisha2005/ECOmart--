@@ -165,9 +165,11 @@ export const AuthProvider = ({ children }) => {
       if (res.success) {
         if (res.token) localStorage.setItem('eco_token', res.token);
         const newUser = res.user;
+        setCurrentUser(newUser);
+        setRole(newUser.role || normalizedSelectedRole);
         setUsers(prev => [...prev.filter(u => u.email !== newUser.email), newUser]);
-        showNotification(`Registration successful via REST API as ${normalizedSelectedRole}! Please login.`, 'success');
-        return { success: true, user: newUser };
+        showNotification(`Welcome to ECO MART! Registered and logged in as ${normalizedSelectedRole}.`, 'success');
+        return { success: true, user: newUser, token: res.token };
       }
       showNotification(res.error || "Registration failed on Backend API", 'error');
       return { success: false, error: res.error || "Registration failed" };
@@ -194,9 +196,11 @@ export const AuthProvider = ({ children }) => {
       if (res.success) {
         if (res.token) localStorage.setItem('eco_token', res.token);
         const newAdmin = res.user;
+        setCurrentUser(newAdmin);
+        setRole('ADMIN');
         setUsers(prev => [...prev.filter(u => u.email !== newAdmin.email), newAdmin]);
-        showNotification("Admin registered successfully via REST API! Please login.", 'success');
-        return { success: true, user: newAdmin };
+        showNotification("Welcome Admin! Account registered & logged in.", 'success');
+        return { success: true, user: newAdmin, token: res.token };
       }
       showNotification(res.error || "Admin registration failed", 'error');
       return { success: false, error: res.error || "Registration failed" };

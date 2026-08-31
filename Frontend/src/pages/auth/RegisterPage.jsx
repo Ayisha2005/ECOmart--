@@ -87,9 +87,9 @@ export const RegisterPage = () => {
     const res = await registerSellerBuyer(formData, selectedRole);
     if (res && res.success) {
       if (selectedRole === 'SELLER') {
-        navigate('/seller/login');
+        navigate('/seller/dashboard');
       } else {
-        navigate('/buyer/login');
+        navigate('/buyer/dashboard');
       }
     }
   };

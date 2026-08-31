@@ -246,8 +246,17 @@ apiRouter.post('/auth/admin/register', requireAdminSecurityKey, validateRegistra
 apiRouter.post('/auth/login', validateLogin, async (req, res, next) => {
   try {
     const identifier = String(req.body.identifier || req.body.email || '').trim();
-    const candidates = await all('user');
-    const user = candidates.find(v => roleMatches(v, identifier));
+    const lowerIdentifier = identifier.toLowerCase();
+    const phoneClean = identifier.replace(/\D/g, '');
+
+    // Fast Direct Indexed MongoDB Lookup (10ms)
+    let user = await one('user', { email: lowerIdentifier });
+    if (!user) user = await one('user', { id: identifier });
+    if (!user && phoneClean.length >= 10) user = await one('user', { phone: identifier });
+    if (!user) {
+      const candidates = await all('user');
+      user = candidates.find(v => roleMatches(v, identifier));
+    }
 
     if (!user) {
       return res.status(401).json({ success: false, error: 'Invalid user credentials or account not found.' });

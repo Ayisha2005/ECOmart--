@@ -59,7 +59,7 @@ export const AdminRegisterPage = () => {
 
     const res = await registerAdmin(formData);
     if (res && res.success) {
-      navigate('/admin/login');
+      navigate('/admin/dashboard');
     } else if (res?.error) {
       setError(res.error);
     }

@@ -12,6 +12,7 @@ export const AdminLoginPage = () => {
   const [password, setPassword] = useState('');
   const [securityKey, setSecurityKey] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showSecurityKey, setShowSecurityKey] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleSubmit = async (e) => {
@@ -135,13 +136,21 @@ export const AdminLoginPage = () => {
             <div className="relative">
               <KeyRound className="w-4 h-4 text-slate-500 absolute left-3 top-3.5" />
               <input
-                type="password"
+                type={showSecurityKey ? "text" : "password"}
                 value={securityKey}
                 onChange={(e) => setSecurityKey(e.target.value)}
                 placeholder="Enter Security Key..."
                 required
-                className="w-full pl-9 pr-3 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-medium focus:ring-2 focus:ring-amber-500 text-white outline-hidden transition-all"
+                className="w-full pl-9 pr-10 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-medium focus:ring-2 focus:ring-amber-500 text-white outline-hidden transition-all"
               />
+              <button
+                type="button"
+                onClick={() => setShowSecurityKey(!showSecurityKey)}
+                className="absolute right-3 top-3 text-slate-400 hover:text-white cursor-pointer p-1"
+                title={showSecurityKey ? "Hide Security Key" : "Show Security Key"}
+              >
+                {showSecurityKey ? <EyeOff className="w-4 h-4 text-amber-400" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 

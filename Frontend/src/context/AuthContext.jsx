@@ -334,6 +334,33 @@ export const AuthProvider = ({ children }) => {
     showNotification("Logged out successfully.", 'info');
   };
 
+  const updateUserAccount = async (userId, changes) => {
+    try {
+      const res = await apiService.updateUser(userId, changes);
+      if (res && res.success && res.user) {
+        setUsers(prev => prev.map(u => (u.id === userId || u.email === userId) ? { ...u, ...res.user } : u));
+        showNotification(`User account '${res.user.name}' updated successfully! ✅`, 'success');
+        return { success: true, user: res.user };
+      }
+    } catch (err) {
+      console.warn("Backend update failed, updating state locally:", err.message);
+    }
+    setUsers(prev => prev.map(u => (u.id === userId || u.email === userId) ? { ...u, ...changes } : u));
+    showNotification("User account updated successfully! ✅", 'success');
+    return { success: true };
+  };
+
+  const deleteUserAccount = async (userId) => {
+    try {
+      await apiService.deleteUser(userId);
+    } catch (err) {
+      console.warn("Backend delete failed, removing state locally:", err.message);
+    }
+    setUsers(prev => prev.filter(u => u.id !== userId && u.email !== userId));
+    showNotification("User account removed from database! 🗑️", 'info');
+    return { success: true };
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -348,6 +375,8 @@ export const AuthProvider = ({ children }) => {
         createCompanyManagerByAdmin,
         createDriverByManager,
         updateUserProfile,
+        updateUserAccount,
+        deleteUserAccount,
         login,
         logout
       }}

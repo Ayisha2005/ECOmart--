@@ -325,6 +325,45 @@ apiRouter.get('/users', verifyToken, authorizeRoles('ADMIN'), async (req, res, n
   }
 });
 
+apiRouter.put('/users/:id', verifyToken, authorizeRoles('ADMIN'), async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const existing = await one('user', { id: userId }) || (await all('user')).find(u => u.id === userId || u.email === userId);
+    if (!existing) {
+      return res.status(404).json({ success: false, error: 'User account not found' });
+    }
+    
+    // Protect Super Admin account from being modified
+    if (existing.email === 'ayishaparveena36@gmail.com' && req.body.role && req.body.role !== 'ADMIN') {
+      return res.status(403).json({ success: false, error: 'Super Admin AYISHA PARVEEN A role cannot be modified.' });
+    }
+
+    const updated = await update('user', { id: existing.id }, req.body);
+    res.json({ success: true, user: cleanUser(updated) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+apiRouter.delete('/users/:id', verifyToken, authorizeRoles('ADMIN'), async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const existing = await one('user', { id: userId }) || (await all('user')).find(u => u.id === userId || u.email === userId);
+    if (!existing) {
+      return res.status(404).json({ success: false, error: 'User account not found' });
+    }
+
+    if (existing.email === 'ayishaparveena36@gmail.com') {
+      return res.status(403).json({ success: false, error: 'Super Admin account cannot be deleted.' });
+    }
+
+    await remove('user', { id: existing.id });
+    res.json({ success: true, message: 'User account deleted successfully' });
+  } catch (err) {
+    next(err);
+  }
+});
+
 /* Product Marketplace Endpoints */
 apiRouter.get('/products', async (req, res, next) => {
   try {

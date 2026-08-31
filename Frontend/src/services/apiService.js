@@ -58,6 +58,15 @@ export const apiService = {
 
   getCurrentUser: () => fetchAPI('/auth/me'),
 
+  updateUser: (userId, changes) => fetchAPI(`/users/${userId}`, {
+    method: 'PUT',
+    body: JSON.stringify(changes)
+  }),
+
+  deleteUser: (userId) => fetchAPI(`/users/${userId}`, {
+    method: 'DELETE'
+  }),
+
   // Products API
   getProducts: (category, sellerId) => {
     const params = new URLSearchParams();

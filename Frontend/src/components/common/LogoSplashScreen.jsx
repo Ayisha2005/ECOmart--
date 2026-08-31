@@ -10,10 +10,11 @@ import {
   ArrowRight,
   Package,
   RefreshCw,
-  Compass
+  Compass,
+  Wind
 } from 'lucide-react';
 
-export const LogoSplashScreen = ({ onComplete, duration = 3500 }) => {
+export const LogoSplashScreen = ({ onComplete, duration = 3000 }) => {
   const [progress, setProgress] = useState(0);
   const [isFadingOut, setIsFadingOut] = useState(false);
   const [phase, setPhase] = useState('orbit'); // 'orbit' -> 'reveal'
@@ -25,7 +26,7 @@ export const LogoSplashScreen = ({ onComplete, duration = 3500 }) => {
       const pct = Math.min(100, Math.round((elapsed / duration) * 100));
       setProgress(pct);
 
-      if (pct > 45 && phase === 'orbit') {
+      if (pct > 38 && phase === 'orbit') {
         setPhase('reveal');
       }
 
@@ -80,32 +81,33 @@ export const LogoSplashScreen = ({ onComplete, duration = 3500 }) => {
         {/* Top Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-amber-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-black uppercase tracking-wider mb-6 shadow-xl shadow-emerald-950/60 animate-pulse">
           <Sparkles className="w-4 h-4 text-amber-400" />
-          <span>Global Green Logistics & Eco Trading</span>
+          <span>Fast Green EV Logistics & Recycling Network</span>
         </div>
 
-        {/* 3D World Globe & Recycling Lorry Orbit Animation Stage */}
+        {/* 3D World Globe & Fast Speeding Lorry Animation Stage */}
         <div className="relative w-64 h-64 my-2 flex items-center justify-center">
           
           {/* Rotating Globe Atmosphere Glow Rings */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-emerald-500/20 via-cyan-500/20 to-teal-500/20 blur-xl animate-pulse" />
-          <div className="absolute w-56 h-56 rounded-full border border-emerald-500/30 animate-spin" style={{ animationDuration: '18s' }} />
-          <div className="absolute w-48 h-48 rounded-full border border-dashed border-cyan-400/40 animate-spin" style={{ animationDuration: '12s', animationDirection: 'reverse' }} />
+          <div className="absolute w-56 h-56 rounded-full border border-emerald-500/40 animate-spin" style={{ animationDuration: '10s' }} />
+          <div className="absolute w-48 h-48 rounded-full border border-dashed border-cyan-400/50 animate-spin" style={{ animationDuration: '6s', animationDirection: 'reverse' }} />
 
-          {/* Orbiting Path Ring with Recycling Lorry */}
-          <div className="absolute w-60 h-60 rounded-full border-2 border-emerald-400/30 animate-spin" style={{ animationDuration: '3.5s' }}>
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 p-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-amber-400 text-slate-950 rounded-xl shadow-xl shadow-emerald-400/60 border border-lime-300 transform -rotate-45">
+          {/* FAST Speeding Orbiting Path Ring with Lorry (1.6s Speeding Orbit) */}
+          <div className="absolute w-60 h-60 rounded-full border-2 border-emerald-400/40 animate-spin" style={{ animationDuration: '1.6s' }}>
+            <div className="absolute -top-5 left-1/2 -translate-x-1/2 p-2 bg-gradient-to-r from-emerald-400 via-teal-400 to-amber-300 text-slate-950 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.8)] border-2 border-lime-300 transform -rotate-45 flex items-center gap-1">
               <Truck className="w-5 h-5 fill-slate-950 text-slate-950" />
+              <Wind className="w-3 h-3 text-slate-950 animate-pulse" />
             </div>
           </div>
 
           {/* Central 3D Globe / Logo Transition Container */}
-          <div className="relative z-10 w-40 h-40 rounded-3xl bg-slate-900/90 border-2 border-emerald-500/50 shadow-[0_0_60px_rgba(16,185,129,0.3)] backdrop-blur-2xl flex flex-col items-center justify-center p-4 transition-all duration-700 hover:scale-105">
+          <div className="relative z-10 w-44 h-44 rounded-3xl bg-slate-900/90 border-2 border-emerald-500/60 shadow-[0_0_70px_rgba(16,185,129,0.4)] backdrop-blur-2xl flex flex-col items-center justify-center p-4 transition-all duration-500 hover:scale-105">
             {phase === 'orbit' ? (
               <div className="flex flex-col items-center gap-2 animate-fadeIn">
-                <Globe className="w-16 h-16 text-emerald-400 animate-spin" style={{ animationDuration: '16s' }} />
-                <span className="text-[10px] font-black text-emerald-300 uppercase tracking-widest flex items-center gap-1">
-                  <Compass className="w-3 h-3 text-amber-400" />
-                  PAN-INDIA LOGISTICS
+                <Globe className="w-16 h-16 text-emerald-400 animate-spin" style={{ animationDuration: '10s' }} />
+                <span className="text-[10px] font-black text-amber-300 uppercase tracking-widest flex items-center gap-1">
+                  <Wind className="w-3.5 h-3.5 text-emerald-400 animate-bounce" />
+                  HIGH-SPEED LORRY...
                 </span>
               </div>
             ) : (
@@ -116,13 +118,13 @@ export const LogoSplashScreen = ({ onComplete, duration = 3500 }) => {
           </div>
 
           {/* Orbiting Satellite Eco Icons */}
-          <div className="absolute top-2 right-4 p-1.5 bg-emerald-500/20 text-emerald-400 rounded-full border border-emerald-500/40 animate-bounce" style={{ animationDuration: '3s' }}>
+          <div className="absolute top-2 right-4 p-1.5 bg-emerald-500/30 text-emerald-300 rounded-full border border-emerald-500/50 animate-bounce" style={{ animationDuration: '2s' }}>
             <Leaf className="w-4 h-4" />
           </div>
-          <div className="absolute bottom-4 left-4 p-1.5 bg-amber-500/20 text-amber-400 rounded-full border border-amber-500/40 animate-bounce" style={{ animationDuration: '4s' }}>
+          <div className="absolute bottom-4 left-4 p-1.5 bg-amber-500/30 text-amber-300 rounded-full border border-amber-500/50 animate-bounce" style={{ animationDuration: '2.5s' }}>
             <Package className="w-4 h-4" />
           </div>
-          <div className="absolute bottom-6 right-6 p-1.5 bg-cyan-500/20 text-cyan-400 rounded-full border border-cyan-500/40 animate-bounce" style={{ animationDuration: '3.5s' }}>
+          <div className="absolute bottom-6 right-6 p-1.5 bg-cyan-500/30 text-cyan-300 rounded-full border border-cyan-500/50 animate-bounce" style={{ animationDuration: '2.2s' }}>
             <RefreshCw className="w-4 h-4" />
           </div>
         </div>
@@ -132,7 +134,7 @@ export const LogoSplashScreen = ({ onComplete, duration = 3500 }) => {
           ECO MART RECYCLING
         </h1>
         <p className="text-xs text-slate-300 font-medium max-w-xs leading-relaxed mb-6">
-          Green EV Fleet Logistics • Industrial Scrap Trading • Zero Carbon
+          Speed Green EV Fleet • Industrial Scrap Trading • Zero Carbon
         </p>
 
         {/* Loading Progress Bar & Percentage Counter */}
@@ -140,7 +142,7 @@ export const LogoSplashScreen = ({ onComplete, duration = 3500 }) => {
           <div className="flex justify-between items-center text-[11px] font-extrabold">
             <span className="flex items-center gap-1.5 text-emerald-400">
               <Zap className="w-3.5 h-3.5 text-amber-400 animate-spin" />
-              <span>{phase === 'orbit' ? 'EV Recycling Lorry Orbiting Globe...' : 'Initializing Marketplace Portal...'}</span>
+              <span>{phase === 'orbit' ? '⚡ Fast Lorry Traveling Globe...' : '✨ Launching Eco Marketplace Portal...'}</span>
             </span>
             <span className="font-mono text-amber-400 font-black">{progress}%</span>
           </div>

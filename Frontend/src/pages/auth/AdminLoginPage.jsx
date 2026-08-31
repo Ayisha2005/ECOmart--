@@ -8,9 +8,9 @@ import { ShieldCheck, Mail, Lock, ArrowRight, ShieldAlert, Store, ShoppingBag, T
 export const AdminLoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [email, setEmail] = useState('ayishaparveena36@gmail.com');
-  const [password, setPassword] = useState('Ayisha2005@');
-  const [securityKey, setSecurityKey] = useState('Ayisha');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [securityKey, setSecurityKey] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -100,7 +100,7 @@ export const AdminLoginPage = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="ayishaparveena36@gmail.com"
+                placeholder="Enter Admin Email..."
                 required
                 className="w-full pl-9 pr-3 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-medium focus:ring-2 focus:ring-rose-500 text-white outline-hidden transition-all"
               />
@@ -135,10 +135,10 @@ export const AdminLoginPage = () => {
             <div className="relative">
               <KeyRound className="w-4 h-4 text-slate-500 absolute left-3 top-3.5" />
               <input
-                type="text"
+                type="password"
                 value={securityKey}
                 onChange={(e) => setSecurityKey(e.target.value)}
-                placeholder="Ayisha"
+                placeholder="Enter Security Key..."
                 required
                 className="w-full pl-9 pr-3 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-medium focus:ring-2 focus:ring-amber-500 text-white outline-hidden transition-all"
               />

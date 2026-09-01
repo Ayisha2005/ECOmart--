@@ -125,45 +125,10 @@ export const RegisterPage = () => {
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: '7s' }} />
 
-        {/* Top Right Header Quick Portal Links (Matching User Image 1) */}
-        <div className="w-full max-w-6xl flex justify-end gap-2 mb-3 relative z-20">
-          <Link
-            to="/seller/login"
-            className="px-3.5 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-emerald-400 text-xs font-bold flex items-center gap-1.5 shadow-md transition-all hover:scale-105"
-          >
-            <Store className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Seller</span>
-          </Link>
-
-          <Link
-            to="/buyer/login"
-            className="px-3.5 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-cyan-400 text-xs font-bold flex items-center gap-1.5 shadow-md transition-all hover:scale-105"
-          >
-            <ShoppingBag className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Buyer</span>
-          </Link>
-
-          <Link
-            to="/transport/login"
-            className="px-3.5 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-teal-400 text-xs font-bold flex items-center gap-1.5 shadow-md transition-all hover:scale-105"
-          >
-            <Truck className="w-3.5 h-3.5 text-teal-400" />
-            <span>Transport</span>
-          </Link>
-
-          <Link
-            to="/transport/driver/login"
-            className="px-3.5 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-indigo-400 text-xs font-bold flex items-center gap-1.5 shadow-md transition-all hover:scale-105"
-          >
-            <User className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Fleet</span>
-          </Link>
-        </div>
-
-        <div className="relative z-10 w-full max-w-6xl bg-slate-900/90 rounded-2xl sm:rounded-3xl shadow-[0_0_70px_rgba(16,185,129,0.2)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 border border-slate-800 backdrop-blur-xl">
+        <div className="relative z-10 w-full max-w-5xl mx-auto bg-slate-900/90 rounded-3xl shadow-[0_0_70px_rgba(16,185,129,0.2)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 border border-slate-800 backdrop-blur-xl">
           
           {/* Left Visual Branding Side with Ambient Panel Video */}
-          <div className="lg:col-span-5 bg-gradient-to-br from-slate-950/95 via-emerald-950/90 to-slate-950 p-4 sm:p-6 md:p-10 text-white flex flex-col justify-between relative lg:max-h-[92vh] lg:overflow-y-auto custom-scrollbar border-b lg:border-b-0 lg:border-r border-slate-800 overflow-hidden">
+          <div className="lg:col-span-5 bg-gradient-to-br from-slate-950/95 via-emerald-950/90 to-slate-950 p-5 md:p-8 text-white flex flex-col justify-between relative border-b lg:border-b-0 lg:border-r border-slate-800 overflow-hidden">
             
             {/* Embedded Panel Video Background */}
             <div className="absolute inset-0 pointer-events-none opacity-25 z-0">
@@ -183,88 +148,119 @@ export const RegisterPage = () => {
             </div>
 
             <div className="relative z-10">
-              <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center justify-between mb-6">
                 <EcoMartLogo size="lg" showTagline={true} />
                 <button
                   type="button"
                   onClick={handleReplayIntro}
                   title="Replay Logo Intro Animation"
-                  className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-emerald-400 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
+                  className="p-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-emerald-400 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shadow-md"
                 >
                   <Play className="w-3.5 h-3.5 fill-emerald-400" />
-                  <span className="hidden sm:inline">Replay Intro</span>
+                  <span className="hidden sm:inline">Intro</span>
                 </button>
               </div>
 
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold uppercase tracking-wider mb-6">
-                <Sparkles className="w-4 h-4 text-amber-400" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold uppercase tracking-wider mb-4">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                 <span>ECO MART RECYCLING ECOSYSTEM</span>
               </div>
 
-              <div className="space-y-4 my-6">
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight leading-tight text-white">
+              <div className="space-y-3 my-4">
+                <h2 className="text-xl md:text-2xl font-extrabold tracking-tight leading-tight text-white">
                   India's Premier Eco Marketplace & Green Logistics Platform
                 </h2>
-                <p className="text-xs md:text-sm text-slate-300 leading-relaxed">
+                <p className="text-xs text-slate-300 leading-relaxed">
                   Connect directly as a verified Seller or Buyer. Trade recyclable materials, manage industrial scrap, and dispatch 3rd-party logistics fleets across Indian cities.
                 </p>
               </div>
 
-              <div className="space-y-3 pt-4 border-t border-slate-800/80">
+              <div className="space-y-2.5 pt-4 border-t border-slate-800/80">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-emerald-500/20 text-lime-400 border border-emerald-500/30">
+                  <div className="p-1.5 rounded-lg bg-emerald-500/20 text-lime-400 border border-emerald-500/30">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                   <span className="text-xs font-semibold text-slate-200">Strict Role-Based Authorization</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-emerald-500/20 text-lime-400 border border-emerald-500/30">
+                  <div className="p-1.5 rounded-lg bg-emerald-500/20 text-lime-400 border border-emerald-500/30">
                     <Truck className="w-4 h-4" />
                   </div>
                   <span className="text-xs font-semibold text-slate-200">3rd Party Transport Partner Network</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-emerald-500/20 text-lime-400 border border-emerald-500/30">
+                  <div className="p-1.5 rounded-lg bg-emerald-500/20 text-lime-400 border border-emerald-500/30">
                     <Store className="w-4 h-4" />
                   </div>
                   <span className="text-xs font-semibold text-slate-200">AI Scrap Pricing & OpenStreetMap Tracking</span>
                 </div>
               </div>
-
-              {/* Role Portals Box */}
-              <div className="mt-8">
-                <DemoCredentialsBox />
-              </div>
             </div>
           </div>
 
-          {/* Right Form Side with Modern Glassmorphism & Top Logo */}
-          <div className="lg:col-span-7 p-4 sm:p-6 md:p-10 bg-gradient-to-br from-slate-950 via-slate-900/90 to-emerald-950/30 text-white flex flex-col justify-center lg:max-h-[92vh] lg:overflow-y-auto custom-scrollbar relative">
+          {/* Right Form Side with Modern Glassmorphism & Top Right Quick Links */}
+          <div className="lg:col-span-7 p-4 sm:p-6 md:p-8 bg-gradient-to-br from-slate-950 via-slate-900/90 to-emerald-950/30 text-white flex flex-col justify-center relative">
             
-            {/* Top Form Header with Logo */}
-            <div className="mb-6 flex flex-col items-start pb-4 border-b border-slate-800/80">
-              <EcoMartLogo size="md" showTagline={true} className="mb-3" />
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold text-white tracking-tight">Create your ECO MART account</h2>
-                <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30 uppercase">
-                  India Portal
-                </span>
+            {/* Top Form Header with Logo & Portal Links at Top Right */}
+            <div className="mb-4 pb-3 border-b border-slate-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">Create your ECO MART account</h2>
+                  <span className="px-2 py-0.5 text-[9px] font-mono font-bold bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30 uppercase">
+                    India Portal
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">Select your role to get started with India-only eco trading</p>
               </div>
-              <p className="text-xs text-slate-400 mt-1">Select your role to get started with India-only eco trading</p>
+
+              {/* Portal Switcher Buttons Top Right */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Link
+                  to="/seller/login"
+                  className="px-2.5 py-1 rounded-full bg-slate-950 hover:bg-slate-800 border border-slate-700/80 text-emerald-400 text-[11px] font-bold flex items-center gap-1 shadow-xs transition-all hover:scale-105"
+                >
+                  <Store className="w-3 h-3 text-emerald-400" />
+                  <span>Seller</span>
+                </Link>
+
+                <Link
+                  to="/buyer/login"
+                  className="px-2.5 py-1 rounded-full bg-slate-950 hover:bg-slate-800 border border-slate-700/80 text-cyan-400 text-[11px] font-bold flex items-center gap-1 shadow-xs transition-all hover:scale-105"
+                >
+                  <ShoppingBag className="w-3 h-3 text-cyan-400" />
+                  <span>Buyer</span>
+                </Link>
+
+                <Link
+                  to="/transport/login"
+                  className="px-2.5 py-1 rounded-full bg-slate-950 hover:bg-slate-800 border border-slate-700/80 text-teal-400 text-[11px] font-bold flex items-center gap-1 shadow-xs transition-all hover:scale-105"
+                >
+                  <Truck className="w-3 h-3 text-teal-400" />
+                  <span>Transport</span>
+                </Link>
+
+                <Link
+                  to="/transport/driver/login"
+                  className="px-2.5 py-1 rounded-full bg-slate-950 hover:bg-slate-800 border border-slate-700/80 text-indigo-400 text-[11px] font-bold flex items-center gap-1 shadow-xs transition-all hover:scale-105"
+                >
+                  <User className="w-3 h-3 text-indigo-400" />
+                  <span>Fleet</span>
+                </Link>
+              </div>
             </div>
 
-            {/* Ultra-Modern Role Toggle Selector */}
-            <div className="mb-6 bg-slate-950/90 p-1.5 rounded-2xl grid grid-cols-1 sm:grid-cols-2 gap-2 border border-slate-800/90 shadow-inner">
+            {/* Role Toggle Selector */}
+            <div className="mb-4 bg-slate-950/90 p-1 rounded-2xl grid grid-cols-2 gap-2 border border-slate-800/90 shadow-inner">
               <button
                 type="button"
                 onClick={() => setSelectedRole('SELLER')}
-                className={`py-3 px-4 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                className={`py-2.5 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
                   selectedRole === 'SELLER'
                     ? 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-slate-950 shadow-lg shadow-emerald-950/80 scale-[1.01]'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                <Store className={`w-4 h-4 ${selectedRole === 'SELLER' ? 'text-slate-950' : 'text-emerald-400'}`} />
+                <Store className={`w-3.5 h-3.5 ${selectedRole === 'SELLER' ? 'text-slate-950' : 'text-emerald-400'}`} />
                 <span>I want to SELL</span>
               </button>
               <button

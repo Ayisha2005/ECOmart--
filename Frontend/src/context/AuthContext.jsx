@@ -258,41 +258,43 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: "Missing fields" };
     }
 
-    // 1. Try Backend REST API /api/auth/login
-    try {
-      const res = await apiService.login({ identifier, password, expectedRole: expectedPortalRole });
-      if (res.success && res.user) {
-        if (res.token) localStorage.setItem('eco_token', res.token);
-        const userRole = normalizeRole(res.user.role);
-
-        setCurrentUser(res.user);
-        setRole(userRole);
-        localStorage.setItem('ecoMartUser', JSON.stringify(res.user));
-        localStorage.setItem('ecoMartRole', userRole);
-
-        showNotification(`Welcome back, ${res.user.name}! Connected to ECO MART REST API.`, 'success');
-        return { success: true, user: res.user };
-      }
-    } catch (apiErr) {
-      console.warn("REST API Login failed or offline, attempting local login matching:", apiErr.message);
-    }
-
-    // 2. Local Fallback Matching
     const cleanIdentifier = identifier.trim().toLowerCase();
     const cleanPassword = password.trim();
 
-    const foundUser = users.find(u => {
-      const matchEmail = u.email?.toLowerCase() === cleanIdentifier;
-      const matchTransportId = u.transportId?.toLowerCase() === cleanIdentifier;
-      const matchDriverId = u.driverId?.toLowerCase() === cleanIdentifier;
-      const matchId = u.id?.toLowerCase() === cleanIdentifier;
-      const matchPhone = u.phone?.replace(/\D/g, '') === cleanIdentifier;
-      const pwdMatches = u.password === cleanPassword;
-      return (matchEmail || matchTransportId || matchDriverId || matchId || matchPhone) && pwdMatches;
-    });
+    // Helper to find matching user in local state/preseeded users
+    const findMatchingUser = () => {
+      return users.find(u => {
+        const matchEmail = u.email?.toLowerCase() === cleanIdentifier;
+        const matchTransportId = u.transportId?.toLowerCase() === cleanIdentifier;
+        const matchDriverId = u.driverId?.toLowerCase() === cleanIdentifier;
+        const matchId = u.id?.toLowerCase() === cleanIdentifier;
+        const matchPhone = u.phone?.replace(/\D/g, '') === cleanIdentifier;
+        const pwdMatches = u.password === cleanPassword;
+        return (matchEmail || matchTransportId || matchDriverId || matchId || matchPhone) && pwdMatches;
+      });
+    };
+
+    // 1. Fast API Login attempt with 1000ms strict timeout
+    let apiUser = null;
+    try {
+      const fetchPromise = apiService.login({ identifier, password, expectedRole: expectedPortalRole });
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('API login timeout')), 1000)
+      );
+
+      const res = await Promise.race([fetchPromise, timeoutPromise]);
+      if (res && res.success && res.user) {
+        if (res.token) localStorage.setItem('eco_token', res.token);
+        apiUser = res.user;
+      }
+    } catch (apiErr) {
+      console.warn("Fast API login timeout/fallback:", apiErr.message);
+    }
+
+    const foundUser = apiUser || findMatchingUser();
 
     if (!foundUser) {
-      showNotification(`Invalid credentials for '${identifier}'. Demo Manager: TRM001 / Manager@123 | Demo Driver: DRV001 / Driver@123.`, 'error');
+      showNotification(`Invalid credentials for '${identifier}'. Please check email and password.`, 'error');
       return { success: false, error: "Invalid credentials" };
     }
 

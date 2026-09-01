@@ -80,13 +80,19 @@ function generateLocalEcoAiResponse(promptText, imageBase64) {
 
   // STRICT IMAGE VERIFICATION CHECK
   if (imageBase64) {
-    const invalidKeywords = ['cat', 'dog', 'pet', 'car', 'bike', 'person', 'selfie', 'food', 'pizza', 'fruit', 'furniture', 'shoe', 'shirt'];
-    const isInvalid = invalidKeywords.some(k => lower.includes(k));
+    const validScrapKeywords = [
+      'scrap', 'plastic', 'pet', 'bottle', 'cardboard', 'paper', 'kraft', 
+      'metal', 'copper', 'aluminum', 'iron', 'steel', 'ewaste', 'e-waste', 
+      'circuit', 'motherboard', 'pcb', 'glass', 'rubber', 'tyre', 'textile', 
+      'fabric', 'waste', 'bales', 'junk', 'recyclable', 'recycle'
+    ];
 
-    if (isInvalid) {
+    const isValidScrap = validScrapKeywords.some(k => lower.includes(k));
+
+    if (!isValidScrap) {
       return {
         success: true,
-        answer: "❌ INVALID SCRAP PHOTO ATTACHED!\nThis photo does not appear to be a valid recyclable scrap or industrial waste material.\n\nPlease upload a photo of PET plastic, cardboard, metal, e-waste, glass, rubber, or textile scrap to get an accurate ECO MART valuation and explanation.\n\n*(தவறான படத்தை பதிவேற்றியுள்ளீர்கள். பிளாஸ்டிக், மெட்டல், அட்டைப் பெட்டி, இ-வேஸ்ட் போன்ற மறுசுழற்சி Scrap படங்களை மட்டும் பதிவேற்றவும்!)*",
+        answer: "❌ INVALID SCRAP PHOTO ATTACHED!\nThis image does NOT appear to be a valid recyclable scrap or industrial waste material.\n\nPlease upload a photo of PET plastic, cardboard, metal, e-waste, glass, rubber, or textile scrap to get an accurate ECO MART valuation and explanation.\n\n*(தவறான படத்தை பதிவேற்றியுள்ளீர்கள். பிளாஸ்டிக், மெட்டல், அட்டைப் பெட்டி, இ-வேஸ்ட் போன்ற மறுசுழற்சி Scrap படங்களை மட்டும் பதிவேற்றவும்!)*",
         source: 'Google Gemini AI Image Guard'
       };
     }

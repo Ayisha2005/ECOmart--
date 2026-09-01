@@ -227,7 +227,7 @@ export const RegisterPage = () => {
                   <div className="p-2 rounded-lg bg-emerald-500/20 text-lime-400 border border-emerald-500/30">
                     <Store className="w-4 h-4" />
                   </div>
-                  <span className="text-xs font-semibold text-slate-200">Scrap Pricing & OpenStreetMap Tracking</span>
+                  <span className="text-xs font-semibold text-slate-200">AI Scrap Pricing & OpenStreetMap Tracking</span>
                 </div>
               </div>
 
@@ -245,12 +245,12 @@ export const RegisterPage = () => {
             <div className="mb-6 flex flex-col items-start pb-4 border-b border-slate-800/80">
               <EcoMartLogo size="md" showTagline={true} className="mb-3" />
               <div className="flex items-center gap-2">
-                <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold text-white tracking-tight">Create your ECO MART Account</h2>
+                <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold text-white tracking-tight">Create your ECO MART account</h2>
                 <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30 uppercase">
                   India Portal
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-1">Select your role to get started with India-only eco scrap trading</p>
+              <p className="text-xs text-slate-400 mt-1">Select your role to get started with India-only eco trading</p>
             </div>
 
             {/* Ultra-Modern Role Toggle Selector */}
@@ -265,7 +265,7 @@ export const RegisterPage = () => {
                 }`}
               >
                 <Store className={`w-4 h-4 ${selectedRole === 'SELLER' ? 'text-slate-950' : 'text-emerald-400'}`} />
-                <span>I want to SELL Scrap / Recyclables</span>
+                <span>I want to SELL</span>
               </button>
               <button
                 type="button"
@@ -277,7 +277,7 @@ export const RegisterPage = () => {
                 }`}
               >
                 <ShoppingBag className={`w-4 h-4 ${selectedRole === 'BUYER' ? 'text-slate-950' : 'text-cyan-400'}`} />
-                <span>I want to BUY Scrap Materials</span>
+                <span>I want to BUY</span>
               </button>
             </div>
 
@@ -309,7 +309,7 @@ export const RegisterPage = () => {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder="name@company.in"
+                      placeholder="ayesha@gmail.com"
                       className="w-full pl-10 pr-3 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm font-bold text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500/80 outline-hidden transition-all placeholder:text-slate-500"
                     />
                   </div>
@@ -371,7 +371,7 @@ export const RegisterPage = () => {
                     name="city"
                     value={formData.city}
                     onChange={handleChange}
-                    placeholder="e.g. Chennai"
+                    placeholder="Chennai"
                     className="w-full px-3.5 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm font-bold text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500/80 outline-hidden transition-all placeholder:text-slate-500"
                   />
                 </div>

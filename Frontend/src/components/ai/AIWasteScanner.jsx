@@ -182,16 +182,13 @@ export const AIWasteScanner = ({ onApplyAiResult }) => {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 text-emerald-400 rounded-2xl border border-emerald-500/40 shadow-inner">
-            <Cpu className="w-6 h-6 animate-pulse" />
+            <Box className="w-6 h-6 text-emerald-400" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-extrabold text-lg text-white tracking-wide">AI Vision Quantity & Scrap Analyzer</h3>
-              <span className="px-2.5 py-0.5 text-[10px] font-black bg-gradient-to-r from-emerald-400 via-teal-400 to-lime-400 text-slate-950 rounded-full uppercase tracking-wider">
-                v2.5 Vision AI
-              </span>
+              <h3 className="font-extrabold text-lg text-white tracking-wide">Create Scrap Listing</h3>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">Auto-detect category, calculate weight (kg), count units & predict market price</p>
+            <p className="text-xs text-slate-400 mt-0.5">Enter your product details manually and upload a photo of your scrap material.</p>
           </div>
         </div>
 
@@ -206,10 +203,10 @@ export const AIWasteScanner = ({ onApplyAiResult }) => {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer"
+            className="px-3.5 py-2 bg-emerald-900/60 hover:bg-emerald-800/80 text-emerald-300 border border-emerald-500/40 rounded-full text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer shadow-md"
           >
             <Camera className="w-4 h-4 text-emerald-400" />
-            <span>Upload Photo</span>
+            <span>Manual Product Listing</span>
           </button>
         </div>
       </div>

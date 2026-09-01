@@ -103,15 +103,8 @@ export const AddProductPage = () => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-slate-800 gap-3">
               <div>
                 <h3 className="font-extrabold text-lg text-white">Listing Information & Location</h3>
-                <p className="text-xs text-slate-400">Manual edits allowed anytime. AI classifications can be customized.</p>
+                <p className="text-xs text-slate-400">Enter your product details manually and upload a photo of your scrap material.</p>
               </div>
-
-              {aiAnalysis && (
-                <div className="px-3.5 py-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-extrabold rounded-xl flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-emerald-400" />
-                  <span>AI Auto-Synced ({aiAnalysis.weight} kg)</span>
-                </div>
-              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

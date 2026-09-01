@@ -125,6 +125,41 @@ export const RegisterPage = () => {
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDuration: '7s' }} />
 
+        {/* Top Right Header Quick Portal Links (Matching User Image 1) */}
+        <div className="w-full max-w-6xl flex justify-end gap-2 mb-3 relative z-20">
+          <Link
+            to="/seller/login"
+            className="px-3.5 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-emerald-400 text-xs font-bold flex items-center gap-1.5 shadow-md transition-all hover:scale-105"
+          >
+            <Store className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Seller</span>
+          </Link>
+
+          <Link
+            to="/buyer/login"
+            className="px-3.5 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-cyan-400 text-xs font-bold flex items-center gap-1.5 shadow-md transition-all hover:scale-105"
+          >
+            <ShoppingBag className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Buyer</span>
+          </Link>
+
+          <Link
+            to="/transport/login"
+            className="px-3.5 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-teal-400 text-xs font-bold flex items-center gap-1.5 shadow-md transition-all hover:scale-105"
+          >
+            <Truck className="w-3.5 h-3.5 text-teal-400" />
+            <span>Transport</span>
+          </Link>
+
+          <Link
+            to="/transport/driver/login"
+            className="px-3.5 py-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-indigo-400 text-xs font-bold flex items-center gap-1.5 shadow-md transition-all hover:scale-105"
+          >
+            <User className="w-3.5 h-3.5 text-indigo-400" />
+            <span>Fleet</span>
+          </Link>
+        </div>
+
         <div className="relative z-10 w-full max-w-6xl bg-slate-900/90 rounded-2xl sm:rounded-3xl shadow-[0_0_70px_rgba(16,185,129,0.2)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 border border-slate-800 backdrop-blur-xl">
           
           {/* Left Visual Branding Side with Ambient Panel Video */}
@@ -192,7 +227,7 @@ export const RegisterPage = () => {
                   <div className="p-2 rounded-lg bg-emerald-500/20 text-lime-400 border border-emerald-500/30">
                     <Store className="w-4 h-4" />
                   </div>
-                  <span className="text-xs font-semibold text-slate-200">OpenStreetMap Live Tracking & AI Scrap Price</span>
+                  <span className="text-xs font-semibold text-slate-200">Scrap Pricing & OpenStreetMap Tracking</span>
                 </div>
               </div>
 

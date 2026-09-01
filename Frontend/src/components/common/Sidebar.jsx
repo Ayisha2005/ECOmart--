@@ -47,7 +47,7 @@ export const Sidebar = ({ role }) => {
     ],
     SELLER: [
       { path: '/seller/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { path: '/seller/add-product', label: 'Add Product (AI Scan)', icon: PlusCircle, badge: 'AI' },
+      { path: '/seller/add-product', label: 'Add Product', icon: PlusCircle },
       { path: '/seller/listings', label: 'My Listings', icon: Package },
       { path: '/seller/orders', label: 'Orders & Pickup', icon: ShoppingCart },
       { path: '/seller/earnings', label: 'Earnings', icon: DollarSign },

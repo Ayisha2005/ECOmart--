@@ -58,7 +58,7 @@ export const SellerDashboard = () => {
               className="px-4 py-2.5 bg-gradient-to-r from-emerald-500 via-teal-500 to-amber-500 hover:from-emerald-400 hover:to-amber-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg transition-all flex items-center gap-2 shrink-0 cursor-pointer relative z-10"
             >
               <PlusCircle className="w-4 h-4 text-slate-950" />
-              <span>Create Listing (AI Scan)</span>
+              <span>Create Listing</span>
             </Link>
           </div>
 

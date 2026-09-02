@@ -59,6 +59,10 @@ import ManagerMessagesPage from './pages/transport/manager/ManagerMessagesPage';
 // Transport Driver Pages
 import DriverLoginPage from './pages/transport/driver/DriverLoginPage';
 import DriverDashboard from './pages/transport/driver/DriverDashboard';
+import DriverRequestsPage from './pages/transport/driver/DriverRequestsPage';
+import DriverNavigationPage from './pages/transport/driver/DriverNavigationPage';
+import DriverHistoryPage from './pages/transport/driver/DriverHistoryPage';
+import DriverProfilePage from './pages/transport/driver/DriverProfilePage';
 import TransportDashboard from './pages/transport/TransportDashboard';
 
 // Forbidden Transport Public Self-Registration
@@ -429,6 +433,38 @@ export const App = () => {
                 element={
                   <ProtectedRoute allowedRoles={['TRANSPORT_DRIVER']}>
                     <DriverDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/transport/driver/requests"
+                element={
+                  <ProtectedRoute allowedRoles={['TRANSPORT_DRIVER']}>
+                    <DriverRequestsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/transport/driver/navigation"
+                element={
+                  <ProtectedRoute allowedRoles={['TRANSPORT_DRIVER']}>
+                    <DriverNavigationPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/transport/driver/history"
+                element={
+                  <ProtectedRoute allowedRoles={['TRANSPORT_DRIVER']}>
+                    <DriverHistoryPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/transport/driver/profile"
+                element={
+                  <ProtectedRoute allowedRoles={['TRANSPORT_DRIVER']}>
+                    <DriverProfilePage />
                   </ProtectedRoute>
                 }
               />

@@ -17,9 +17,16 @@ export const ManagerOrdersPage = () => {
   } = useData();
 
   const companyId = currentUser?.transportCompanyId || 'comp-greenroute';
-  const myOrders = (orders || []).filter(o => o.transportCompanyId === companyId);
-  const myDrivers = (companyDrivers || []).filter(d => d.transportCompanyId === companyId);
-  const myVehicles = (fleetVehicles || []).filter(v => v.transportCompanyId === companyId);
+  const companyNameClean = (currentUser?.companyName || 'greenroute').toLowerCase();
+  
+  const myOrders = (orders || []).filter(o => 
+    o.transportCompanyId === companyId || 
+    (o.transportCompanyName && o.transportCompanyName.toLowerCase().includes(companyNameClean)) ||
+    (o.transportRequestStatus === 'TRANSPORT_REQUEST_SENT' && !o.transportCompanyId) ||
+    o.transportRequestStatus === 'ORDER_CONFIRMED'
+  );
+  const myDrivers = (companyDrivers || []).filter(d => d.transportCompanyId === companyId || !d.transportCompanyId);
+  const myVehicles = (fleetVehicles || []).filter(v => v.transportCompanyId === companyId || !v.transportCompanyId);
 
   const [selectedOrderForDispatch, setSelectedOrderForDispatch] = useState(null);
   const [selectedDriverId, setSelectedDriverId] = useState('');

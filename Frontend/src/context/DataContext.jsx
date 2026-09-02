@@ -350,24 +350,24 @@ export const DataProvider = ({ children }) => {
   // Step 1: ECO MART Admin assigns 3rd Party Transportation Partner COMPANY (NOT driver)
   const assignPartnerToOrder = (orderId, transportCompanyId) => {
     const partner = (partners || []).find(p => p.id === transportCompanyId);
-    if (!partner) return;
+    const compName = partner ? partner.companyName : "GreenRoute Logistics Pvt Ltd";
 
     updateOrderStatus(orderId, "TRANSPORT_REQUEST_SENT", {
       transportRequestStatus: "TRANSPORT_REQUEST_SENT",
-      transportCompanyId: partner.id,
-      transportCompanyName: partner.companyName
+      transportCompanyId: transportCompanyId,
+      transportCompanyName: compName
     });
 
     apiService.assignPartnerToOrder(orderId, transportCompanyId).catch(err => console.warn("API assign partner error:", err.message));
 
     addNotificationAlert(
       "New Transportation Assignment Requested",
-      `ECO MART Admin assigned Order ${orderId} to ${partner.companyName}. Pending partner response.`,
+      `ECO MART Admin assigned Order ${orderId} to ${compName}. Pending partner response.`,
       "TRANSPORT_MANAGER",
-      partner.id
+      transportCompanyId
     );
 
-    showNotification(`Order ${orderId} assigned to Partner Company: ${partner.companyName}. Request sent to partner inbox.`, 'success');
+    showNotification(`Order ${orderId} assigned to Partner Company: ${compName}. Request sent to partner inbox.`, 'success');
   };
 
   // Step 2: Transport Manager accepts the assigned ECO MART order

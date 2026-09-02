@@ -49,29 +49,36 @@ export const DriverDashboard = () => {
     { label: 'Mark Delivered & Complete', nextStatus: 'COMPLETED' }
   ];
 
+  const pickupLat = Number(activeTrip?.pickupCoordinates?.[0]) || 13.0827;
+  const pickupLng = Number(activeTrip?.pickupCoordinates?.[1]) || 80.2707;
+  const delivLat = Number(activeTrip?.deliveryCoordinates?.[0]) || 13.1327;
+  const delivLng = Number(activeTrip?.deliveryCoordinates?.[1]) || 80.3207;
+  const truckLat = Number(activeTrip?.currentTransportCoordinates?.[0]) || pickupLat;
+  const truckLng = Number(activeTrip?.currentTransportCoordinates?.[1]) || pickupLng;
+
   const mapMarkers = activeTrip ? [
     {
       id: 'pickup',
-      lat: activeTrip.pickupCoordinates[0],
-      lng: activeTrip.pickupCoordinates[1],
-      title: `Pickup: ${activeTrip.sellerName}`,
-      location: activeTrip.sellerAddress,
+      lat: pickupLat,
+      lng: pickupLng,
+      title: `Pickup: ${activeTrip.sellerName || 'Seller Location'}`,
+      location: activeTrip.sellerAddress || 'Seller Address',
       type: 'seller',
       typeLabel: 'Pickup Location'
     },
     {
       id: 'delivery',
-      lat: activeTrip.deliveryCoordinates[0],
-      lng: activeTrip.deliveryCoordinates[1],
-      title: `Delivery: ${activeTrip.buyerName}`,
-      location: activeTrip.buyerAddress,
+      lat: delivLat,
+      lng: delivLng,
+      title: `Delivery: ${activeTrip.buyerName || 'Buyer Destination'}`,
+      location: activeTrip.buyerAddress || 'Destination Address',
       type: 'buyer',
       typeLabel: 'Destination'
     },
     {
       id: 'truck',
-      lat: activeTrip.currentTransportCoordinates[0],
-      lng: activeTrip.currentTransportCoordinates[1],
+      lat: truckLat,
+      lng: truckLng,
       title: `My Truck: ${profileData.vehicleNumber}`,
       location: `Driver: ${profileData.name}`,
       type: 'transport',

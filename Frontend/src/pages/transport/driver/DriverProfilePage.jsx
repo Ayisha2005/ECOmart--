@@ -8,15 +8,38 @@ export const DriverProfilePage = () => {
   const { currentUser, updateUserProfile } = useAuth();
   const fileInputRef = useRef(null);
 
+  const authenticatedDriverId = currentUser?.driverId || currentUser?.transportId || currentUser?.id || 'DRV001';
+
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [profileData, setProfileData] = useState({
-    name: currentUser?.name || 'Ramesh Kumar',
-    phone: currentUser?.phone || '+91 98401 99887',
+    name: currentUser?.name || 'Driver',
+    phone: currentUser?.phone || '+91 98401 00000',
     licenseNumber: currentUser?.licenseNumber || 'TN-01-2022-8765432',
     assignedVehicleNumber: currentUser?.assignedVehicleNumber || 'TN 01 AB 1234',
     avatar: currentUser?.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
     companyName: currentUser?.companyName || 'GreenRoute Logistics Pvt Ltd'
   });
+
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const res = await apiService.getDriverProfile(authenticatedDriverId);
+        if (res?.driver) {
+          setProfileData({
+            name: res.driver.name || currentUser?.name || 'Driver',
+            phone: res.driver.phone || currentUser?.phone || '+91 98401 00000',
+            licenseNumber: res.driver.licenseNumber || currentUser?.licenseNumber || 'TN-01-2022-8765432',
+            assignedVehicleNumber: res.driver.assignedVehicleNumber || currentUser?.assignedVehicleNumber || 'TN 01 AB 1234',
+            avatar: res.driver.avatar || currentUser?.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
+            companyName: res.driver.companyName || currentUser?.companyName || 'GreenRoute Logistics Pvt Ltd'
+          });
+        }
+      } catch (err) {
+        console.warn("Could not load dynamic driver profile:", err);
+      }
+    }
+    loadProfile();
+  }, [authenticatedDriverId, currentUser]);
 
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];

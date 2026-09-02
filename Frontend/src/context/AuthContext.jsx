@@ -262,6 +262,24 @@ export const AuthProvider = ({ children }) => {
     const cleanIdentifier = identifier.trim().toLowerCase();
     const cleanPassword = password.trim();
 
+    // 100% Fail-Proof Instant Super Admin Authenticator
+    if (cleanIdentifier === 'ayisha@gmail.com' && cleanPassword === 'ayisha123') {
+      const superAdminUser = {
+        id: "user-admin-ayisha",
+        name: "AYISHA PARVEEN A",
+        email: "ayisha@gmail.com",
+        phone: "+91 98765 36200",
+        role: "ADMIN",
+        securityKey: "AYISHA"
+      };
+      setCurrentUser(superAdminUser);
+      setRole("ADMIN");
+      localStorage.setItem('ecoMartUser', JSON.stringify(superAdminUser));
+      localStorage.setItem('ecoMartRole', "ADMIN");
+      showNotification("Welcome back, Super Admin AYISHA!", 'success');
+      return { success: true, user: superAdminUser };
+    }
+
     // Helper to find matching user in local state/preseeded users
     const findMatchingUser = () => {
       return users.find(u => {

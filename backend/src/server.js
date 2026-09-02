@@ -147,11 +147,69 @@ async function connectDatabase() {
       email: { $ne: 'ayisha@gmail.com' }
     });
 
-    if (process.env.SEED_DEMO !== 'false' && (await stores.product.countDocuments()) === 0) {
-      await stores.product.insertMany(demoProducts);
-      await stores.partner.insertMany(demoPartners);
-      await stores.fleet.insertMany(demoFleet);
-      await stores.driver.insertMany(demoDrivers);
+const demoOrders = [
+  {
+    id: "ORD-8421",
+    productId: "PROD-101",
+    productTitle: "Industrial PET Plastic Bottles (Clean Sorted)",
+    category: "plastic",
+    quantityKg: 2500,
+    totalPrice: 95000,
+    buyerId: "buyer-1",
+    buyerName: "Anand Polymers India",
+    buyerPhone: "+91 97909 11223",
+    buyerAddress: "Plot 42, Ambattur Industrial Estate, Chennai, Tamil Nadu",
+    sellerId: "seller-1",
+    sellerName: "Green Earth Recyclers Pvt Ltd",
+    sellerAddress: "Main Industrial Zone, Chennai, Tamil Nadu",
+    status: "In Transit",
+    transportRequestStatus: "DRIVER_ASSIGNED",
+    transportCompanyId: "comp-greenroute",
+    transportCompanyName: "GreenRoute Logistics Pvt Ltd",
+    driverId: "DRV001",
+    driverName: "Ramesh Kumar",
+    vehicleNumber: "TN 01 AB 1234 (Demo)",
+    pickupDate: new Date().toISOString().split('T')[0],
+    deliveryEstimate: "Today Evening",
+    paymentMethod: "UPI / Net Banking Secured",
+    co2SavedKg: 3750,
+    createdAt: new Date().toLocaleString()
+  },
+  {
+    id: "ORD-8422",
+    productId: "PROD-102",
+    productTitle: "Heavy Corrugated Cardboard Bales",
+    category: "paper",
+    quantityKg: 5000,
+    totalPrice: 70000,
+    buyerId: "buyer-1",
+    buyerName: "Anand Polymers India",
+    buyerPhone: "+91 97909 11223",
+    buyerAddress: "Plot 42, Ambattur Industrial Estate, Chennai, Tamil Nadu",
+    sellerId: "seller-1",
+    sellerName: "Green Earth Recyclers Pvt Ltd",
+    sellerAddress: "Main Industrial Zone, Chennai, Tamil Nadu",
+    status: "Assigned",
+    transportRequestStatus: "PARTNER_ACCEPTED",
+    transportCompanyId: "comp-greenroute",
+    transportCompanyName: "GreenRoute Logistics Pvt Ltd",
+    driverId: null,
+    driverName: null,
+    vehicleNumber: null,
+    pickupDate: new Date().toISOString().split('T')[0],
+    deliveryEstimate: "Tomorrow Morning",
+    paymentMethod: "UPI / Net Banking Secured",
+    co2SavedKg: 7500,
+    createdAt: new Date().toLocaleString()
+  }
+];
+
+    if (process.env.SEED_DEMO !== 'false') {
+      if ((await stores.product.countDocuments()) === 0) await stores.product.insertMany(demoProducts);
+      if ((await stores.partner.countDocuments()) === 0) await stores.partner.insertMany(demoPartners);
+      if ((await stores.fleet.countDocuments()) === 0) await stores.fleet.insertMany(demoFleet);
+      if ((await stores.driver.countDocuments()) === 0) await stores.driver.insertMany(demoDrivers);
+      if ((await stores.order.countDocuments()) === 0) await stores.order.insertMany(demoOrders);
     }
     db = 'mongo';
     console.log('🍃 Successfully connected & seeded MongoDB Atlas Database: ecomart.k6qvvps.mongodb.net');

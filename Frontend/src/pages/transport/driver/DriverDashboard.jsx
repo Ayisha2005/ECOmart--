@@ -37,8 +37,8 @@ export const DriverDashboard = () => {
   const myTrips = (orders || []).filter(o => {
     const isDriverMatch = o.driverId === driverId || o.driverId === currentUser?.id || o.driverId === currentUser?.driverId;
     const isVehicleMatch = o.vehicleNumber && profileData.vehicleNumber && o.vehicleNumber.toLowerCase().replace(/\s+/g, '') === profileData.vehicleNumber.toLowerCase().replace(/\s+/g, '');
-    const isPendingDriver = o.transportRequestStatus === 'DRIVER_ASSIGNED' || o.status === 'DRIVER_ASSIGNED';
-    return isDriverMatch || isVehicleMatch || isPendingDriver;
+    const isNotCompleted = !['COMPLETED', 'CANCELLED', 'DELIVERED', 'Completed'].includes(o.transportRequestStatus || o.status);
+    return (isDriverMatch || isVehicleMatch) && isNotCompleted;
   });
 
   const activeTrip = myTrips[0];

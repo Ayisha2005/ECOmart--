@@ -445,7 +445,7 @@ export const DataProvider = ({ children }) => {
     const ord = (orders || []).find(o => o.id === orderId);
     if (ord && ord.driverId) {
       setCompanyDrivers(prev => (prev || []).map(d => 
-        (d.driverId === ord.driverId || d.id === ord.driverId) ? { ...d, status: "ON DELIVERY" } : d
+        (d.driverId === ord.driverId || d.id === ord.driverId) ? { ...d, status: "IN TRANSIT" } : d
       ));
       if (ord.vehicleNumber) {
         setFleetVehicles(prev => (prev || []).map(v => 
@@ -456,11 +456,11 @@ export const DataProvider = ({ children }) => {
 
     addNotificationAlert(
       "Driver Accepted Trip",
-      `Driver accepted assigned trip for Order ${orderId}. Driver status is ON DELIVERY.`,
+      `Driver accepted assigned trip for Order ${orderId}. Driver status updated to IN TRANSIT.`,
       "TRANSPORT_MANAGER"
     );
 
-    showNotification(`Trip for Order ${orderId} accepted! Ready to start pickup.`, 'success');
+    showNotification(`Trip for Order ${orderId} accepted! Status set to IN TRANSIT.`, 'success');
   };
 
   // Step 5: Driver Advances Trip Lifecycle

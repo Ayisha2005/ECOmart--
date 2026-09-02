@@ -92,14 +92,16 @@ export const ManagerDriversPage = () => {
                     const avatarUrl = driver.avatar || (driver.driverId === 'DRV001' ? DRIVER_AVATAR_PRESETS[0].url : DRIVER_AVATAR_PRESETS[1].url);
                     const rating = driver.rating || 4.8;
 
-                    // Check if driver has an active ongoing delivery order
+                    // Check if driver has accepted an active ongoing delivery order
                     const activeOrder = (orders || []).find(o => 
                       (o.driverId === driver.driverId || o.driverId === driver.id) &&
                       !['COMPLETED', 'CANCELLED', 'DELIVERED', 'Completed'].includes(o.transportRequestStatus || o.status)
                     );
 
-                    const isBusy = Boolean(activeOrder) || ['ON DELIVERY', 'On Delivery', 'BUSY'].includes(driver.status);
-                    const statusText = isBusy ? 'ON DELIVERY' : 'AVAILABLE';
+                    const isInTransit = Boolean(activeOrder && ['DRIVER_ACCEPTED', 'EN_ROUTE_TO_PICKUP', 'ARRIVED_AT_PICKUP', 'PICKUP_COMPLETED', 'IN_TRANSIT', 'ARRIVED_AT_DESTINATION', 'In Transit'].includes(activeOrder.transportRequestStatus || activeOrder.status)) || ['IN TRANSIT', 'In Transit', 'ON DELIVERY'].includes(driver.status);
+                    const isPendingAccept = Boolean(activeOrder && (activeOrder.transportRequestStatus === 'DRIVER_ASSIGNED' || activeOrder.status === 'DRIVER_ASSIGNED'));
+                    
+                    const statusText = isInTransit ? 'IN TRANSIT' : isPendingAccept ? 'PENDING ACCEPTANCE' : 'AVAILABLE';
 
                     return (
                       <tr key={driver.id} className="hover:bg-slate-50/80 transition-colors">
@@ -113,9 +115,16 @@ export const ManagerDriversPage = () => {
                               onClick={() => setSelectedDriver(driver)}
                             />
                             <div>
-                              <p className="font-extrabold text-slate-900 hover:text-cyan-700 cursor-pointer" onClick={() => setSelectedDriver(driver)}>
-                                {driver.name}
-                              </p>
+                              <div className="flex items-center gap-2">
+                                <p className="font-extrabold text-slate-900 hover:text-cyan-700 cursor-pointer" onClick={() => setSelectedDriver(driver)}>
+                                  {driver.name}
+                                </p>
+                                {isInTransit && (
+                                  <span className="px-2 py-0.5 text-[9px] font-mono font-black bg-cyan-500/20 text-cyan-700 border border-cyan-400 rounded-full animate-pulse uppercase">
+                                    IN TRANSIT
+                                  </span>
+                                )}
+                              </div>
                               <div className="flex items-center gap-1 text-[10px] text-slate-500 mt-0.5">
                                 <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                                 <span className="font-bold text-slate-700">{rating}</span>
@@ -131,7 +140,9 @@ export const ManagerDriversPage = () => {
                         <td className="p-4 font-semibold text-slate-800">{driver.assignedVehicleNumber || 'Unassigned'}</td>
                         <td className="p-4">
                           <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase border ${
-                            isBusy
+                            isInTransit
+                              ? 'bg-cyan-100 text-cyan-900 border-cyan-400 animate-pulse'
+                              : isPendingAccept
                               ? 'bg-amber-100 text-amber-900 border-amber-300 animate-pulse'
                               : 'bg-emerald-100 text-emerald-800 border-emerald-300'
                           }`}>

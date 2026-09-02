@@ -465,13 +465,49 @@ export const DataProvider = ({ children }) => {
 
   // Step 5: Driver Advances Trip Lifecycle
   const driverUpdateTripStatus = (orderId, nextStatus) => {
+    const ord = (orders || []).find(o => o.id === orderId);
+    const driverName = ord?.driverName || "Driver";
+    const compId = ord?.transportCompanyId || "comp-greenroute";
+
     updateOrderStatus(orderId, nextStatus, {
       transportRequestStatus: nextStatus
     });
 
+    // Save Live Notification Alert to MongoDB Atlas
+    const notifPayload = {
+      title: `Driver Status Alert: ${nextStatus}`,
+      message: `Driver ${driverName} updated Order ${orderId} status to '${nextStatus}'.`,
+      recipientRole: "TRANSPORT_MANAGER",
+      transportCompanyId: compId,
+      orderId: orderId,
+      status: nextStatus,
+      driverName: driverName,
+      timestamp: new Date().toLocaleString()
+    };
+    addNotificationAlert(notifPayload.title, notifPayload.message, "TRANSPORT_MANAGER", compId);
+    apiService.createNotification(notifPayload).catch(err => console.warn("API notification sync error:", err.message));
+
+    // Save Fleet Event Log to MongoDB Atlas
+    const fleetLogPayload = {
+      orderId: orderId,
+      vehicleNumber: ord?.vehicleNumber || "",
+      driverId: ord?.driverId || "",
+      driverName: driverName,
+      transportCompanyId: compId,
+      category: ['COMPLETED', 'DELIVERED'].includes(nextStatus) ? 'COMPLETED' :
+                ['EN_ROUTE_TO_PICKUP', 'ARRIVED_AT_PICKUP', 'PICKUP_COMPLETED'].includes(nextStatus) ? 'PICKUP' :
+                ['IN_TRANSIT', 'ARRIVED_AT_DESTINATION'].includes(nextStatus) ? 'IN_TRANSIT' : 'ACCEPTED',
+      statusLabel: nextStatus,
+      productTitle: ord?.productTitle || "",
+      quantityKg: ord?.quantityKg || 0,
+      sellerAddress: ord?.sellerAddress || "",
+      buyerAddress: ord?.buyerAddress || "",
+      timestamp: new Date().toLocaleString()
+    };
+    apiService.logFleetEvent(fleetLogPayload).catch(err => console.warn("API fleet log sync error:", err.message));
+
     // If trip is completed/delivered, free up Driver & Lorry back to AVAILABLE!
     if (['COMPLETED', 'DELIVERED', 'Completed'].includes(nextStatus)) {
-      const ord = (orders || []).find(o => o.id === orderId);
       if (ord && ord.driverId) {
         setCompanyDrivers(prev => (prev || []).map(d => 
           (d.driverId === ord.driverId || d.id === ord.driverId) ? { ...d, status: "AVAILABLE" } : d
@@ -484,13 +520,7 @@ export const DataProvider = ({ children }) => {
       }
     }
 
-    addNotificationAlert(
-      `Trip Status Updated: ${nextStatus}`,
-      `Order ${orderId} advanced to ${nextStatus}.`,
-      "ALL"
-    );
-
-    showNotification(`Order ${orderId} updated to ${nextStatus}.`, 'info');
+    showNotification(`Order ${orderId} updated to ${nextStatus}. Notification sent to Transport Manager!`, 'info');
   };
 
   return (

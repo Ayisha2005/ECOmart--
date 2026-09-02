@@ -110,7 +110,8 @@ const schemas = {
   Fleet: new mongoose.Schema({ id: { type: String, unique: true }, vehicleNumber: String, transportCompanyId: String }, { strict: false, timestamps: true }),
   Driver: new mongoose.Schema({ id: { type: String, unique: true }, driverId: String, transportCompanyId: String }, { strict: false, timestamps: true }),
   Order: new mongoose.Schema({ id: { type: String, unique: true }, productId: String, buyerId: String, sellerId: String, status: String, transportRequestStatus: String, transportCompanyId: String, driverId: String, vehicleNumber: String }, { strict: false, timestamps: true }),
-  Notification: new mongoose.Schema({ id: { type: String, unique: true }, title: String, message: String, recipientRole: String, transportCompanyId: String, orderId: String, status: String, timestamp: String }, { strict: false, timestamps: true })
+  Notification: new mongoose.Schema({ id: { type: String, unique: true }, title: String, message: String, recipientRole: String, transportCompanyId: String, orderId: String, status: String, timestamp: String }, { strict: false, timestamps: true }),
+  FleetLog: new mongoose.Schema({ id: { type: String, unique: true }, orderId: String, vehicleNumber: String, driverId: String, driverName: String, transportCompanyId: String, category: String, statusLabel: String, productTitle: String, quantityKg: Number, sellerAddress: String, buyerAddress: String, timestamp: String }, { strict: false, timestamps: true })
 };
 
 let db = null;
@@ -221,7 +222,7 @@ const demoOrders = [
   }
 }
 
-const collectionName = type => ({ user: 'users', product: 'products', partner: 'partners', fleet: 'fleet', driver: 'drivers', order: 'orders', notification: 'notifications' })[type];
+const collectionName = type => ({ user: 'users', product: 'products', partner: 'partners', fleet: 'fleet', driver: 'drivers', order: 'orders', notification: 'notifications', fleetlog: 'fleet_logs' })[type];
 const all = async (type, filter = {}) => db ? (await stores[type].find(filter).lean()).map(({ _id, __v, ...item }) => item) : memory[collectionName(type)];
 const one = async (type, filter) => db ? await stores[type].findOne(filter).lean() : memory[collectionName(type)].find(item => Object.entries(filter).every(([k, v]) => item[k] === v));
 const insert = async (type, val) => {
@@ -284,6 +285,29 @@ apiRouter.post('/notifications', async (req, res, next) => {
       ...req.body
     });
     res.status(201).json({ success: true, notification: item });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* Fleet Trip Lifecycle & Status Analytics Endpoints */
+apiRouter.get('/fleet/analytics', async (req, res, next) => {
+  try {
+    const logs = await all('fleetlog');
+    res.json({ success: true, logs });
+  } catch (err) {
+    next(err);
+  }
+});
+
+apiRouter.post('/fleet/logs', async (req, res, next) => {
+  try {
+    const item = await insert('fleetlog', {
+      id: id('FLEETLOG'),
+      timestamp: new Date().toLocaleString(),
+      ...req.body
+    });
+    res.status(201).json({ success: true, log: item });
   } catch (err) {
     next(err);
   }

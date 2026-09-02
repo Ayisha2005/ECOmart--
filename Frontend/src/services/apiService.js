@@ -153,6 +153,14 @@ export const apiService = {
   createNotification: (notifData) => fetchAPI('/notifications', {
     method: 'POST',
     body: JSON.stringify(notifData)
+  }),
+
+  // Fleet Analytics & Status Event Logs API
+  getFleetAnalytics: () => fetchAPI('/fleet/analytics'),
+
+  logFleetEvent: (eventData) => fetchAPI('/fleet/logs', {
+    method: 'POST',
+    body: JSON.stringify(eventData)
   })
 };
 

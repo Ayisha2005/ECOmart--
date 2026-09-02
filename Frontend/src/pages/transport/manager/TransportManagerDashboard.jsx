@@ -207,49 +207,93 @@ export const TransportManagerDashboard = () => {
             </div>
           )}
 
-          {/* Metrics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
+          {/* 8-Card Dynamic Database Metrics Grid (Requirement 2) */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3.5">
+            <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
               <div>
-                <p className="text-xs font-bold text-slate-400 uppercase">Company Lorries</p>
-                <h3 className="text-2xl font-extrabold text-white mt-1">{myVehicles.length}</h3>
-                <p className="text-[11px] text-emerald-400 font-semibold mt-1">Available: {availableVehicles} | On Trip: {vehiclesOnTrip}</p>
+                <p className="text-[10px] font-extrabold text-slate-400 uppercase">TOTAL DRIVERS</p>
+                <h3 className="text-xl font-black text-white mt-1">{myDrivers.length}</h3>
+                <p className="text-[10px] text-blue-400 font-semibold mt-0.5">Company Staff</p>
               </div>
-              <div className="p-3 bg-cyan-500/20 text-cyan-400 rounded-xl border border-cyan-500/30">
-                <Truck className="w-6 h-6" />
+              <div className="p-2.5 bg-blue-500/20 text-blue-400 rounded-xl border border-blue-500/30">
+                <Users className="w-5 h-5" />
               </div>
             </div>
 
-            <div className="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
+            <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
               <div>
-                <p className="text-xs font-bold text-slate-400 uppercase">Company Drivers</p>
-                <h3 className="text-2xl font-extrabold text-white mt-1">{myDrivers.length}</h3>
-                <p className="text-[11px] text-slate-400 font-semibold mt-1">Active: {availableDrivers} | On Trip: {driversOnTrip}</p>
+                <p className="text-[10px] font-extrabold text-amber-400 uppercase">ACTIVE DRIVERS</p>
+                <h3 className="text-xl font-black text-amber-300 mt-1">{driversOnTrip}</h3>
+                <p className="text-[10px] text-amber-500 font-semibold mt-0.5">On Duty / In Transit</p>
               </div>
-              <div className="p-3 bg-blue-500/20 text-blue-400 rounded-xl border border-blue-500/30">
-                <Users className="w-6 h-6" />
+              <div className="p-2.5 bg-amber-500/20 text-amber-400 rounded-xl border border-amber-500/30">
+                <Users className="w-5 h-5" />
               </div>
             </div>
 
-            <div className="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
+            <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
               <div>
-                <p className="text-xs font-bold text-slate-400 uppercase">Active Deliveries</p>
-                <h3 className="text-2xl font-extrabold text-cyan-400 mt-1">{activeDeliveries}</h3>
-                <p className="text-[11px] text-slate-400 font-semibold mt-1">In Transit</p>
+                <p className="text-[10px] font-extrabold text-slate-400 uppercase">TOTAL VEHICLES</p>
+                <h3 className="text-xl font-black text-white mt-1">{myVehicles.length}</h3>
+                <p className="text-[10px] text-cyan-400 font-semibold mt-0.5">Fleet Trucks</p>
               </div>
-              <div className="p-3 bg-teal-500/20 text-teal-400 rounded-xl border border-teal-500/30">
-                <Navigation className="w-6 h-6" />
+              <div className="p-2.5 bg-cyan-500/20 text-cyan-400 rounded-xl border border-cyan-500/30">
+                <Truck className="w-5 h-5" />
               </div>
             </div>
 
-            <div className="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
+            <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
               <div>
-                <p className="text-xs font-bold text-slate-400 uppercase">Completed Trips</p>
-                <h3 className="text-2xl font-extrabold text-emerald-400 mt-1">{completedDeliveries}</h3>
-                <p className="text-[11px] text-emerald-400 font-semibold mt-1">100% Verified</p>
+                <p className="text-[10px] font-extrabold text-emerald-400 uppercase">AVAILABLE VEHICLES</p>
+                <h3 className="text-xl font-black text-emerald-300 mt-1">{availableVehicles}</h3>
+                <p className="text-[10px] text-emerald-500 font-semibold mt-0.5">Ready for Dispatch</p>
               </div>
-              <div className="p-3 bg-emerald-500/20 text-emerald-400 rounded-xl border border-emerald-500/30">
-                <CheckCircle2 className="w-6 h-6" />
+              <div className="p-2.5 bg-emerald-500/20 text-emerald-400 rounded-xl border border-emerald-500/30">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
+              <div>
+                <p className="text-[10px] font-extrabold text-cyan-400 uppercase">ACTIVE TRIPS</p>
+                <h3 className="text-xl font-black text-cyan-300 mt-1">{activeDeliveries}</h3>
+                <p className="text-[10px] text-cyan-500 font-semibold mt-0.5">Live Delivery Routes</p>
+              </div>
+              <div className="p-2.5 bg-cyan-500/20 text-cyan-400 rounded-xl border border-cyan-500/30">
+                <Navigation className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
+              <div>
+                <p className="text-[10px] font-extrabold text-amber-400 uppercase">PENDING PICKUPS</p>
+                <h3 className="text-xl font-black text-amber-300 mt-1">{incomingAssignments.length + pendingDispatchOrders.length}</h3>
+                <p className="text-[10px] text-amber-500 font-semibold mt-0.5">Awaiting Dispatch</p>
+              </div>
+              <div className="p-2.5 bg-amber-500/20 text-amber-400 rounded-xl border border-amber-500/30">
+                <Clock className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
+              <div>
+                <p className="text-[10px] font-extrabold text-emerald-400 uppercase">COMPLETED TRIPS</p>
+                <h3 className="text-xl font-black text-emerald-300 mt-1">{completedDeliveries}</h3>
+                <p className="text-[10px] text-emerald-500 font-semibold mt-0.5">Verified History</p>
+              </div>
+              <div className="p-2.5 bg-emerald-500/20 text-emerald-400 rounded-xl border border-emerald-500/30">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+            </div>
+
+            <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">
+              <div>
+                <p className="text-[10px] font-extrabold text-teal-400 uppercase">PENDING DELIVERIES</p>
+                <h3 className="text-xl font-black text-teal-300 mt-1">{activeDeliveries}</h3>
+                <p className="text-[10px] text-teal-500 font-semibold mt-0.5">In Transit to Buyer</p>
+              </div>
+              <div className="p-2.5 bg-teal-500/20 text-teal-400 rounded-xl border border-teal-500/30">
+                <Package className="w-5 h-5" />
               </div>
             </div>
           </div>

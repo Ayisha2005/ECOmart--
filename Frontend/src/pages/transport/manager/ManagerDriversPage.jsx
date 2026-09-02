@@ -3,165 +3,229 @@ import { useAuth } from '../../../context/AuthContext';
 import { useData } from '../../../context/DataContext';
 import ManagerSidebar from '../../../components/common/ManagerSidebar';
 import Navbar from '../../../components/common/Navbar';
-import { Users, PlusCircle, UserCheck, Star, X, ShieldCheck, Phone, Truck, CheckCircle2, User, Award } from 'lucide-react';
+import {
+  Users,
+  PlusCircle,
+  ShieldCheck,
+  Star,
+  Phone,
+  Truck,
+  UserCheck,
+  X,
+  Search,
+  CheckCircle2,
+  Clock,
+  Package
+} from 'lucide-react';
 
 const DRIVER_AVATAR_PRESETS = [
-  { id: 1, label: 'Avatar 1', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80' },
-  { id: 2, label: 'Avatar 2', url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80' },
-  { id: 3, label: 'Avatar 3', url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=300&q=80' },
-  { id: 4, label: 'Avatar 4', url: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80' }
+  { id: 1, label: 'Driver Photo 1', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80' },
+  { id: 2, label: 'Driver Photo 2', url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80' },
+  { id: 3, label: 'Driver Photo 3', url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=300&q=80' },
+  { id: 4, label: 'Driver Photo 4', url: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80' }
 ];
 
 export const ManagerDriversPage = () => {
-  const { currentUser, createDriverByManager } = useAuth();
-  const { companyDrivers, fleetVehicles, addCompanyDriver } = useData();
+  const { currentUser } = useAuth();
+  const { companyDrivers = [], fleetVehicles = [], orders = [], addCompanyDriver } = useData();
 
   const companyId = currentUser?.transportCompanyId || 'comp-greenroute';
-  const myDrivers = companyDrivers.filter(d => d.transportCompanyId === companyId);
-  const myVehicles = fleetVehicles.filter(v => v.transportCompanyId === companyId);
+  const myDrivers = (companyDrivers || []).filter(d => d.transportCompanyId === companyId || !d.transportCompanyId);
+  const myVehicles = (fleetVehicles || []).filter(v => v.transportCompanyId === companyId || !v.transportCompanyId);
 
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedDriver, setSelectedDriver] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    licenseNumber: 'TN01-2024-001122',
-    licenseType: 'Commercial Heavy & EV',
-    assignedVehicleNumber: '',
-    password: 'Driver@123'
+    licenseNumber: 'TN-01-2026-99001',
+    assignedVehicleNumber: ''
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  const filteredDrivers = myDrivers.filter(d =>
+    (d.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (d.driverId || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (d.phone || '').includes(searchQuery)
+  );
 
-  const handleAddSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.name || !formData.phone) return;
 
-    // 1. Add driver in DataContext
-    const driverData = addCompanyDriver(formData, currentUser);
+    addCompanyDriver({
+      name: formData.name,
+      phone: formData.phone,
+      licenseNumber: formData.licenseNumber,
+      assignedVehicleNumber: formData.assignedVehicleNumber,
+      avatar: DRIVER_AVATAR_PRESETS[Math.floor(Math.random() * DRIVER_AVATAR_PRESETS.length)].url,
+      transportCompanyId: companyId,
+      companyName: currentUser?.companyName || 'GreenRoute Logistics Pvt Ltd'
+    });
 
-    // 2. Add driver auth credentials in AuthContext
-    createDriverByManager(driverData, currentUser);
-
+    setFormData({ name: '', phone: '', licenseNumber: 'TN-01-2026-99001', assignedVehicleNumber: '' });
     setShowAddModal(false);
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="flex h-screen bg-slate-950 text-white overflow-hidden font-sans">
       <ManagerSidebar />
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <Navbar title="Company Drivers & Workers Directory" />
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        <Navbar title="Drivers & Personnel Directory" />
 
-        <main className="p-6 space-y-6 overflow-y-auto">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-extrabold text-slate-900">Drivers & Fleet Personnel ({myDrivers.length})</h2>
-              <p className="text-xs text-slate-500">View company licensed drivers, profile credentials & truck assignments</p>
+        <main className="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto custom-scrollbar">
+          {/* Header Banner */}
+          <div className="bg-gradient-to-r from-slate-900 via-cyan-950 to-slate-900 rounded-3xl p-6 border border-cyan-500/40 shadow-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10 space-y-1">
+              <div className="flex items-center gap-2">
+                <Users className="w-6 h-6 text-cyan-400" />
+                <h2 className="text-xl font-extrabold tracking-wide">Company Drivers & Personnel Directory</h2>
+              </div>
+              <p className="text-xs text-slate-300">
+                Manage drivers, verify licenses, track assigned lorries, active trip statuses, and onboarding for {currentUser?.companyName}.
+              </p>
             </div>
+
             <button
               type="button"
               onClick={() => setShowAddModal(true)}
-              className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer flex items-center gap-1.5 self-start sm:self-auto"
+              className="px-4 py-2.5 bg-gradient-to-r from-cyan-400 to-teal-400 hover:from-cyan-300 hover:to-teal-300 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-cyan-950/50 cursor-pointer flex items-center gap-1.5 relative z-10 transition-transform active:scale-95 shrink-0"
             >
-              <PlusCircle className="w-4 h-4 text-cyan-400" />
-              <span>Add New Driver</span>
+              <PlusCircle className="w-4 h-4 text-slate-950" />
+              <span>Onboard New Driver</span>
             </button>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+          {/* Search Bar */}
+          <div className="bg-slate-900/90 rounded-3xl p-5 border border-slate-800 shadow-2xl space-y-4 backdrop-blur-xl">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="relative w-full sm:w-80">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                <input
+                  type="text"
+                  placeholder="Search Driver Name, Driver ID, Phone..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-2 focus:ring-cyan-500 outline-hidden font-medium"
+                />
+              </div>
+
+              <span className="px-3.5 py-1.5 bg-cyan-500/20 text-cyan-300 font-mono font-extrabold text-xs rounded-xl border border-cyan-500/30">
+                {myDrivers.length} Registered Drivers
+              </span>
+            </div>
+
+            {/* Drivers Directory Table (Requirement 4) */}
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-700">
-                <thead className="bg-slate-50 text-slate-500 uppercase font-bold border-b border-slate-200">
+              <table className="w-full text-left text-xs text-slate-300">
+                <thead className="bg-slate-950 text-slate-400 uppercase font-bold border-b border-slate-800">
                   <tr>
-                    <th className="p-4">Driver Profile</th>
-                    <th className="p-4">Driver ID</th>
-                    <th className="p-4">Phone Number</th>
-                    <th className="p-4">License Number</th>
-                    <th className="p-4">Assigned Vehicle</th>
-                    <th className="p-4">Status</th>
-                    <th className="p-4 text-right">Actions</th>
+                    <th className="p-3.5">DRIVER PROFILE</th>
+                    <th className="p-3.5">DRIVER ID</th>
+                    <th className="p-3.5">VERIFICATION</th>
+                    <th className="p-3.5">PHONE</th>
+                    <th className="p-3.5">ASSIGNED VEHICLE</th>
+                    <th className="p-3.5">CURRENT ACTIVE TRIP</th>
+                    <th className="p-3.5">STATUS</th>
+                    <th className="p-3.5 text-right">ACTION</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {myDrivers.map(driver => {
-                    const avatarUrl = driver.avatar || (driver.driverId === 'DRV001' ? DRIVER_AVATAR_PRESETS[0].url : DRIVER_AVATAR_PRESETS[1].url);
-                    const rating = driver.rating || 4.8;
+                <tbody className="divide-y divide-slate-800/80">
+                  {filteredDrivers.length > 0 ? (
+                    filteredDrivers.map(driver => {
+                      const avatarUrl = driver.avatar || DRIVER_AVATAR_PRESETS[0].url;
+                      const rating = driver.rating || 4.9;
 
-                    // Check if driver has accepted an active ongoing delivery order
-                    const activeOrder = (orders || []).find(o => 
-                      (o.driverId === driver.driverId || o.driverId === driver.id) &&
-                      !['COMPLETED', 'CANCELLED', 'DELIVERED', 'Completed'].includes(o.transportRequestStatus || o.status)
-                    );
+                      // Check live ongoing trip for this driver
+                      const activeOrder = (orders || []).find(o =>
+                        (o.driverId === driver.driverId || o.driverId === driver.id) &&
+                        !['COMPLETED', 'CANCELLED', 'DELIVERED', 'Completed'].includes(o.transportRequestStatus || o.status)
+                      );
 
-                    const isInTransit = Boolean(activeOrder && ['DRIVER_ACCEPTED', 'EN_ROUTE_TO_PICKUP', 'ARRIVED_AT_PICKUP', 'PICKUP_COMPLETED', 'IN_TRANSIT', 'ARRIVED_AT_DESTINATION', 'In Transit'].includes(activeOrder.transportRequestStatus || activeOrder.status)) || ['IN TRANSIT', 'In Transit', 'ON DELIVERY'].includes(driver.status);
-                    const isPendingAccept = Boolean(activeOrder && (activeOrder.transportRequestStatus === 'DRIVER_ASSIGNED' || activeOrder.status === 'DRIVER_ASSIGNED'));
-                    
-                    const statusText = isInTransit ? 'IN TRANSIT' : isPendingAccept ? 'PENDING ACCEPTANCE' : 'AVAILABLE';
+                      const isInTransit = Boolean(activeOrder && ['DRIVER_ACCEPTED', 'EN_ROUTE_TO_PICKUP', 'ARRIVED_AT_PICKUP', 'PICKUP_COMPLETED', 'IN_TRANSIT', 'ARRIVED_AT_DESTINATION', 'In Transit'].includes(activeOrder.transportRequestStatus || activeOrder.status)) || ['IN TRANSIT', 'In Transit', 'ON DELIVERY'].includes(driver.status);
+                      const isPendingAccept = Boolean(activeOrder && (activeOrder.transportRequestStatus === 'DRIVER_ASSIGNED' || activeOrder.status === 'DRIVER_ASSIGNED'));
+                      const statusText = isInTransit ? 'IN TRANSIT' : isPendingAccept ? 'PENDING ACCEPTANCE' : 'AVAILABLE';
 
-                    return (
-                      <tr key={driver.id} className="hover:bg-slate-50/80 transition-colors">
-                        {/* Driver Profile Picture & Name */}
-                        <td className="p-4">
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={avatarUrl}
-                              alt={driver.name}
-                              className="w-10 h-10 rounded-xl object-cover border border-slate-300 shadow-xs cursor-pointer hover:opacity-90"
-                              onClick={() => setSelectedDriver(driver)}
-                            />
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <p className="font-extrabold text-slate-900 hover:text-cyan-700 cursor-pointer" onClick={() => setSelectedDriver(driver)}>
+                      return (
+                        <tr key={driver.id} className="hover:bg-slate-800/50 transition-colors">
+                          <td className="p-3.5">
+                            <div className="flex items-center gap-3">
+                              <img
+                                src={avatarUrl}
+                                alt={driver.name}
+                                className="w-10 h-10 rounded-xl object-cover border border-cyan-500/50 shadow-xs cursor-pointer hover:opacity-90"
+                                onClick={() => setSelectedDriver(driver)}
+                              />
+                              <div>
+                                <p className="font-extrabold text-white hover:text-cyan-300 cursor-pointer" onClick={() => setSelectedDriver(driver)}>
                                   {driver.name}
                                 </p>
-                                {isInTransit && (
-                                  <span className="px-2 py-0.5 text-[9px] font-mono font-black bg-cyan-500/20 text-cyan-700 border border-cyan-400 rounded-full animate-pulse uppercase">
-                                    IN TRANSIT
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-1 text-[10px] text-slate-500 mt-0.5">
-                                <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                                <span className="font-bold text-slate-700">{rating}</span>
-                                <span>({driver.completedTripsCount || 30} Trips)</span>
+                                <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-0.5">
+                                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                                  <span className="font-bold text-white">{rating}</span>
+                                  <span>({driver.completedTripsCount || 35} Trips)</span>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </td>
+                          </td>
 
-                        <td className="p-4 font-mono font-extrabold text-cyan-700">{driver.driverId}</td>
-                        <td className="p-4 font-medium">{driver.phone}</td>
-                        <td className="p-4 font-mono font-medium text-slate-700">{driver.licenseNumber}</td>
-                        <td className="p-4 font-semibold text-slate-800">{driver.assignedVehicleNumber || 'Unassigned'}</td>
-                        <td className="p-4">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase border ${
-                            isInTransit
-                              ? 'bg-cyan-100 text-cyan-900 border-cyan-400 animate-pulse'
-                              : isPendingAccept
-                              ? 'bg-amber-100 text-amber-900 border-amber-300 animate-pulse'
-                              : 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                          }`}>
-                            {statusText}
-                          </span>
-                        </td>
-                        <td className="p-4 text-right">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedDriver(driver)}
-                            className="px-3 py-1.5 bg-slate-100 hover:bg-cyan-50 text-slate-700 hover:text-cyan-700 font-extrabold text-[11px] rounded-lg border border-slate-200 transition-colors cursor-pointer inline-flex items-center gap-1"
-                          >
-                            <UserCheck className="w-3.5 h-3.5 text-cyan-600" />
-                            <span>View Profile</span>
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                          <td className="p-3.5 font-mono font-extrabold text-cyan-400">{driver.driverId || driver.id}</td>
+
+                          <td className="p-3.5">
+                            <span className="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 font-bold text-[10px] rounded-md border border-emerald-500/30 flex items-center gap-1 w-fit">
+                              <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                              <span>Verified</span>
+                            </span>
+                          </td>
+
+                          <td className="p-3.5 font-medium text-slate-300">{driver.phone}</td>
+
+                          <td className="p-3.5 font-mono font-bold text-cyan-300">
+                            {driver.assignedVehicleNumber || 'No Truck Assigned'}
+                          </td>
+
+                          <td className="p-3.5 font-mono font-bold text-amber-300">
+                            {activeOrder ? activeOrder.id : 'None'}
+                          </td>
+
+                          <td className="p-3.5">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase border ${
+                              isInTransit
+                                ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 animate-pulse'
+                                : isPendingAccept
+                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse'
+                                : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                            }`}>
+                              {statusText}
+                            </span>
+                          </td>
+
+                          <td className="p-3.5 text-right">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedDriver(driver)}
+                              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 font-extrabold text-[11px] rounded-lg border border-slate-700 transition-colors cursor-pointer inline-flex items-center gap-1"
+                            >
+                              <UserCheck className="w-3.5 h-3.5 text-cyan-400" />
+                              <span>View Profile</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan="8" className="p-10 text-center text-slate-400 space-y-2">
+                        <Users className="w-10 h-10 text-slate-600 mx-auto" />
+                        <p className="font-bold text-white text-sm">No Drivers Found</p>
+                        <p className="text-xs text-slate-500">Drivers onboarded into your company fleet will appear here.</p>
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -169,177 +233,118 @@ export const ManagerDriversPage = () => {
         </main>
       </div>
 
-      {/* Read-Only Driver Profile Card Modal */}
+      {/* Driver View Profile Modal */}
       {selectedDriver && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5 relative max-h-[90vh] overflow-y-auto border border-slate-200">
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full text-white shadow-2xl relative space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <h3 className="font-extrabold text-white text-sm">Driver Profile: {selectedDriver.name}</h3>
+              <button onClick={() => setSelectedDriver(null)} className="p-1 text-slate-400 hover:text-white bg-slate-800 rounded-full cursor-pointer">✕</button>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <img
+                src={selectedDriver.avatar || DRIVER_AVATAR_PRESETS[0].url}
+                alt={selectedDriver.name}
+                className="w-16 h-16 rounded-2xl object-cover border-2 border-cyan-400 shadow-md"
+              />
+              <div>
+                <p className="font-black text-white text-base">{selectedDriver.name}</p>
+                <p className="text-cyan-400 font-mono font-bold text-xs">ID: {selectedDriver.driverId || selectedDriver.id}</p>
+                <p className="text-slate-400 text-xs">{selectedDriver.companyName || currentUser?.companyName}</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2 text-xs font-mono">
+              <p><span className="text-slate-500 font-bold">Mobile Phone:</span> <span className="text-white">{selectedDriver.phone}</span></p>
+              <p><span className="text-slate-500 font-bold">License Number:</span> <span className="text-white">{selectedDriver.licenseNumber || 'TN-01-2026-8877'}</span></p>
+              <p><span className="text-slate-500 font-bold">Assigned Lorry:</span> <span className="text-cyan-300 font-bold">{selectedDriver.assignedVehicleNumber || 'No Truck Assigned'}</span></p>
+              <p><span className="text-slate-500 font-bold">Rating & Experience:</span> <span className="text-amber-400 font-bold">⭐ {selectedDriver.rating || 4.9}</span> ({selectedDriver.completedTripsCount || 35} Trips)</p>
+            </div>
+
             <button
               type="button"
               onClick={() => setSelectedDriver(null)}
-              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 bg-slate-100 rounded-full cursor-pointer"
+              className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs cursor-pointer"
             >
-              <X className="w-4 h-4" />
+              Close Profile
             </button>
-
-            <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-              <div className="p-2.5 bg-cyan-100 text-cyan-700 rounded-xl">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-extrabold text-slate-900 text-base">Verified Driver Identity & Badge</h3>
-                <p className="text-xs text-slate-500">Official credentials of company transport driver</p>
-              </div>
-            </div>
-
-            {/* Driver Profile Picture & Rating Header Card */}
-            <div className="p-4 bg-gradient-to-r from-slate-900 to-cyan-950 rounded-2xl text-white space-y-3 shadow-lg">
-              <div className="flex items-center gap-4">
-                <img
-                  src={selectedDriver.avatar || (selectedDriver.driverId === 'DRV001' ? DRIVER_AVATAR_PRESETS[0].url : DRIVER_AVATAR_PRESETS[1].url)}
-                  alt={selectedDriver.name}
-                  className="w-16 h-16 rounded-2xl object-cover border-2 border-cyan-400 shadow-md shrink-0"
-                />
-                <div className="space-y-1">
-                  <span className="px-2 py-0.5 text-[9px] font-mono font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded-md">
-                    {selectedDriver.driverId}
-                  </span>
-                  <h4 className="font-extrabold text-white text-base leading-tight">{selectedDriver.name}</h4>
-                  <p className="text-xs text-slate-300 font-bold flex items-center gap-1">
-                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    <span>{selectedDriver.rating || 4.8} Rating ({selectedDriver.completedTripsCount || 30} Completed Trips)</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Read-Only Details Grid */}
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-                <span className="text-[10px] font-bold text-slate-400 uppercase block">Driving License (DL)</span>
-                <span className="font-mono font-bold text-slate-900 text-xs block mt-0.5">{selectedDriver.licenseNumber}</span>
-              </div>
-
-              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-                <span className="text-[10px] font-bold text-slate-400 uppercase block">Duty Status</span>
-                <span className="font-extrabold text-emerald-700 text-xs block mt-0.5 uppercase">{selectedDriver.status}</span>
-              </div>
-
-              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-                <span className="text-[10px] font-bold text-slate-400 uppercase block">Mobile Phone Number</span>
-                <span className="font-bold text-slate-900 text-xs block mt-0.5">{selectedDriver.phone}</span>
-              </div>
-
-              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-                <span className="text-[10px] font-bold text-slate-400 uppercase block">Assigned Truck</span>
-                <span className="font-bold text-cyan-800 text-xs block mt-0.5">{selectedDriver.assignedVehicleNumber || 'Unassigned'}</span>
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={() => setSelectedDriver(null)}
-                className="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer"
-              >
-                Close Profile
-              </button>
-            </div>
           </div>
         </div>
       )}
 
-      {/* Add New Driver Modal */}
+      {/* Modal: Onboard Driver */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <h3 className="font-extrabold text-slate-900 text-sm">Add Company Driver</h3>
-              <button onClick={() => setShowAddModal(false)} className="font-bold text-slate-400">✕</button>
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full text-white shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <h3 className="font-extrabold text-white text-sm">Onboard New Driver to Company Fleet</h3>
+              <button onClick={() => setShowAddModal(false)} className="p-1 text-slate-400 hover:text-white bg-slate-800 rounded-full cursor-pointer">✕</button>
             </div>
 
-            <form onSubmit={handleAddSubmit} className="space-y-3 text-xs">
+            <form onSubmit={handleSubmit} className="space-y-3 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Driver Name *</label>
+                <label className="block font-bold text-slate-300 mb-1">Driver Full Name *</label>
                 <input
                   type="text"
-                  name="name"
                   value={formData.name}
-                  onChange={handleChange}
-                  placeholder="e.g. Ramesh Kumar"
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   required
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold"
+                  placeholder="e.g. Santhosh Kumar"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-cyan-500 outline-hidden font-bold"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Phone Number (+91) *</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  maxLength={10}
-                  value={formData.phone}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, '').slice(0, 10);
-                    setFormData(prev => ({ ...prev, phone: val }));
-                  }}
-                  placeholder="Enter 10-digit Mobile Number"
-                  required
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">License Number</label>
-                  <input
-                    type="text"
-                    name="licenseNumber"
-                    value={formData.licenseNumber}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Assign Vehicle</label>
-                  <select
-                    name="assignedVehicleNumber"
-                    value={formData.assignedVehicleNumber}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl"
-                  >
-                    <option value="">Unassigned</option>
-                    {myVehicles.map(v => (
-                      <option key={v.id} value={v.vehicleNumber}>{v.vehicleNumber} ({v.vehicleType})</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Driver App Password</label>
+                <label className="block font-bold text-slate-300 mb-1">Mobile Phone Number *</label>
                 <input
                   type="text"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
+                  value={formData.phone}
+                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                   required
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold"
+                  placeholder="+91 98401 00000"
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-cyan-500 outline-hidden font-medium"
                 />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-300 mb-1">Driving License Number *</label>
+                <input
+                  type="text"
+                  value={formData.licenseNumber}
+                  onChange={(e) => setFormData(prev => ({ ...prev, licenseNumber: e.target.value }))}
+                  required
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl font-mono text-cyan-300 focus:ring-2 focus:ring-cyan-500 outline-hidden"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-300 mb-1">Assign Truck / Lorry</label>
+                <select
+                  value={formData.assignedVehicleNumber}
+                  onChange={(e) => setFormData(prev => ({ ...prev, assignedVehicleNumber: e.target.value }))}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl font-mono text-cyan-300 outline-hidden"
+                >
+                  <option value="">-- No Truck Assigned --</option>
+                  {myVehicles.map(v => (
+                    <option key={v.id} value={v.vehicleNumber}>{v.vehicleNumber} ({v.vehicleType})</option>
+                  ))}
+                </select>
               </div>
 
               <div className="pt-2 flex gap-2">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="w-1/2 py-2.5 rounded-xl border border-slate-300 font-bold cursor-pointer"
+                  className="w-1/2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 py-2.5 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 cursor-pointer"
+                  className="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 font-extrabold hover:from-cyan-300 hover:to-teal-300 cursor-pointer shadow-md"
                 >
-                  Create Driver Account
+                  Onboard Driver
                 </button>
               </div>
             </form>

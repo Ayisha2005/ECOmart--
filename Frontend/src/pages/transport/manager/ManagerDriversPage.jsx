@@ -92,6 +92,15 @@ export const ManagerDriversPage = () => {
                     const avatarUrl = driver.avatar || (driver.driverId === 'DRV001' ? DRIVER_AVATAR_PRESETS[0].url : DRIVER_AVATAR_PRESETS[1].url);
                     const rating = driver.rating || 4.8;
 
+                    // Check if driver has an active ongoing delivery order
+                    const activeOrder = (orders || []).find(o => 
+                      (o.driverId === driver.driverId || o.driverId === driver.id) &&
+                      !['COMPLETED', 'CANCELLED', 'DELIVERED', 'Completed'].includes(o.transportRequestStatus || o.status)
+                    );
+
+                    const isBusy = Boolean(activeOrder) || ['ON DELIVERY', 'On Delivery', 'BUSY'].includes(driver.status);
+                    const statusText = isBusy ? 'ON DELIVERY' : 'AVAILABLE';
+
                     return (
                       <tr key={driver.id} className="hover:bg-slate-50/80 transition-colors">
                         {/* Driver Profile Picture & Name */}
@@ -121,12 +130,12 @@ export const ManagerDriversPage = () => {
                         <td className="p-4 font-mono font-medium text-slate-700">{driver.licenseNumber}</td>
                         <td className="p-4 font-semibold text-slate-800">{driver.assignedVehicleNumber || 'Unassigned'}</td>
                         <td className="p-4">
-                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                            driver.status === 'On Delivery' || driver.status === 'ON DELIVERY'
-                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                              : 'bg-cyan-100 text-cyan-800 border border-cyan-300'
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase border ${
+                            isBusy
+                              ? 'bg-amber-100 text-amber-900 border-amber-300 animate-pulse'
+                              : 'bg-emerald-100 text-emerald-800 border-emerald-300'
                           }`}>
-                            {driver.status}
+                            {statusText}
                           </span>
                         </td>
                         <td className="p-4 text-right">

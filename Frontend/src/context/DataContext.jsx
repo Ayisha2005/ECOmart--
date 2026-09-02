@@ -407,24 +407,33 @@ export const DataProvider = ({ children }) => {
   // Step 3: Transport Manager assigns their OWN Driver & Fleet Vehicle
   const assignDriverAndVehicleToOrder = (orderId, driverId, vehicleNumber) => {
     const driver = (companyDrivers || []).find(d => d.driverId === driverId || d.id === driverId);
-    
+    const assignedDriverId = driver ? driver.driverId : driverId;
+
     updateOrderStatus(orderId, "DRIVER_ASSIGNED", {
       transportRequestStatus: "DRIVER_ASSIGNED",
-      driverId: driver ? driver.driverId : driverId,
+      driverId: assignedDriverId,
       driverName: driver ? driver.name : "Assigned Driver",
       driverPhone: driver ? driver.phone : "+91 98401 00000",
       vehicleNumber: vehicleNumber
     });
 
-    setFleetVehicles(prev => (prev || []).map(v => v.vehicleNumber === vehicleNumber ? { ...v, currentStatus: "On Pickup", assignedOrderId: orderId } : v));
+    // Mark Driver as ON DELIVERY in companyDrivers list
+    setCompanyDrivers(prev => (prev || []).map(d => 
+      (d.driverId === assignedDriverId || d.id === assignedDriverId) ? { ...d, status: "ON DELIVERY" } : d
+    ));
+
+    // Mark Fleet Vehicle as On Pickup
+    setFleetVehicles(prev => (prev || []).map(v => 
+      v.vehicleNumber === vehicleNumber ? { ...v, currentStatus: "On Pickup", assignedOrderId: orderId } : v
+    ));
 
     addNotificationAlert(
       "Driver & Vehicle Dispatched",
-      `Driver ${driver?.name || driverId} with Vehicle ${vehicleNumber} assigned to Order ${orderId}.`,
+      `Driver ${driver?.name || driverId} with Vehicle ${vehicleNumber} assigned to Order ${orderId}. Status set to ON DELIVERY.`,
       "ADMIN"
     );
 
-    showNotification(`Order ${orderId} assigned to Driver ${driver?.name} with vehicle ${vehicleNumber}!`, 'success');
+    showNotification(`Order ${orderId} assigned to Driver ${driver?.name || driverId}! Driver status updated to ON DELIVERY.`, 'success');
   };
 
   // Step 4: Driver Accepts Assigned Trip
@@ -433,9 +442,21 @@ export const DataProvider = ({ children }) => {
       transportRequestStatus: "DRIVER_ACCEPTED"
     });
 
+    const ord = (orders || []).find(o => o.id === orderId);
+    if (ord && ord.driverId) {
+      setCompanyDrivers(prev => (prev || []).map(d => 
+        (d.driverId === ord.driverId || d.id === ord.driverId) ? { ...d, status: "ON DELIVERY" } : d
+      ));
+      if (ord.vehicleNumber) {
+        setFleetVehicles(prev => (prev || []).map(v => 
+          v.vehicleNumber === ord.vehicleNumber ? { ...v, currentStatus: "In Transit", assignedOrderId: orderId } : v
+        ));
+      }
+    }
+
     addNotificationAlert(
       "Driver Accepted Trip",
-      `Driver accepted assigned trip for Order ${orderId}. Ready to start pickup.`,
+      `Driver accepted assigned trip for Order ${orderId}. Driver status is ON DELIVERY.`,
       "TRANSPORT_MANAGER"
     );
 
@@ -447,6 +468,21 @@ export const DataProvider = ({ children }) => {
     updateOrderStatus(orderId, nextStatus, {
       transportRequestStatus: nextStatus
     });
+
+    // If trip is completed/delivered, free up Driver & Lorry back to AVAILABLE!
+    if (['COMPLETED', 'DELIVERED', 'Completed'].includes(nextStatus)) {
+      const ord = (orders || []).find(o => o.id === orderId);
+      if (ord && ord.driverId) {
+        setCompanyDrivers(prev => (prev || []).map(d => 
+          (d.driverId === ord.driverId || d.id === ord.driverId) ? { ...d, status: "AVAILABLE" } : d
+        ));
+      }
+      if (ord && ord.vehicleNumber) {
+        setFleetVehicles(prev => (prev || []).map(v => 
+          v.vehicleNumber === ord.vehicleNumber ? { ...v, currentStatus: "Available", assignedOrderId: null } : v
+        ));
+      }
+    }
 
     addNotificationAlert(
       `Trip Status Updated: ${nextStatus}`,

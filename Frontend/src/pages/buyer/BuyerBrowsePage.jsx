@@ -16,11 +16,12 @@ export const BuyerBrowsePage = () => {
   const categoriesList = ECO_CATEGORIES || [];
 
   const filteredProducts = (products || []).filter(p => {
+    const isApproved = p?.approvalStatus === 'APPROVED';
     const title = (p?.title || '').toLowerCase();
     const desc = (p?.description || '').toLowerCase();
     const matchesSearch = title.includes(search.toLowerCase()) || desc.includes(search.toLowerCase());
     const matchesCat = selectedCat === 'all' || p?.category === selectedCat;
-    return matchesSearch && matchesCat;
+    return isApproved && matchesSearch && matchesCat;
   });
 
   return (

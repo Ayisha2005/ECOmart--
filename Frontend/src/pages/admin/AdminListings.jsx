@@ -63,9 +63,9 @@ export const AdminListings = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredProducts.map((prod) => {
-                    const status = prod.approvalStatus || prod.status || 'PENDING_APPROVAL';
-                    const isApproved = status === 'APPROVED';
-                    const isRejected = status === 'REJECTED';
+                    const isApproved = prod.approvalStatus === 'APPROVED';
+                    const isRejected = prod.approvalStatus === 'REJECTED';
+                    const status = isApproved ? 'APPROVED' : isRejected ? 'REJECTED' : 'PENDING_APPROVAL';
 
                     return (
                       <tr key={prod.id || Math.random()} className="hover:bg-slate-50/80 transition-colors">

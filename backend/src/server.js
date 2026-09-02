@@ -46,7 +46,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Demo Seed Data
 const demoUsers = [
-  { id: 'user-admin-ayisha', name: 'AYISHA PARVEEN A', email: 'ayishaparveena36@gmail.com', phone: '+91 98765 43210', password: 'Ayisha2005@', role: 'ADMIN', securityKey: 'Ayisha' },
+  { id: 'user-admin-ayisha', name: 'AYISHA PARVEEN A', email: 'ayisha@gmail.com', phone: '+91 98765 36200', password: 'ayisha123', role: 'ADMIN', securityKey: 'AYISHA' },
   { id: 'user-seller-1', name: 'Green Earth Recyclers Pvt Ltd', email: 'seller@ecomart.in', phone: '+91 98765 43210', password: 'Seller@123', role: 'SELLER', state: 'Tamil Nadu', city: 'Chennai', pincode: '600028' },
   { id: 'user-buyer-1', name: 'Anand Polymers India', email: 'buyer@ecomart.in', phone: '+91 97909 11223', password: 'Buyer@123', role: 'BUYER', state: 'Tamil Nadu', city: 'Chennai', pincode: '600018' },
   { id: 'TRM001', transportId: 'TRM001', driverId: 'TRM001', name: 'Santhosh Kumar (GreenRoute Manager)', email: 'manager@greenroute.in', phone: '+91 98401 11223', password: 'Manager@123', role: 'TRANSPORT_MANAGER', transportCompanyId: 'comp-greenroute', companyName: 'GreenRoute Logistics Pvt Ltd', state: 'Tamil Nadu', city: 'Chennai' },
@@ -132,19 +132,19 @@ async function connectDatabase() {
       if (!existing) {
         const hashedPassword = bcrypt.hashSync(demoUser.password, 10);
         await stores.user.create({ ...demoUser, password: hashedPassword });
-      } else if (demoUser.email.toLowerCase() === 'ayishaparveena36@gmail.com') {
+      } else if (demoUser.email.toLowerCase() === 'ayisha@gmail.com') {
         const hashedPassword = bcrypt.hashSync(demoUser.password, 10);
         await stores.user.updateOne(
           { email: demoUser.email.toLowerCase() },
-          { $set: { name: demoUser.name, password: hashedPassword, role: 'ADMIN', securityKey: 'Ayisha' } }
+          { $set: { name: demoUser.name, password: hashedPassword, role: 'ADMIN', securityKey: 'AYISHA' } }
         );
       }
     }
 
-    // Automatically purge any legacy Admin documents from MongoDB Atlas except Super Admin AYISHA PARVEEN A
+    // Automatically purge any legacy Admin documents from MongoDB Atlas except Super Admin ayisha@gmail.com
     await stores.user.deleteMany({
       role: 'ADMIN',
-      email: { $ne: 'ayishaparveena36@gmail.com' }
+      email: { $ne: 'ayisha@gmail.com' }
     });
 
     if (process.env.SEED_DEMO !== 'false' && (await stores.product.countDocuments()) === 0) {

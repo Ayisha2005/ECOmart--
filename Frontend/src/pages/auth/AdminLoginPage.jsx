@@ -20,13 +20,13 @@ export const AdminLoginPage = () => {
     setErrorMsg('');
 
     const cleanEmail = email.trim().toLowerCase();
-    if (cleanEmail !== 'ayishaparveena36@gmail.com') {
-      setErrorMsg("Access Denied: Admin Portal is strictly restricted to Super Admin AYISHA PARVEEN A (ayishaparveena36@gmail.com).");
+    if (cleanEmail !== 'ayisha@gmail.com') {
+      setErrorMsg("Access Denied: Admin Portal is strictly restricted to Super Admin AYISHA (ayisha@gmail.com).");
       return;
     }
 
-    if (securityKey.trim() !== 'Ayisha') {
-      setErrorMsg("Invalid Admin Security Key! Access strictly restricted to Super Admin AYISHA PARVEEN A.");
+    if (securityKey.trim().toUpperCase() !== 'AYISHA') {
+      setErrorMsg("Invalid Admin Security Key! Access strictly restricted to Super Admin AYISHA.");
       return;
     }
 
@@ -62,7 +62,7 @@ export const AdminLoginPage = () => {
         <div className="mb-5 p-3 bg-slate-950/80 border border-slate-800 rounded-2xl flex items-start gap-2.5 text-xs text-slate-300">
           <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
           <p className="leading-relaxed text-[11px]">
-            <span className="font-bold text-amber-400">Super Admin Access:</span> Access strictly restricted to Super Admin AYISHA PARVEEN A.
+            <span className="font-bold text-amber-400">Super Admin Access:</span> Access strictly restricted to Super Admin AYISHA (ayisha@gmail.com).
           </p>
         </div>
 

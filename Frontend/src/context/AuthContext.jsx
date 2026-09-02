@@ -22,10 +22,10 @@ const PRESEEDED_USERS = [
   {
     id: "user-admin-ayisha",
     name: "AYISHA PARVEEN A",
-    email: "ayishaparveena36@gmail.com",
+    email: "ayisha@gmail.com",
     phone: "+91 98765 36200",
-    password: "Ayisha2005@",
-    securityKey: "Ayisha",
+    password: "ayisha123",
+    securityKey: "AYISHA",
     role: "ADMIN"
   },
   {

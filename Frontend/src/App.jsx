@@ -47,6 +47,7 @@ import BuyerProfilePage from './pages/buyer/BuyerProfilePage';
 // Transport Manager Pages
 import TransportManagerDashboard from './pages/transport/manager/TransportManagerDashboard';
 import ManagerFleetPage from './pages/transport/manager/ManagerFleetPage';
+import ManagerDeliveriesPage from './pages/transport/manager/ManagerDeliveriesPage';
 import ManagerDriversPage from './pages/transport/manager/ManagerDriversPage';
 import ManagerOrdersPage from './pages/transport/manager/ManagerOrdersPage';
 import ManagerTrackingPage from './pages/transport/manager/ManagerTrackingPage';

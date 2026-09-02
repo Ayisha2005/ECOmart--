@@ -133,11 +133,15 @@ export const AddPartnerPage = () => {
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Business Phone (+91) *</label>
                   <input
-                    type="text"
+                    type="tel"
                     name="phone"
+                    maxLength={10}
                     value={formData.phone}
-                    onChange={handleChange}
-                    placeholder="+91 98401 11223"
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      setFormData(prev => ({ ...prev, phone: val }));
+                    }}
+                    placeholder="Enter 10-digit Mobile Number"
                     required
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-cyan-500 outline-hidden"
                   />

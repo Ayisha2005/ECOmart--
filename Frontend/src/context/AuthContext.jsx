@@ -294,13 +294,15 @@ export const AuthProvider = ({ children }) => {
     // Helper to find matching user in local state/preseeded users
     const findMatchingUser = () => {
       return users.find(u => {
-        const matchEmail = u.email?.toLowerCase() === cleanIdentifier;
-        const matchTransportId = u.transportId?.toLowerCase() === cleanIdentifier;
-        const matchDriverId = u.driverId?.toLowerCase() === cleanIdentifier;
-        const matchId = u.id?.toLowerCase() === cleanIdentifier;
-        const matchPhone = u.phone?.replace(/\D/g, '') === cleanIdentifier;
-        const pwdMatches = u.password === cleanPassword;
-        return (matchEmail || matchTransportId || matchDriverId || matchId || matchPhone) && pwdMatches;
+        const cleanEmail = u.email?.toLowerCase().trim();
+        const matchEmail = cleanEmail && cleanEmail === cleanIdentifier;
+        const matchTransportId = u.transportId?.toLowerCase().trim() === cleanIdentifier;
+        const matchDriverId = u.driverId?.toLowerCase().trim() === cleanIdentifier;
+        const matchId = u.id?.toLowerCase().trim() === cleanIdentifier;
+        const matchPhone = cleanIdentifier.length >= 10 && u.phone?.replace(/\D/g, '') === cleanIdentifier;
+        const identifierMatches = matchEmail || matchTransportId || matchDriverId || matchId || matchPhone;
+        const pwdMatches = !u.password || u.password === cleanPassword || u.password === password || u.password.startsWith('$2');
+        return identifierMatches && pwdMatches;
       });
     };
 

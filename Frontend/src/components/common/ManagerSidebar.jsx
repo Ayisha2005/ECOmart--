@@ -260,9 +260,14 @@ export const ManagerSidebar = () => {
                   <div>
                     <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Mobile Phone (+91) *</label>
                     <input
-                      type="text"
+                      type="tel"
+                      maxLength={10}
                       value={managerData.phone}
-                      onChange={(e) => setManagerData(prev => ({ ...prev, phone: e.target.value }))}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        setManagerData(prev => ({ ...prev, phone: val }));
+                      }}
+                      placeholder="Enter 10-digit Mobile Number"
                       required
                       className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-cyan-500 outline-hidden"
                     />

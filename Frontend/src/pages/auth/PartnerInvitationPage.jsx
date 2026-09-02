@@ -162,10 +162,15 @@ export const PartnerInvitationPage = () => {
                 <div className="relative">
                   <Phone className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
                   <input
-                    type="text"
+                    type="tel"
                     name="phone"
+                    maxLength={10}
                     value={managerForm.phone}
-                    onChange={handleChange}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      setManagerForm(prev => ({ ...prev, phone: val }));
+                    }}
+                    placeholder="Enter 10-digit Mobile Number"
                     required
                     className="w-full pl-9 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-medium text-white"
                   />

@@ -319,11 +319,15 @@ export const RegisterPage = () => {
                   <div className="relative">
                     <Phone className="w-4 h-4 text-emerald-400 absolute left-3.5 top-3.5" />
                     <input
-                      type="text"
+                      type="tel"
                       name="phone"
+                      maxLength={10}
                       value={formData.phone}
-                      onChange={handleChange}
-                      placeholder="+91 98765 43210"
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        setFormData(prev => ({ ...prev, phone: val }));
+                      }}
+                      placeholder="Enter 10-digit Mobile Number"
                       className="w-full pl-10 pr-3 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm font-bold text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500/80 outline-hidden transition-all placeholder:text-slate-500"
                     />
                   </div>
@@ -335,8 +339,12 @@ export const RegisterPage = () => {
                   <input
                     type="text"
                     name="pincode"
+                    maxLength={6}
                     value={formData.pincode}
-                    onChange={handleChange}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                      setFormData(prev => ({ ...prev, pincode: val }));
+                    }}
                     placeholder="e.g. 600001"
                     maxLength={6}
                     className="w-full px-3.5 py-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-sm font-bold text-white focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500/80 outline-hidden transition-all placeholder:text-slate-500"

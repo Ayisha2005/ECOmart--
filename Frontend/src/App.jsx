@@ -55,6 +55,7 @@ import ManagerTripsHistoryPage from './pages/transport/manager/ManagerTripsHisto
 import ManagerReportsPage from './pages/transport/manager/ManagerReportsPage';
 import ManagerProfilePage from './pages/transport/manager/ManagerProfilePage';
 import ManagerMessagesPage from './pages/transport/manager/ManagerMessagesPage';
+import ManagerDeliveriesPage from './pages/transport/manager/ManagerDeliveriesPage';
 
 // Transport Driver Pages
 import DriverLoginPage from './pages/transport/driver/DriverLoginPage';

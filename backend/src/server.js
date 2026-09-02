@@ -710,7 +710,8 @@ apiRouter.post('/auth/login', validateLogin, async (req, res, next) => {
     }
 
     // Strict Admin Access Control: Only Super Admin AYISHA PARVEEN A can log in to Admin Portal
-    if ((user.role === 'ADMIN' || expected === 'ADMIN') && user.email.toLowerCase() !== 'ayishaparveena36@gmail.com') {
+    const adminEmail = (user.email || '').toLowerCase();
+    if ((user.role === 'ADMIN' || expected === 'ADMIN') && adminEmail !== 'ayishaparveena36@gmail.com' && adminEmail !== 'ayisha@gmail.com') {
       return res.status(403).json({
         success: false,
         error: 'Admin Portal access is strictly restricted to Super Admin AYISHA PARVEEN A.'

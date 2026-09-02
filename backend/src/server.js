@@ -255,6 +255,18 @@ const roleMatches = (user, identifier) => [user.email, user.id, user.transportId
 /* Create API Router supporting both /api/* and /* aliases */
 const apiRouter = express.Router();
 
+/* API Root Route */
+apiRouter.get('/', (req, res) => {
+  res.json({
+    success: true,
+    service: 'ECO MART REST API',
+    version: '2.5.0',
+    status: 'OPERATIONAL',
+    database: db ? 'MongoDB Atlas (Connected)' : 'In-Memory DB',
+    timestamp: new Date().toISOString()
+  });
+});
+
 /* API Health Check */
 apiRouter.get('/health', (req, res) => {
   res.json({

@@ -2,21 +2,21 @@
  * Middleware: 404 Route Not Found & Root Welcome Handler
  */
 export const notFoundHandler = (req, res, next) => {
-  const host = req.get('host') || 'localhost:5000';
-  const protocol = req.protocol || 'http';
+  const host = req.get('host') || 'ecomart-backend-api.onrender.com';
+  const protocol = req.get('x-forwarded-proto') || req.protocol || 'https';
   const baseUrl = `${protocol}://${host}`;
 
-  // If root / is accessed directly
-  if (req.originalUrl === '/' || req.originalUrl === '') {
+  // If root / or /api is accessed directly
+  if (req.originalUrl === '/' || req.originalUrl === '' || req.originalUrl === '/api' || req.originalUrl === '/api/') {
     return res.status(200).json({
       success: true,
       service: 'ECO MART REST API',
       version: '2.5.0',
       message: 'Welcome to ECO MART Eco Marketplace & Green Logistics Platform API',
       status: 'OPERATIONAL',
+      database: 'CONNECTED (MongoDB Atlas)',
       swaggerDocs: `${baseUrl}/api-docs`,
-      healthCheck: `${baseUrl}/api/health`,
-      apiEndpoints: `${baseUrl}/api`
+      healthCheck: `${baseUrl}/api/health`
     });
   }
 

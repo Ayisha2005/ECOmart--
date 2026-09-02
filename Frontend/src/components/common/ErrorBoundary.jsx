@@ -19,7 +19,7 @@ export class ErrorBoundary extends React.Component {
 
   handleReset = () => {
     this.setState({ hasError: false, error: null, errorInfo: null });
-    window.location.href = '/admin/dashboard';
+    window.location.reload();
   };
 
   render() {
@@ -35,7 +35,7 @@ export class ErrorBoundary extends React.Component {
               <p className="text-xs text-rose-200">The application caught a runtime component exception.</p>
             </div>
 
-            {process.env.NODE_ENV !== 'production' && this.state.error && (
+            {this.state.error && (
               <div className="p-3 bg-slate-950 rounded-xl text-left border border-slate-800 text-[11px] font-mono text-slate-300 overflow-x-auto max-h-40">
                 <p className="font-bold text-rose-400">{this.state.error.toString()}</p>
               </div>
@@ -45,17 +45,17 @@ export class ErrorBoundary extends React.Component {
               <button
                 type="button"
                 onClick={this.handleReset}
-                className="w-1/2 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-1/2 py-3 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-extrabold text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-lg"
               >
-                <RefreshCw className="w-4 h-4" />
-                <span>Reload Admin Page</span>
+                <RefreshCw className="w-4 h-4 text-slate-950" />
+                <span>Reload Application</span>
               </button>
               <a
-                href="/admin/login"
-                className="w-1/2 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-pointer"
+                href="/register"
+                className="w-1/2 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-lg"
               >
-                <ShieldCheck className="w-4 h-4" />
-                <span>Return to Admin Login</span>
+                <Home className="w-4 h-4" />
+                <span>Go to Marketplace</span>
               </a>
             </div>
           </div>

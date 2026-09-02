@@ -18,7 +18,8 @@ import {
   Camera,
   Save,
   User,
-  ShieldCheck
+  ShieldCheck,
+  MessageSquare
 } from 'lucide-react';
 
 const MANAGER_AVATAR_PRESETS = [
@@ -81,6 +82,7 @@ export const ManagerSidebar = () => {
 
   const menu = [
     { path: '/transport/manager/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/transport/manager/messages', label: 'Live Driver Messages', icon: MessageSquare, badge: 'Live Alerts' },
     { path: '/transport/manager/fleet', label: 'Fleet Management', icon: Truck },
     { path: '/transport/manager/drivers', label: 'Drivers & Workers', icon: Users },
     { path: '/transport/manager/orders', label: 'Assigned Orders', icon: Package },

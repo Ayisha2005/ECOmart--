@@ -145,6 +145,14 @@ export const apiService = {
   sendAiChat: (chatPayload) => fetchAPI('/ai/chat', {
     method: 'POST',
     body: JSON.stringify(chatPayload)
+  }),
+
+  // Notifications & Dispatch Messages API
+  getNotifications: () => fetchAPI('/notifications'),
+
+  createNotification: (notifData) => fetchAPI('/notifications', {
+    method: 'POST',
+    body: JSON.stringify(notifData)
   })
 };
 

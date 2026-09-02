@@ -41,6 +41,12 @@ export const DriverDashboard = () => {
     return (isDriverMatch || isVehicleMatch) && isNotCompleted;
   });
 
+  const completedTrips = (orders || []).filter(o => {
+    const isDriverMatch = o.driverId === driverId || o.driverId === currentUser?.id || o.driverId === currentUser?.driverId;
+    const isCompleted = ['COMPLETED', 'DELIVERED', 'Completed'].includes(o.transportRequestStatus || o.status);
+    return isDriverMatch && isCompleted;
+  });
+
   const activeTrip = myTrips[0];
 
   const statusWorkflow = [
@@ -329,12 +335,65 @@ export const DriverDashboard = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-slate-900 p-12 rounded-3xl text-center text-slate-400">
-            <Truck className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-            <p className="font-bold text-white">No Active Trip Assigned</p>
-            <p className="text-xs text-slate-400 mt-1">Waiting for Transport Manager to dispatch a new order.</p>
+          <div className="bg-slate-900 p-10 rounded-3xl text-center text-slate-400 border border-slate-800 shadow-xl">
+            <Truck className="w-12 h-12 text-cyan-400 mx-auto mb-3" />
+            <p className="font-bold text-white text-base">No Active Pickup / Delivery Trip Assigned</p>
+            <p className="text-xs text-slate-400 mt-1">Waiting for Transport Manager to dispatch a new order to your vehicle.</p>
           </div>
         )}
+
+        {/* My Completed Deliveries & Product Trip History */}
+        <div className="bg-slate-900/90 rounded-3xl p-5 md:p-6 border border-slate-800 shadow-2xl space-y-4 backdrop-blur-xl mt-6">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+              <h3 className="font-extrabold text-white text-sm">
+                My Completed Deliveries & Product Trip History ({completedTrips.length})
+              </h3>
+            </div>
+            <span className="px-3 py-1 text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30">
+              100% Verified History
+            </span>
+          </div>
+
+          {completedTrips.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {completedTrips.map(trip => (
+                <div key={trip.id} className="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono font-extrabold text-cyan-400 text-sm">{trip.id}</span>
+                    <span className="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30 font-bold text-[10px]">
+                      ✓ DELIVERED & COMPLETED
+                    </span>
+                  </div>
+
+                  <p className="font-extrabold text-white text-sm">{trip.productTitle}</p>
+                  
+                  <div className="grid grid-cols-2 gap-2 py-1 text-[11px] text-slate-300">
+                    <div>
+                      <p className="text-[10px] text-slate-500 font-semibold uppercase">Payload Weight</p>
+                      <p className="font-bold text-cyan-300">{trip.quantityKg} kg</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-slate-500 font-semibold uppercase">Delivery Value</p>
+                      <p className="font-bold text-emerald-300">₹{Number(trip.totalPrice || 0).toLocaleString('en-IN')}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 text-[11px] text-slate-400 pt-1 border-t border-slate-900">
+                    <p><span className="text-slate-500 font-bold">Pickup (Seller):</span> {trip.sellerAddress}</p>
+                    <p><span className="text-slate-500 font-bold">Destination (Buyer):</span> {trip.buyerAddress}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 text-center text-slate-400 space-y-1">
+              <p className="font-bold text-white text-sm">No Past Deliveries Yet</p>
+              <p className="text-xs text-slate-500">Your completed delivery logs and product trip history will be stored here permanently.</p>
+            </div>
+          )}
+        </div>
       </main>
 
       {/* Driver Profile Edit Modal */}

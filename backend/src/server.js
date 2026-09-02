@@ -109,7 +109,8 @@ const schemas = {
   Partner: new mongoose.Schema({ id: { type: String, unique: true }, companyName: String, partnerStatus: String }, { strict: false, timestamps: true }),
   Fleet: new mongoose.Schema({ id: { type: String, unique: true }, vehicleNumber: String, transportCompanyId: String }, { strict: false, timestamps: true }),
   Driver: new mongoose.Schema({ id: { type: String, unique: true }, driverId: String, transportCompanyId: String }, { strict: false, timestamps: true }),
-  Order: new mongoose.Schema({ id: { type: String, unique: true }, productId: String, buyerId: String, sellerId: String, status: String, transportRequestStatus: String, transportCompanyId: String, driverId: String, vehicleNumber: String }, { strict: false, timestamps: true })
+  Order: new mongoose.Schema({ id: { type: String, unique: true }, productId: String, buyerId: String, sellerId: String, status: String, transportRequestStatus: String, transportCompanyId: String, driverId: String, vehicleNumber: String }, { strict: false, timestamps: true }),
+  Notification: new mongoose.Schema({ id: { type: String, unique: true }, title: String, message: String, recipientRole: String, transportCompanyId: String, orderId: String, status: String, timestamp: String }, { strict: false, timestamps: true })
 };
 
 let db = null;
@@ -220,7 +221,7 @@ const demoOrders = [
   }
 }
 
-const collectionName = type => ({ user: 'users', product: 'products', partner: 'partners', fleet: 'fleet', driver: 'drivers', order: 'orders' })[type];
+const collectionName = type => ({ user: 'users', product: 'products', partner: 'partners', fleet: 'fleet', driver: 'drivers', order: 'orders', notification: 'notifications' })[type];
 const all = async (type, filter = {}) => db ? (await stores[type].find(filter).lean()).map(({ _id, __v, ...item }) => item) : memory[collectionName(type)];
 const one = async (type, filter) => db ? await stores[type].findOne(filter).lean() : memory[collectionName(type)].find(item => Object.entries(filter).every(([k, v]) => item[k] === v));
 const insert = async (type, val) => {
@@ -263,6 +264,29 @@ apiRouter.get('/health', (req, res) => {
     swaggerDocs: 'http://localhost:5000/api-docs',
     timestamp: new Date().toISOString()
   });
+});
+
+/* Notifications & Live Driver Messages Endpoints */
+apiRouter.get('/notifications', async (req, res, next) => {
+  try {
+    const list = await all('notification');
+    res.json({ success: true, notifications: list });
+  } catch (err) {
+    next(err);
+  }
+});
+
+apiRouter.post('/notifications', async (req, res, next) => {
+  try {
+    const item = await insert('notification', {
+      id: id('NOTIF'),
+      timestamp: new Date().toLocaleString(),
+      ...req.body
+    });
+    res.status(201).json({ success: true, notification: item });
+  } catch (err) {
+    next(err);
+  }
 });
 
 /* ECO AI Chat Endpoint (Google Gemini Multimodal + Database Integration) */

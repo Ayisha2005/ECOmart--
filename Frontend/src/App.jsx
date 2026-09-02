@@ -51,10 +51,10 @@ import ManagerDriversPage from './pages/transport/manager/ManagerDriversPage';
 import ManagerOrdersPage from './pages/transport/manager/ManagerOrdersPage';
 import ManagerTrackingPage from './pages/transport/manager/ManagerTrackingPage';
 import ManagerPickupsPage from './pages/transport/manager/ManagerPickupsPage';
-import ManagerDeliveriesPage from './pages/transport/manager/ManagerDeliveriesPage';
 import ManagerTripsHistoryPage from './pages/transport/manager/ManagerTripsHistoryPage';
 import ManagerReportsPage from './pages/transport/manager/ManagerReportsPage';
 import ManagerProfilePage from './pages/transport/manager/ManagerProfilePage';
+import ManagerMessagesPage from './pages/transport/manager/ManagerMessagesPage';
 
 // Transport Driver Pages
 import DriverLoginPage from './pages/transport/driver/DriverLoginPage';
@@ -393,6 +393,14 @@ export const App = () => {
                 element={
                   <ProtectedRoute allowedRoles={['TRANSPORT_MANAGER', 'TRANSPORTATION']}>
                     <ManagerReportsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/transport/manager/messages"
+                element={
+                  <ProtectedRoute allowedRoles={['TRANSPORT_MANAGER', 'TRANSPORTATION']}>
+                    <ManagerMessagesPage />
                   </ProtectedRoute>
                 }
               />

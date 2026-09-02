@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import DriverSidebar from '../../../components/common/DriverSidebar';
 import Navbar from '../../../components/common/Navbar';

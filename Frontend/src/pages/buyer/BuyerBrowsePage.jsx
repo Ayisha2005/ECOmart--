@@ -6,6 +6,14 @@ import Navbar from '../../components/common/Navbar';
 import { Search, ShoppingBag, MapPin, Filter } from 'lucide-react';
 import { ECO_CATEGORIES } from '../../data/initialData';
 
+const CATEGORY_FALLBACK_IMAGES = {
+  plastic: "https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=600&q=80",
+  paper: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&w=600&q=80",
+  metal: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=600&q=80",
+  ewaste: "https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&w=600&q=80",
+  glass: "https://images.unsplash.com/photo-1516996087931-1ca4ea6dd45f?auto=format&fit=crop&w=600&q=80"
+};
+
 export const BuyerBrowsePage = () => {
   const { currentUser } = useAuth();
   const { products = [], placeOrder } = useData();
@@ -23,6 +31,15 @@ export const BuyerBrowsePage = () => {
     const matchesCat = selectedCat === 'all' || p?.category === selectedCat;
     return isApproved && matchesSearch && matchesCat;
   });
+
+  const getProductImage = (prod) => {
+    const categoryKey = (prod?.category || 'plastic').toLowerCase();
+    const fallback = CATEGORY_FALLBACK_IMAGES[categoryKey] || CATEGORY_FALLBACK_IMAGES.plastic;
+    if (Array.isArray(prod?.images) && prod.images.length > 0 && prod.images[0] && prod.images[0].trim() !== '') {
+      return prod.images[0];
+    }
+    return fallback;
+  };
 
   return (
     <div className="flex min-h-screen bg-slate-100">
@@ -62,14 +79,21 @@ export const BuyerBrowsePage = () => {
           {/* Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
             {filteredProducts.map((prod) => {
-              const mainImg = prod.images && prod.images.length > 0 ? prod.images[0] : "https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=600&q=80";
+              const mainImg = getProductImage(prod);
+              const categoryKey = (prod?.category || 'plastic').toLowerCase();
+              const fallbackImg = CATEGORY_FALLBACK_IMAGES[categoryKey] || CATEGORY_FALLBACK_IMAGES.plastic;
               const priceVal = Number(prod.price || 0);
 
               return (
                 <div key={prod.id || Math.random()} className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden flex flex-col justify-between hover:shadow-md transition-shadow">
                   <div>
                     <div className="relative h-44 overflow-hidden bg-slate-100">
-                      <img src={mainImg} alt={prod.title || 'Scrap Item'} className="w-full h-full object-cover" />
+                      <img
+                        src={mainImg}
+                        alt={prod.title || 'Scrap Item'}
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.target.src = fallbackImg; }}
+                      />
                       <span className="absolute top-3 left-3 px-2.5 py-1 text-[10px] font-extrabold bg-slate-900/90 text-white rounded-full uppercase">
                         {prod.categoryLabel || prod.category || 'Recyclable'}
                       </span>

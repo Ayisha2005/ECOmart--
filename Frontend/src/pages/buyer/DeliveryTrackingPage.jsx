@@ -31,40 +31,47 @@ export const DeliveryTrackingPage = () => {
     return statusSteps.indexOf(status) !== -1 ? statusSteps.indexOf(status) : 2;
   };
 
+  const pickupLat = Number(activeTrackingOrder?.pickupCoordinates?.[0]) || 13.0827;
+  const pickupLng = Number(activeTrackingOrder?.pickupCoordinates?.[1]) || 80.2707;
+  const delivLat = Number(activeTrackingOrder?.deliveryCoordinates?.[0]) || 13.1327;
+  const delivLng = Number(activeTrackingOrder?.deliveryCoordinates?.[1]) || 80.3207;
+  const transLat = Number(activeTrackingOrder?.currentTransportCoordinates?.[0]) || (pickupLat + 0.01);
+  const transLng = Number(activeTrackingOrder?.currentTransportCoordinates?.[1]) || (pickupLng + 0.01);
+
   const mapMarkers = activeTrackingOrder ? [
     {
       id: 'pickup',
-      lat: activeTrackingOrder.pickupCoordinates[0],
-      lng: activeTrackingOrder.pickupCoordinates[1],
-      title: `Pickup: ${activeTrackingOrder.sellerName}`,
-      location: activeTrackingOrder.sellerAddress,
+      lat: pickupLat,
+      lng: pickupLng,
+      title: `Pickup: ${activeTrackingOrder.sellerName || 'Seller Location'}`,
+      location: activeTrackingOrder.sellerAddress || 'Seller Address',
       type: 'seller',
       typeLabel: 'Seller Location'
     },
     {
       id: 'delivery',
-      lat: activeTrackingOrder.deliveryCoordinates[0],
-      lng: activeTrackingOrder.deliveryCoordinates[1],
-      title: `Delivery: ${activeTrackingOrder.buyerName}`,
-      location: activeTrackingOrder.buyerAddress,
+      lat: delivLat,
+      lng: delivLng,
+      title: `Delivery: ${activeTrackingOrder.buyerName || 'Buyer Point'}`,
+      location: activeTrackingOrder.buyerAddress || 'Buyer Address',
       type: 'buyer',
       typeLabel: 'Buyer Delivery Point'
     },
     {
       id: 'transport',
-      lat: activeTrackingOrder.currentTransportCoordinates[0],
-      lng: activeTrackingOrder.currentTransportCoordinates[1],
+      lat: transLat,
+      lng: transLng,
       title: `Vehicle: ${activeTrackingOrder.vehicleNumber || 'EV Truck'} (${activeTrackingOrder.transportId || 'TRANS001'})`,
-      location: `Driver: ${activeTrackingOrder.transportName || 'EV Dispatch Driver'}`,
+      location: `Driver: ${activeTrackingOrder.driverName || activeTrackingOrder.transportName || 'EV Dispatch Driver'}`,
       type: 'transport',
       typeLabel: 'Live EV Transport GPS'
     }
   ] : [];
 
   const routePoints = activeTrackingOrder ? [
-    activeTrackingOrder.pickupCoordinates,
-    activeTrackingOrder.currentTransportCoordinates,
-    activeTrackingOrder.deliveryCoordinates
+    [pickupLat, pickupLng],
+    [transLat, transLng],
+    [delivLat, delivLng]
   ] : [];
 
   return (

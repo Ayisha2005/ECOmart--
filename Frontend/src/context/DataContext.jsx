@@ -9,6 +9,7 @@ import {
   ECO_CATEGORIES
 } from '../data/initialData';
 import { useAuth } from './AuthContext';
+import apiService from '../services/apiService';
 
 const DataContext = createContext();
 
@@ -71,6 +72,59 @@ export const DataProvider = ({ children }) => {
 
   const [appNotifications, setAppNotifications] = useState([]);
 
+  // Fetch Live Data from Render MongoDB Atlas API on Load
+  useEffect(() => {
+    async function loadLiveBackendData() {
+      try {
+        const prods = await apiService.getProducts();
+        if (prods && prods.success && prods.products?.length) {
+          setProducts(prods.products);
+        }
+      } catch (e) {
+        console.warn("Using cached products state:", e.message);
+      }
+
+      try {
+        const ords = await apiService.getOrders();
+        if (ords && ords.success && ords.orders?.length) {
+          setOrders(ords.orders);
+        }
+      } catch (e) {
+        console.warn("Using cached orders state:", e.message);
+      }
+
+      try {
+        const parts = await apiService.getPartners();
+        if (parts && parts.success && parts.partners?.length) {
+          setPartners(parts.partners);
+        }
+      } catch (e) {
+        console.warn("Using cached partners state:", e.message);
+      }
+
+      try {
+        const fleet = await apiService.getFleet();
+        if (fleet && fleet.success && fleet.fleet?.length) {
+          setFleetVehicles(fleet.fleet);
+        }
+      } catch (e) {
+        console.warn("Using cached fleet state:", e.message);
+      }
+
+      try {
+        const drivers = await apiService.getDrivers();
+        if (drivers && drivers.success && drivers.drivers?.length) {
+          setCompanyDrivers(drivers.drivers);
+        }
+      } catch (e) {
+        console.warn("Using cached drivers state:", e.message);
+      }
+    }
+
+    loadLiveBackendData();
+  }, []);
+
+  // Persistent Cache Sync
   useEffect(() => {
     localStorage.setItem('ecoMartProducts', JSON.stringify(products));
   }, [products]);
@@ -108,7 +162,7 @@ export const DataProvider = ({ children }) => {
     setAppNotifications(prev => [alertObj, ...prev]);
   };
 
-  // Product Actions
+  // Product Actions with REST API Sync
   const addProduct = (newProdData, seller) => {
     const categoryObj = ECO_CATEGORIES.find(c => c.id === newProdData.category);
     const newProd = {
@@ -137,16 +191,21 @@ export const DataProvider = ({ children }) => {
     };
 
     setProducts(prev => [newProd, ...(prev || [])]);
+
+    // Async REST API Sync to MongoDB Atlas
+    apiService.createProduct(newProd).catch(err => console.warn("API product create error:", err.message));
+
     showNotification("New product listing published successfully!", 'success');
     return newProd;
   };
 
   const deleteProduct = (prodId) => {
     setProducts(prev => (prev || []).filter(p => p.id !== prodId));
+    apiService.deleteProduct(prodId).catch(err => console.warn("API product delete error:", err.message));
     showNotification("Product listing deleted.", 'info');
   };
 
-  // Admin Partnership Onboarding (Creates Partnership Invitation)
+  // Admin Partnership Onboarding with REST API Sync
   const addPartnerCompany = (partnerData) => {
     const partnerId = `comp-${Date.now()}`;
     const newPartner = {
@@ -157,6 +216,8 @@ export const DataProvider = ({ children }) => {
       ...partnerData
     };
     setPartners(prev => [newPartner, ...(prev || [])]);
+
+    apiService.createPartner(newPartner).catch(err => console.warn("API partner create error:", err.message));
 
     addNotificationAlert(
       "Partnership Invitation Sent",
@@ -170,10 +231,11 @@ export const DataProvider = ({ children }) => {
 
   const updatePartnerStatus = (partnerId, status) => {
     setPartners(prev => (prev || []).map(p => p.id === partnerId ? { ...p, partnerStatus: status } : p));
+    apiService.updatePartnerStatus(partnerId, status).catch(err => console.warn("API partner status update error:", err.message));
     showNotification(`Partner status updated to ${status}`, 'info');
   };
 
-  // Fleet Vehicle Actions (Manager Only)
+  // Fleet Vehicle Actions
   const addFleetVehicle = (vehicleData, manager) => {
     const newVeh = {
       id: `veh-${Date.now()}`,
@@ -186,11 +248,12 @@ export const DataProvider = ({ children }) => {
       ...vehicleData
     };
     setFleetVehicles(prev => [newVeh, ...(prev || [])]);
+    apiService.addFleetVehicle(newVeh).catch(err => console.warn("API fleet create error:", err.message));
     showNotification(`Vehicle ${newVeh.vehicleNumber} added to company fleet!`, 'success');
     return newVeh;
   };
 
-  // Driver Actions (Manager Only)
+  // Driver Actions
   const addCompanyDriver = (driverData, manager) => {
     const newDriver = {
       id: driverData.driverId || `DRV00${(companyDrivers || []).length + 1}`,
@@ -202,11 +265,12 @@ export const DataProvider = ({ children }) => {
       ...driverData
     };
     setCompanyDrivers(prev => [newDriver, ...(prev || [])]);
+    apiService.addDriver(newDriver).catch(err => console.warn("API driver create error:", err.message));
     showNotification(`Driver ${newDriver.name} onboarded successfully!`, 'success');
     return newDriver;
   };
 
-  // Marketplace Order Placement
+  // Marketplace Order Placement with REST API Sync
   const placeOrder = (product, buyer, quantityKg = null) => {
     const weight = quantityKg || product.weightKg;
     const price = Math.round((product.price / product.weightKg) * weight);
@@ -243,6 +307,9 @@ export const DataProvider = ({ children }) => {
     };
 
     setOrders(prev => [newOrder, ...(prev || [])]);
+
+    apiService.createOrder(newOrder).catch(err => console.warn("API order create error:", err.message));
+
     showNotification(`Order ${newOrder.id} placed! Waiting for Seller confirmation.`, 'success');
     return newOrder;
   };
@@ -269,6 +336,8 @@ export const DataProvider = ({ children }) => {
       return ord;
     }));
 
+    apiService.updateOrderStatus(orderId, { status: newStatus, ...extraData }).catch(err => console.warn("API order status update error:", err.message));
+
     showNotification(`Order ${orderId} status: ${newStatus}`, 'info');
   };
 
@@ -282,6 +351,8 @@ export const DataProvider = ({ children }) => {
       transportCompanyId: partner.id,
       transportCompanyName: partner.companyName
     });
+
+    apiService.assignPartnerToOrder(orderId, transportCompanyId).catch(err => console.warn("API assign partner error:", err.message));
 
     addNotificationAlert(
       "New Transportation Assignment Requested",
@@ -379,36 +450,41 @@ export const DataProvider = ({ children }) => {
   };
 
   return (
-    <DataContext.Provider
-      value={{
-        products: products || [],
-        partners: partners || [],
-        fleetVehicles: fleetVehicles || [],
-        companyDrivers: companyDrivers || [],
-        transportUsers: fleetVehicles || [],
-        orders: orders || [],
-        environmentalImpact: environmentalImpact || INITIAL_ENVIRONMENTAL_IMPACT,
-        categories: ECO_CATEGORIES,
-        appNotifications,
-        addProduct,
-        deleteProduct,
-        addPartnerCompany,
-        updatePartnerStatus,
-        addFleetVehicle,
-        addCompanyDriver,
-        placeOrder,
-        updateOrderStatus,
-        assignPartnerToOrder,
-        partnerAcceptOrder,
-        partnerRejectOrder,
-        assignDriverAndVehicleToOrder,
-        driverAcceptTrip,
-        driverUpdateTripStatus
-      }}
-    >
+    <DataContext.Provider value={{
+      products,
+      partners,
+      fleetVehicles,
+      companyDrivers,
+      orders,
+      environmentalImpact,
+      appNotifications,
+      addProduct,
+      deleteProduct,
+      addPartnerCompany,
+      updatePartnerStatus,
+      addFleetVehicle,
+      addCompanyDriver,
+      placeOrder,
+      updateOrderStatus,
+      assignPartnerToOrder,
+      partnerAcceptOrder,
+      partnerRejectOrder,
+      assignDriverAndVehicleToOrder,
+      driverAcceptTrip,
+      driverUpdateTripStatus,
+      addNotificationAlert
+    }}>
       {children}
     </DataContext.Provider>
   );
 };
 
-export const useData = () => useContext(DataContext);
+export const useData = () => {
+  const context = useContext(DataContext);
+  if (!context) {
+    throw new Error('useData must be used within a DataProvider');
+  }
+  return context;
+};
+
+export default DataContext;

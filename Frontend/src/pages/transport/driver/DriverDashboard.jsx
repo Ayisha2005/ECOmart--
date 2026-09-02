@@ -226,20 +226,59 @@ export const DriverDashboard = () => {
               </span>
             </div>
 
-            {/* Accept Trip Banner */}
-            {activeTrip.transportRequestStatus === 'DRIVER_ASSIGNED' && (
-              <div className="p-4 bg-emerald-950/80 border border-emerald-500/40 rounded-2xl flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-bold text-emerald-200">New Trip Assigned by Transport Manager!</p>
-                  <p className="text-[11px] text-slate-300">Accept this trip assignment to begin pickup logistics.</p>
+            {/* Ola / Uber / Rapido Style Interactive Ride Acceptance Card */}
+            {(activeTrip.transportRequestStatus === 'DRIVER_ASSIGNED' || activeTrip.status === 'DRIVER_ASSIGNED') && (
+              <div className="p-5 bg-gradient-to-br from-emerald-950 via-slate-900 to-teal-950 border-2 border-emerald-500 rounded-3xl shadow-[0_0_40px_rgba(16,185,129,0.3)] animate-pulse space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-emerald-400 animate-ping" />
+                    <span className="text-xs font-black text-emerald-400 uppercase tracking-widest">
+                      ⚡ NEW OLA/UBER/RAPIDO TRIP DISPATCH ALERT
+                    </span>
+                  </div>
+                  <span className="px-2.5 py-1 text-[10px] font-mono font-extrabold bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30">
+                    INSTANT RIDE REQUEST
+                  </span>
                 </div>
+
+                <div className="grid grid-cols-2 gap-3 p-3 bg-slate-950/80 rounded-2xl border border-emerald-500/30">
+                  <div>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase">Estimated Fare / Value</p>
+                    <p className="text-lg font-black text-emerald-400">₹{Number(activeTrip.totalPrice || 0).toLocaleString('en-IN')}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase">Material Payload</p>
+                    <p className="text-lg font-black text-cyan-300">{activeTrip.quantityKg || 1000} kg</p>
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-xs">
+                  <div className="flex items-start gap-2 p-2.5 bg-slate-950/60 rounded-xl border border-slate-800">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 mt-1 shrink-0" />
+                    <div>
+                      <p className="font-bold text-emerald-300 text-[11px]">PICKUP LOCATION (SELLER)</p>
+                      <p className="font-extrabold text-white">{activeTrip.sellerName}</p>
+                      <p className="text-slate-400 text-[11px]">{activeTrip.sellerAddress}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2 p-2.5 bg-slate-950/60 rounded-xl border border-slate-800">
+                    <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 mt-1 shrink-0" />
+                    <div>
+                      <p className="font-bold text-cyan-300 text-[11px]">DROPOFF DESTINATION (BUYER)</p>
+                      <p className="font-extrabold text-white">{activeTrip.buyerName}</p>
+                      <p className="text-slate-400 text-[11px]">{activeTrip.buyerAddress}</p>
+                    </div>
+                  </div>
+                </div>
+
                 <button
                   type="button"
                   onClick={() => driverAcceptTrip(activeTrip.id)}
-                  className="px-4 py-2 bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg flex items-center gap-1 cursor-pointer shrink-0"
+                  className="w-full py-4 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-black text-base rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.5)] flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 uppercase tracking-wider"
                 >
-                  <Check className="w-4 h-4" />
-                  <span>ACCEPT TRIP</span>
+                  <Check className="w-6 h-6 stroke-[3]" />
+                  <span>ACCEPT RIDE & START PICKUP (ACCEPT TRIP)</span>
                 </button>
               </div>
             )}

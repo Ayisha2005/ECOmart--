@@ -18,6 +18,7 @@ import {
   X,
   Camera,
   ShieldCheck,
+  Award,
   Save,
   Search,
   Filter,
@@ -48,7 +49,7 @@ export const DriverDashboard = () => {
   // Authenticated Driver Identity
   const authenticatedDriverId = currentUser?.driverId || currentUser?.transportId || currentUser?.id || 'DRV001';
 
-  // 100% Data-Driven States
+  // Dynamic Driver Fleet States
   const [driverProfile, setDriverProfile] = useState(null);
   const [currentAssignedOrder, setCurrentAssignedOrder] = useState(null);
   const [oldOrdersHistory, setOldOrdersHistory] = useState([]);
@@ -63,7 +64,7 @@ export const DriverDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Search & Filter State
+  // Search & Filter State for Order History
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
@@ -82,8 +83,8 @@ export const DriverDashboard = () => {
     companyName: ''
   });
 
-  // Fetch Driver Profile, Current Assignment, History, and Metrics from Backend/DB
-  const fetchDriverDashboardData = async () => {
+  // Fetch Driver Profile, Current Active Assignment, History, and Metrics from Backend/DB
+  const fetchDriverFleetData = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -97,7 +98,7 @@ export const DriverDashboard = () => {
         licenseNumber: currentUser?.licenseNumber || 'TN-01-2026-LICENSED',
         avatar: currentUser?.avatar || DRIVER_AVATAR_PRESETS[0].url,
         assignedVehicleNumber: currentUser?.assignedVehicleNumber || null,
-        vehicleType: currentUser?.vehicleType || 'Commercial Lorry',
+        vehicleType: currentUser?.vehicleType || 'Commercial Lorry Truck',
         companyName: currentUser?.companyName || 'GreenRoute Logistics Pvt Ltd',
         rating: currentUser?.rating || 4.9,
         tripsCompleted: currentUser?.tripsCompleted || 0
@@ -117,12 +118,13 @@ export const DriverDashboard = () => {
       let activeTrip = currentTripRes?.activeTrip;
 
       if (!activeTrip && orders) {
-        activeTrip = orders.find(o => {
+        const matchingActiveOrders = orders.filter(o => {
           const isMatch = (o.driverId && (o.driverId === authenticatedDriverId || o.driverId === currentUser?.id)) ||
             (o.vehicleNumber && fetchedDriver.assignedVehicleNumber && o.vehicleNumber.replace(/\s+/g, '').toLowerCase() === fetchedDriver.assignedVehicleNumber.replace(/\s+/g, '').toLowerCase());
           const isNotCompleted = !['COMPLETED', 'DELIVERED', 'Completed', 'CANCELLED', 'REJECTED'].includes(o.transportRequestStatus || o.status);
           return isMatch && isNotCompleted;
         });
+        activeTrip = matchingActiveOrders.length > 0 ? matchingActiveOrders[matchingActiveOrders.length - 1] : null;
       }
       setCurrentAssignedOrder(activeTrip || null);
 
@@ -161,18 +163,18 @@ export const DriverDashboard = () => {
         });
       }
     } catch (err) {
-      console.error("Error loading driver dashboard data:", err.message);
+      console.error("Error loading driver fleet data:", err.message);
       setError("Unable to load current order. Please try again.");
-    } fontally: {
+    } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchDriverDashboardData();
+    fetchDriverFleetData();
   }, [authenticatedDriverId, orders, searchQuery, statusFilter]);
 
-  // Handle Driver Workflow Status Advancement
+  // Workflow Status Advancement Action
   const handleUpdateTripStatus = async (orderId, nextStatus) => {
     try {
       if (driverUpdateTripStatus) {
@@ -180,13 +182,13 @@ export const DriverDashboard = () => {
       } else {
         await apiService.updateDriverTripStatus(orderId, nextStatus);
       }
-      fetchDriverDashboardData();
+      fetchDriverFleetData();
     } catch (err) {
       console.error("Failed to update status:", err);
     }
   };
 
-  // Handle Driver Accept Ride
+  // Driver Accept Ride Action
   const handleAcceptRide = async (orderId) => {
     try {
       if (driverAcceptTrip) {
@@ -194,13 +196,13 @@ export const DriverDashboard = () => {
       } else {
         await apiService.updateDriverTripStatus(orderId, 'DRIVER_ACCEPTED');
       }
-      fetchDriverDashboardData();
+      fetchDriverFleetData();
     } catch (err) {
       console.error("Failed to accept ride:", err);
     }
   };
 
-  // Handle Profile Save
+  // Save Profile Handler
   const handleSaveProfile = (e) => {
     e.preventDefault();
     if (updateUserProfile) {
@@ -217,7 +219,7 @@ export const DriverDashboard = () => {
     setTimeout(() => {
       setSaveSuccess(false);
       setShowProfileModal(false);
-      fetchDriverDashboardData();
+      fetchDriverFleetData();
     }, 1000);
   };
 
@@ -229,7 +231,7 @@ export const DriverDashboard = () => {
     }
   };
 
-  const handleLogoutSession = () => {
+  const handleLogout = () => {
     logout();
     navigate('/transport/driver/login');
   };
@@ -283,14 +285,14 @@ export const DriverDashboard = () => {
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col font-sans">
       
-      {/* 1. TOP HEADER */}
+      {/* 1. HEADER BAR */}
       <header className="p-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between sticky top-0 z-30 shadow-xl">
         <EcoMartLogo size="sm" showTagline={false} />
 
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-slate-950 rounded-xl border border-slate-800">
-            <User className="w-3.5 h-3.5 text-cyan-400" />
+          <div className="hidden sm:flex flex-col text-right">
             <span className="text-xs font-bold text-white">{driverProfile?.name || currentUser?.name || 'Driver'}</span>
+            <span className="text-[10px] text-cyan-400 font-mono">ID: {driverProfile?.driverId || authenticatedDriverId}</span>
           </div>
 
           <button
@@ -299,12 +301,12 @@ export const DriverDashboard = () => {
             className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-extrabold text-cyan-300 transition-all cursor-pointer"
           >
             <User className="w-4 h-4 text-cyan-400" />
-            <span>Driver Profile</span>
+            <span>Profile</span>
           </button>
 
           <button
             type="button"
-            onClick={handleLogoutSession}
+            onClick={handleLogout}
             className="px-3.5 py-1.5 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
@@ -313,19 +315,19 @@ export const DriverDashboard = () => {
         </div>
       </header>
 
-      {/* Main Body */}
+      {/* Main Content Area */}
       {loading ? (
         <div className="flex-1 flex items-center justify-center p-8 space-y-4">
           <div className="text-center space-y-3">
             <div className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="font-extrabold text-cyan-300 text-sm">Fetching Driver Fleet Data & Assignments...</p>
+            <p className="font-extrabold text-cyan-300 text-sm">Loading Driver Profile & Orders...</p>
           </div>
         </div>
       ) : error ? (
         <div className="p-8 text-center text-rose-400 space-y-3">
           <AlertCircle className="w-10 h-10 mx-auto" />
           <p className="font-bold text-base">{error}</p>
-          <button onClick={fetchDriverDashboardData} className="px-4 py-2 bg-slate-800 text-white font-bold text-xs rounded-xl cursor-pointer">
+          <button onClick={fetchDriverFleetData} className="px-4 py-2 bg-slate-800 text-white font-bold text-xs rounded-xl cursor-pointer">
             Retry Loading
           </button>
         </div>
@@ -348,7 +350,7 @@ export const DriverDashboard = () => {
                     {driverProfile?.driverId || authenticatedDriverId}
                   </span>
                   <span className="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 font-bold text-[11px] rounded-md border border-emerald-500/30 flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                     <span>Verified Driver</span>
                   </span>
                 </div>
@@ -370,28 +372,24 @@ export const DriverDashboard = () => {
               </div>
             </div>
 
-            {/* Assigned Vehicle Details */}
+            {/* Vehicle Details Sub-Card */}
             <div className="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 w-full md:w-auto min-w-[240px] relative z-10 space-y-1">
-              <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">ASSIGNED VEHICLE</p>
+              <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">VEHICLE DETAILS</p>
               {driverProfile?.assignedVehicleNumber ? (
                 <div>
                   <p className="font-mono font-black text-cyan-300 text-base">{driverProfile.assignedVehicleNumber}</p>
-                  <p className="text-[11px] text-slate-400 font-semibold">{driverProfile.vehicleType || 'Commercial Lorry'}</p>
+                  <p className="text-[11px] text-slate-400 font-semibold">{driverProfile.vehicleType || 'Commercial Lorry Truck'}</p>
+                  <p className="text-[10px] text-emerald-400 font-bold mt-1">Status: Active Commercial Fleet</p>
                 </div>
               ) : (
                 <div className="text-amber-400 font-bold text-xs py-1">
-                  ⚠️ No Vehicle Assigned
+                  ⚠️ NO VEHICLE ASSIGNED
                 </div>
-              )}
-              {driverProfile?.licenseNumber && (
-                <p className="text-[10px] text-slate-500 font-mono mt-1 pt-1 border-t border-slate-900">
-                  DL: {driverProfile.licenseNumber}
-                </p>
               )}
             </div>
           </div>
 
-          {/* 3. DASHBOARD STATISTICS CARDS */}
+          {/* 3. FLEET DASHBOARD STATISTICS CARDS */}
           <div className="space-y-3">
             <h3 className="font-extrabold text-base text-white flex items-center gap-2">
               <Award className="w-5 h-5 text-cyan-400" />
@@ -458,12 +456,12 @@ export const DriverDashboard = () => {
                   </div>
                 </div>
 
-                {/* Ride Acceptance Card if DRIVER_ASSIGNED */}
+                {/* Ride Acceptance Banner */}
                 {(currentAssignedOrder.transportRequestStatus === 'DRIVER_ASSIGNED' || currentAssignedOrder.status === 'DRIVER_ASSIGNED') && (
                   <div className="bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-950 p-4 rounded-2xl border border-emerald-500/50 shadow-xl space-y-3">
                     <div className="flex items-center gap-2 text-emerald-400">
                       <Sparkles className="w-5 h-5 animate-spin" />
-                      <span className="font-extrabold text-sm uppercase">NEW ASSIGNED DISPATCH</span>
+                      <span className="font-extrabold text-sm uppercase">NEW ASSIGNED RIDE DISPATCH</span>
                     </div>
                     <p className="text-xs text-slate-300">
                       You have been assigned a new scrap transportation pickup. Accept ride to enable live route GPS navigation.
@@ -479,7 +477,7 @@ export const DriverDashboard = () => {
                   </div>
                 )}
 
-                {/* Pickup & Destination Address Details */}
+                {/* Seller & Buyer Location Details */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                   <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
                     <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
@@ -500,10 +498,10 @@ export const DriverDashboard = () => {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
+                {/* Trip Workflow Action Buttons */}
                 <div className="pt-2 space-y-3">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">ADVANCE TRIP STATUS</p>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">ADVANCE TRIP WORKFLOW STATUS</p>
                     <button
                       type="button"
                       onClick={() => setSelectedOrderDetail(currentAssignedOrder)}
@@ -529,19 +527,19 @@ export const DriverDashboard = () => {
                   </div>
                 </div>
 
-                {/* OpenStreetMap Live GPS Navigation Map */}
+                {/* Live GPS Navigation Map */}
                 <div className="pt-2">
                   <p className="text-xs font-bold text-slate-400 uppercase mb-2">LIVE ROUTE GPS NAVIGATION</p>
                   <MapView markers={mapMarkers} height="320px" />
                 </div>
               </div>
             ) : (
-              /* CLEAN NO ACTIVE ORDER STATE (Never shows completed order!) */
+              /* CLEAN NO ACTIVE ORDER STATE (Never shows old completed order!) */
               <div className="bg-slate-900/90 rounded-3xl p-10 text-center text-slate-400 border border-slate-800 shadow-2xl space-y-3 backdrop-blur-xl">
                 <Truck className="w-12 h-12 text-cyan-400 mx-auto" />
                 <h4 className="font-extrabold text-white text-base">NO ACTIVE ORDER</h4>
                 <p className="text-xs text-slate-400 max-w-md mx-auto">
-                  You currently have no pickup assigned. Your previous completed orders are available in Order History below.
+                  You currently have no pickup or delivery assigned. Your previous orders are available in Order History below.
                 </p>
               </div>
             )}

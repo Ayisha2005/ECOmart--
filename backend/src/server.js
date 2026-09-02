@@ -396,12 +396,15 @@ apiRouter.get('/driver/current-trip', async (req, res, next) => {
     const driver = await getAuthenticatedDriver(req);
     const orders = await all('order');
 
-    const activeTrip = orders.find(o => {
+    const matchingActiveOrders = orders.filter(o => {
       const isMatch = (o.driverId && (o.driverId === driver.driverId || o.driverId === driver.id)) ||
         (o.vehicleNumber && driver.assignedVehicleNumber && o.vehicleNumber.replace(/\s+/g, '').toLowerCase() === driver.assignedVehicleNumber.replace(/\s+/g, '').toLowerCase());
       const isNotCompleted = !['COMPLETED', 'DELIVERED', 'Completed', 'CANCELLED', 'REJECTED'].includes(o.transportRequestStatus || o.status);
       return isMatch && isNotCompleted;
     });
+
+    // Pick the NEWEST non-completed active assignment
+    const activeTrip = matchingActiveOrders.length > 0 ? matchingActiveOrders[matchingActiveOrders.length - 1] : null;
 
     res.json({ success: true, activeTrip: activeTrip || null });
   } catch (err) {

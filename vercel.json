@@ -1,17 +1,14 @@
 {
   "buildCommand": "cd Frontend && npm install && npm run build",
   "outputDirectory": "Frontend/dist",
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "https://ecomart-backend-api.onrender.com/api/$1"
+      "source": "/api/:path*",
+      "destination": "https://ecomart-backend-api.onrender.com/api/:path*"
     },
     {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/.*",
-      "dest": "/index.html"
+      "source": "/((?!assets/|favicon.svg|.*\\..*).*)",
+      "destination": "/index.html"
     }
   ]
 }

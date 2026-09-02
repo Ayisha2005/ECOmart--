@@ -514,6 +514,8 @@ apiRouter.post('/products', verifyToken, authorizeRoles('SELLER', 'ADMIN'), vali
   try {
     const product = await insert('product', {
       id: id('PROD'),
+      status: 'PENDING_APPROVAL',
+      approvalStatus: 'PENDING_APPROVAL',
       ...req.body,
       sellerId: req.body.sellerId || req.user.id,
       createdAt: new Date().toISOString().slice(0, 10)

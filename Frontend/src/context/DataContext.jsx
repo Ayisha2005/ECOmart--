@@ -186,6 +186,8 @@ export const DataProvider = ({ children }) => {
       images: newProdData.images?.length ? newProdData.images : ["https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=600&q=80"],
       condition: newProdData.condition || "Inspected Scrap",
       availability: "Immediate",
+      status: "PENDING_APPROVAL",
+      approvalStatus: "PENDING_APPROVAL",
       co2SavedKg: Math.round(Number(newProdData.weightKg) * 1.5),
       createdAt: new Date().toISOString().split('T')[0]
     };

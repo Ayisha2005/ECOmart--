@@ -63,7 +63,7 @@ export const AdminListings = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredProducts.map((prod) => {
-                    const status = prod.status || prod.approvalStatus || 'APPROVED';
+                    const status = prod.approvalStatus || prod.status || 'PENDING_APPROVAL';
                     const isApproved = status === 'APPROVED';
                     const isRejected = status === 'REJECTED';
 

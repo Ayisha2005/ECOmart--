@@ -161,6 +161,16 @@ export const apiService = {
   logFleetEvent: (eventData) => fetchAPI('/fleet/logs', {
     method: 'POST',
     body: JSON.stringify(eventData)
+  }),
+
+  // Dynamic Driver & Fleet Module API Methods
+  getDriverProfile: (driverId = '') => fetchAPI(`/driver/profile${driverId ? `?driverId=${driverId}` : ''}`),
+  getDriverCurrentTrip: (driverId = '') => fetchAPI(`/driver/current-trip${driverId ? `?driverId=${driverId}` : ''}`),
+  getDriverTripHistory: (driverId = '', search = '', status = '') => fetchAPI(`/driver/trip-history?driverId=${driverId}&search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}`),
+  getDriverMetrics: (driverId = '') => fetchAPI(`/driver/metrics${driverId ? `?driverId=${driverId}` : ''}`),
+  updateDriverTripStatus: (orderId, status) => fetchAPI('/driver/trip-status', {
+    method: 'PUT',
+    body: JSON.stringify({ orderId, status })
   })
 };
 

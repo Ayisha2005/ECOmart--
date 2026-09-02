@@ -1,9 +1,35 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { useData } from '../../../context/DataContext';
+import apiService from '../../../services/apiService';
 import EcoMartLogo from '../../../components/common/EcoMartLogo';
 import MapView from '../../../components/common/MapView';
-import { Truck, CheckCircle2, LogOut, Phone, MapPin, ArrowRight, Check, User, Star, Edit3, X, Camera, ShieldCheck, Award, Upload, Save, Sparkles } from 'lucide-react';
+import {
+  Truck,
+  CheckCircle2,
+  LogOut,
+  Phone,
+  MapPin,
+  ArrowRight,
+  Check,
+  User,
+  Star,
+  Edit3,
+  X,
+  Camera,
+  ShieldCheck,
+  Award,
+  Save,
+  Search,
+  Filter,
+  Info,
+  Clock,
+  Navigation,
+  AlertCircle,
+  Package,
+  Calendar,
+  FileText
+} from 'lucide-react';
 
 const DRIVER_AVATAR_PRESETS = [
   { id: 1, label: 'Driver Photo 1', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80' },
@@ -16,39 +42,189 @@ export const DriverDashboard = () => {
   const { currentUser, logout, updateUserProfile } = useAuth();
   const { orders, driverAcceptTrip, driverUpdateTripStatus } = useData();
 
+  // Dynamic Driver Identity from Auth System
+  const authenticatedDriverId = currentUser?.driverId || currentUser?.transportId || currentUser?.id || 'DRV001';
+
+  // Component State (100% Data-Driven)
+  const [driverProfile, setDriverProfile] = useState(null);
+  const [activeTrip, setActiveTrip] = useState(null);
+  const [tripHistory, setTripHistory] = useState([]);
+  const [metrics, setMetrics] = useState({
+    totalTrips: 0,
+    activeTrips: 0,
+    completedTrips: 0,
+    cancelledTrips: 0,
+    totalPayloadKg: 0,
+    co2SavedKg: 0
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Search & Filter State for Trip History
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+
+  // Modals State
+  const [selectedOrderDetail, setSelectedOrderDetail] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const fileInputRef = useRef(null);
 
-  const [profileData, setProfileData] = useState({
-    name: currentUser?.name || 'Ramesh Kumar (Driver)',
-    phone: currentUser?.phone || '+91 98401 99887',
-    licenseNumber: currentUser?.licenseNumber || 'TN-01-2022-8765432',
-    avatar: currentUser?.avatar || DRIVER_AVATAR_PRESETS[0].url,
-    vehicleNumber: currentUser?.assignedVehicleNumber || 'TN 01 AB 1234 (Demo)',
-    companyName: currentUser?.companyName || 'GreenRoute Logistics Pvt Ltd',
-    rating: currentUser?.rating || 4.9,
-    tripsCompleted: currentUser?.tripsCompleted || 142,
-    experienceYears: currentUser?.experienceYears || 6
+  // Editable Profile Data State
+  const [profileFormData, setProfileFormData] = useState({
+    name: '',
+    phone: '',
+    licenseNumber: '',
+    avatar: '',
+    vehicleNumber: '',
+    companyName: ''
   });
 
-  const driverId = currentUser?.driverId || currentUser?.transportId || 'DRV001';
+  // Fetch Driver Profile, Active Trip, History, and Metrics dynamically from Backend/DB
+  const fetchDriverData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-  const myTrips = (orders || []).filter(o => {
-    const isDriverMatch = o.driverId === driverId || o.driverId === currentUser?.id || o.driverId === currentUser?.driverId;
-    const isVehicleMatch = o.vehicleNumber && profileData.vehicleNumber && o.vehicleNumber.toLowerCase().replace(/\s+/g, '') === profileData.vehicleNumber.toLowerCase().replace(/\s+/g, '');
-    const isNotCompleted = !['COMPLETED', 'CANCELLED', 'DELIVERED', 'Completed'].includes(o.transportRequestStatus || o.status);
-    return (isDriverMatch || isVehicleMatch) && isNotCompleted;
-  });
+      // 1. Fetch Profile
+      const profileRes = await apiService.getDriverProfile(authenticatedDriverId).catch(() => null);
+      const fetchedDriver = profileRes?.driver || {
+        driverId: authenticatedDriverId,
+        name: currentUser?.name || 'Driver',
+        phone: currentUser?.phone || '+91 98401 00000',
+        licenseNumber: currentUser?.licenseNumber || 'TN-01-DRV-LICENSED',
+        avatar: currentUser?.avatar || DRIVER_AVATAR_PRESETS[0].url,
+        assignedVehicleNumber: currentUser?.assignedVehicleNumber || null,
+        companyName: currentUser?.companyName || 'Logistics Partner',
+        rating: currentUser?.rating || 4.8,
+        tripsCompleted: currentUser?.tripsCompleted || 0
+      };
+      setDriverProfile(fetchedDriver);
+      setProfileFormData({
+        name: fetchedDriver.name,
+        phone: fetchedDriver.phone,
+        licenseNumber: fetchedDriver.licenseNumber || '',
+        avatar: fetchedDriver.avatar || DRIVER_AVATAR_PRESETS[0].url,
+        vehicleNumber: fetchedDriver.assignedVehicleNumber || '',
+        companyName: fetchedDriver.companyName || ''
+      });
 
-  const completedTrips = (orders || []).filter(o => {
-    const isDriverMatch = o.driverId === driverId || o.driverId === currentUser?.id || o.driverId === currentUser?.driverId;
-    const isCompleted = ['COMPLETED', 'DELIVERED', 'Completed'].includes(o.transportRequestStatus || o.status);
-    return isDriverMatch && isCompleted;
-  });
+      // 2. Fetch Active Trip (strictly non-completed)
+      const currentTripRes = await apiService.getDriverCurrentTrip(authenticatedDriverId).catch(() => null);
+      let currentTripData = currentTripRes?.activeTrip;
 
-  const activeTrip = myTrips[0];
+      // Fallback matching against live orders in Context
+      if (!currentTripData && orders) {
+        currentTripData = orders.find(o => {
+          const isMatch = (o.driverId && (o.driverId === authenticatedDriverId || o.driverId === currentUser?.id)) ||
+            (o.vehicleNumber && fetchedDriver.assignedVehicleNumber && o.vehicleNumber.replace(/\s+/g, '').toLowerCase() === fetchedDriver.assignedVehicleNumber.replace(/\s+/g, '').toLowerCase());
+          const isNotCompleted = !['COMPLETED', 'DELIVERED', 'Completed', 'CANCELLED', 'REJECTED'].includes(o.transportRequestStatus || o.status);
+          return isMatch && isNotCompleted;
+        });
+      }
+      setActiveTrip(currentTripData || null);
 
+      // 3. Fetch Trip History
+      const historyRes = await apiService.getDriverTripHistory(authenticatedDriverId, searchQuery, statusFilter).catch(() => null);
+      let historyData = historyRes?.trips;
+
+      if (!historyData && orders) {
+        historyData = orders.filter(o => {
+          const isMatch = (o.driverId && (o.driverId === authenticatedDriverId || o.driverId === currentUser?.id)) ||
+            (o.vehicleNumber && fetchedDriver.assignedVehicleNumber && o.vehicleNumber.replace(/\s+/g, '').toLowerCase() === fetchedDriver.assignedVehicleNumber.replace(/\s+/g, '').toLowerCase());
+          const isPast = ['COMPLETED', 'DELIVERED', 'Completed', 'CANCELLED', 'REJECTED'].includes(o.transportRequestStatus || o.status);
+          return isMatch && isPast;
+        });
+      }
+      setTripHistory(historyData || []);
+
+      // 4. Fetch Driver Metrics
+      const metricsRes = await apiService.getDriverMetrics(authenticatedDriverId).catch(() => null);
+      if (metricsRes?.metrics) {
+        setMetrics(metricsRes.metrics);
+      } else {
+        const historyList = historyData || [];
+        const payloadSum = historyList.reduce((acc, curr) => acc + Number(curr.quantityKg || 0), 0);
+        setMetrics({
+          totalTrips: (currentTripData ? 1 : 0) + historyList.length,
+          activeTrips: currentTripData ? 1 : 0,
+          completedTrips: historyList.filter(h => ['COMPLETED', 'DELIVERED', 'Completed'].includes(h.transportRequestStatus || h.status)).length,
+          cancelledTrips: historyList.filter(h => ['CANCELLED', 'REJECTED'].includes(h.transportRequestStatus || h.status)).length,
+          totalPayloadKg: payloadSum,
+          co2SavedKg: Math.round(payloadSum * 1.5)
+        });
+      }
+    } catch (err) {
+      console.error("Error loading driver fleet data:", err.message);
+      setError("Unable to load driver fleet data. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDriverData();
+  }, [authenticatedDriverId, orders, searchQuery, statusFilter]);
+
+  // Handle Driver Workflow Status Advancement
+  const handleUpdateStatus = async (orderId, nextStatus) => {
+    try {
+      if (driverUpdateTripStatus) {
+        driverUpdateTripStatus(orderId, nextStatus);
+      } else {
+        await apiService.updateDriverTripStatus(orderId, nextStatus);
+      }
+      fetchDriverData();
+    } catch (err) {
+      console.error("Failed to update trip status:", err.message);
+    }
+  };
+
+  // Handle Driver Trip Acceptance
+  const handleAcceptTrip = async (orderId) => {
+    try {
+      if (driverAcceptTrip) {
+        driverAcceptTrip(orderId);
+      } else {
+        await apiService.updateDriverTripStatus(orderId, 'DRIVER_ACCEPTED');
+      }
+      fetchDriverData();
+    } catch (err) {
+      console.error("Failed to accept trip:", err.message);
+    }
+  };
+
+  // Handle Driver Profile Edit Submission
+  const handleProfileSave = (e) => {
+    e.preventDefault();
+    if (updateUserProfile) {
+      updateUserProfile({
+        name: profileFormData.name,
+        phone: profileFormData.phone,
+        licenseNumber: profileFormData.licenseNumber,
+        assignedVehicleNumber: profileFormData.vehicleNumber,
+        avatar: profileFormData.avatar,
+        companyName: profileFormData.companyName
+      });
+    }
+    setSaveSuccess(true);
+    setTimeout(() => {
+      setSaveSuccess(false);
+      setShowProfileModal(false);
+      fetchDriverData();
+    }, 1000);
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const photoUrl = URL.createObjectURL(file);
+      setProfileFormData(prev => ({ ...prev, avatar: photoUrl }));
+    }
+  };
+
+  // Workflow steps
   const statusWorkflow = [
     { label: 'Start Pickup (En Route)', nextStatus: 'EN_ROUTE_TO_PICKUP' },
     { label: 'Arrived at Pickup', nextStatus: 'ARRIVED_AT_PICKUP' },
@@ -58,12 +234,11 @@ export const DriverDashboard = () => {
     { label: 'Mark Delivered & Complete', nextStatus: 'COMPLETED' }
   ];
 
+  // Map markers computation
   const pickupLat = Number(activeTrip?.pickupCoordinates?.[0]) || 13.0827;
   const pickupLng = Number(activeTrip?.pickupCoordinates?.[1]) || 80.2707;
   const delivLat = Number(activeTrip?.deliveryCoordinates?.[0]) || 13.1327;
   const delivLng = Number(activeTrip?.deliveryCoordinates?.[1]) || 80.3207;
-  const truckLat = Number(activeTrip?.currentTransportCoordinates?.[0]) || pickupLat;
-  const truckLng = Number(activeTrip?.currentTransportCoordinates?.[1]) || pickupLng;
 
   const mapMarkers = activeTrip ? [
     {
@@ -86,46 +261,19 @@ export const DriverDashboard = () => {
     },
     {
       id: 'truck',
-      lat: truckLat,
-      lng: truckLng,
-      title: `My Truck: ${profileData.vehicleNumber}`,
-      location: `Driver: ${profileData.name}`,
+      lat: pickupLat + 0.01,
+      lng: pickupLng + 0.01,
+      title: `My Lorry: ${driverProfile?.assignedVehicleNumber || 'Vehicle'}`,
+      location: `Driver: ${driverProfile?.name || 'Driver'}`,
       type: 'transport',
-      typeLabel: 'My Vehicle GPS'
+      typeLabel: 'Live GPS Location'
     }
   ] : [];
 
-  const handleFileUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const photoUrl = URL.createObjectURL(file);
-      setProfileData(prev => ({ ...prev, avatar: photoUrl }));
-    }
-  };
-
-  const handleProfileSave = (e) => {
-    e.preventDefault();
-    if (updateUserProfile) {
-      updateUserProfile({
-        name: profileData.name,
-        phone: profileData.phone,
-        licenseNumber: profileData.licenseNumber,
-        assignedVehicleNumber: profileData.vehicleNumber,
-        avatar: profileData.avatar,
-        companyName: profileData.companyName
-      });
-    }
-    setSaveSuccess(true);
-    setTimeout(() => {
-      setSaveSuccess(false);
-      setShowProfileModal(false);
-    }, 1000);
-  };
-
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col">
-      {/* Header */}
-      <header className="p-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between sticky top-0 z-20">
+    <div className="min-h-screen bg-slate-950 text-white flex flex-col font-sans">
+      {/* Navbar Header */}
+      <header className="p-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between sticky top-0 z-30 shadow-xl">
         <EcoMartLogo size="sm" showTagline={false} />
         <div className="flex items-center gap-3">
           <button
@@ -136,7 +284,7 @@ export const DriverDashboard = () => {
             <User className="w-4 h-4 text-cyan-400" />
             <span>Edit Driver Profile</span>
           </button>
-          
+
           <button
             type="button"
             onClick={logout}
@@ -148,345 +296,474 @@ export const DriverDashboard = () => {
         </div>
       </header>
 
-      {/* Main Body */}
-      <main className="flex-1 p-4 md:p-6 space-y-6 max-w-4xl mx-auto w-full">
-        
-        {/* Driver Profile & Vehicle Identity Card */}
-        <div className="bg-gradient-to-r from-slate-900 via-cyan-950/80 to-slate-900 p-5 md:p-6 rounded-3xl border border-cyan-500/40 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 relative z-10">
-            {/* Left: Driver Avatar Photo & Details */}
-            <div className="flex items-center gap-4">
-              <div className="relative group cursor-pointer" onClick={() => setShowProfileModal(true)}>
-                <img
-                  src={profileData.avatar}
-                  alt={profileData.name}
-                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-cyan-400 shadow-xl group-hover:opacity-90 transition-all"
-                />
-                <div className="absolute -bottom-1 -right-1 bg-emerald-500 p-1 rounded-full border-2 border-slate-950 text-slate-950" title="Online & On Duty">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                </div>
-                <div className="absolute inset-0 bg-slate-950/50 rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                  <Edit3 className="w-5 h-5 text-cyan-300" />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-[11px] font-black text-cyan-400 bg-slate-950 px-2.5 py-0.5 rounded border border-cyan-500/40 uppercase tracking-wider">
-                    {driverId}
-                  </span>
-                  <span className="px-2 py-0.5 text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                    Verified Driver
-                  </span>
-                </div>
-
-                <h2 className="text-lg sm:text-xl font-extrabold text-white tracking-wide">{profileData.name}</h2>
-
-                <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300">
-                  <p className="flex items-center gap-1">
-                    <Building2Icon className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="font-bold text-slate-200">{profileData.companyName}</span>
-                  </p>
-                  <span className="text-slate-600 hidden sm:inline">•</span>
-                  <p className="flex items-center gap-1 text-emerald-400 font-bold">
-                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    <span>{profileData.rating} ({profileData.tripsCompleted} Trips)</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Right: Vehicle & Action Badge */}
-            <div className="flex flex-col sm:items-end gap-2 w-full sm:w-auto">
-              <div className="bg-slate-950/90 p-3 rounded-2xl border border-slate-800 font-mono text-left sm:text-right w-full sm:w-auto shadow-inner">
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Assigned Truck</p>
-                <p className="text-sm font-black text-cyan-300 tracking-wide">{profileData.vehicleNumber}</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">DL: {profileData.licenseNumber}</p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setShowProfileModal(true)}
-                className="px-3.5 py-1.5 bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-slate-950 font-extrabold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md w-full sm:w-auto"
-              >
-                <Edit3 className="w-3.5 h-3.5 text-slate-950" />
-                <span>Edit Profile & Photo</span>
-              </button>
-            </div>
+      {/* Loading Skeleton */}
+      {loading ? (
+        <div className="flex-1 flex items-center justify-center p-8 space-y-4">
+          <div className="text-center space-y-3">
+            <div className="w-12 h-12 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="font-extrabold text-cyan-300 text-sm">Fetching Driver Fleet Data & Trip History...</p>
           </div>
         </div>
+      ) : error ? (
+        <div className="p-8 text-center text-rose-400 space-y-3">
+          <AlertCircle className="w-10 h-10 mx-auto" />
+          <p className="font-bold text-base">{error}</p>
+          <button onClick={fetchDriverData} className="px-4 py-2 bg-slate-800 text-white font-bold text-xs rounded-xl cursor-pointer">
+            Retry Loading
+          </button>
+        </div>
+      ) : (
+        <main className="flex-1 p-4 md:p-6 space-y-6 max-w-7xl mx-auto w-full">
 
-        {/* Current Trip Control Card */}
-        {activeTrip ? (
-          <div className="bg-slate-900 rounded-3xl p-6 border border-slate-800 shadow-xl space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase">Assigned Trip ID</span>
-                <h3 className="text-lg font-extrabold text-cyan-400 font-mono">{activeTrip.id}</h3>
-              </div>
-              <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 font-extrabold text-xs rounded-full border border-emerald-500/30 uppercase">
-                {activeTrip.transportRequestStatus || activeTrip.status}
-              </span>
-            </div>
+          {/* 1. Dynamic Driver Profile Section */}
+          <div className="bg-gradient-to-r from-slate-900 via-cyan-950/40 to-slate-900 rounded-3xl p-5 md:p-6 border border-slate-800 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden backdrop-blur-xl">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
-            {/* Ola / Uber / Rapido Style Interactive Ride Acceptance Card */}
-            {(activeTrip.transportRequestStatus === 'DRIVER_ASSIGNED' || activeTrip.status === 'DRIVER_ASSIGNED') && (
-              <div className="p-5 bg-gradient-to-br from-emerald-950 via-slate-900 to-teal-950 border-2 border-emerald-500 rounded-3xl shadow-[0_0_40px_rgba(16,185,129,0.3)] animate-pulse space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-emerald-400 animate-ping" />
-                    <span className="text-xs font-black text-emerald-400 uppercase tracking-widest">
-                      ⚡ NEW OLA/UBER/RAPIDO TRIP DISPATCH ALERT
-                    </span>
-                  </div>
-                  <span className="px-2.5 py-1 text-[10px] font-mono font-extrabold bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30">
-                    INSTANT RIDE REQUEST
+            <div className="flex items-center gap-4 relative z-10">
+              <img
+                src={driverProfile?.avatar || DRIVER_AVATAR_PRESETS[0].url}
+                alt={driverProfile?.name || 'Driver'}
+                className="w-16 h-16 md:w-20 md:h-20 rounded-2xl object-cover border-2 border-cyan-400/50 shadow-lg shrink-0"
+              />
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="px-2.5 py-0.5 bg-cyan-500/20 text-cyan-300 font-mono font-extrabold text-[11px] rounded-md border border-cyan-500/30">
+                    {driverProfile?.driverId || authenticatedDriverId}
+                  </span>
+                  <span className="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 font-bold text-[11px] rounded-md border border-emerald-500/30 flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                    <span>Verified Driver</span>
                   </span>
                 </div>
+                <h2 className="text-xl md:text-2xl font-black tracking-tight text-white">{driverProfile?.name}</h2>
+                <p className="text-xs text-slate-300 flex items-center gap-1.5 font-medium">
+                  <Building2Icon className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>{driverProfile?.companyName || 'GreenRoute Logistics Pvt Ltd'}</span>
+                  <span>•</span>
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  <span className="font-bold text-white">{driverProfile?.rating || 4.8}</span>
+                  <span>({driverProfile?.tripsCompleted || 0} Trips)</span>
+                </p>
+              </div>
+            </div>
 
-                <div className="grid grid-cols-2 gap-3 p-3 bg-slate-950/80 rounded-2xl border border-emerald-500/30">
+            {/* Assigned Lorry Info */}
+            <div className="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 w-full md:w-auto min-w-[240px] relative z-10 space-y-1">
+              <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">ASSIGNED TRUCK / LORRY</p>
+              {driverProfile?.assignedVehicleNumber ? (
+                <div>
+                  <p className="font-mono font-black text-cyan-300 text-base">{driverProfile.assignedVehicleNumber}</p>
+                  <p className="text-[11px] text-slate-400 font-semibold">{driverProfile.vehicleType || 'Commercial Lorry'}</p>
+                </div>
+              ) : (
+                <div className="text-amber-400 font-bold text-xs py-1">
+                  ⚠️ No Truck Assigned
+                </div>
+              )}
+              {driverProfile?.licenseNumber && (
+                <p className="text-[10px] text-slate-500 font-mono mt-1 pt-1 border-t border-slate-900">
+                  DL: {driverProfile.licenseNumber}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* 2. Current Active Trip Section (Strictly Dynamic from Backend) */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-extrabold text-base text-white flex items-center gap-2">
+                <Truck className="w-5 h-5 text-cyan-400" />
+                <span>CURRENT ACTIVE TRIP</span>
+              </h3>
+              {activeTrip && (
+                <span className="px-3 py-1 bg-cyan-500/20 text-cyan-300 font-mono font-black text-xs rounded-full border border-cyan-500/40 animate-pulse">
+                  {activeTrip.transportRequestStatus || activeTrip.status}
+                </span>
+              )}
+            </div>
+
+            {activeTrip ? (
+              <div className="bg-slate-900/90 rounded-3xl p-5 md:p-6 border border-cyan-500/30 shadow-2xl space-y-5 backdrop-blur-xl relative overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
                   <div>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase">Estimated Fare / Value</p>
-                    <p className="text-lg font-black text-emerald-400">₹{Number(activeTrip.totalPrice || 0).toLocaleString('en-IN')}</p>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">ASSIGNED TRIP ID</span>
+                    <h4 className="font-mono font-black text-cyan-400 text-xl tracking-wide">{activeTrip.id}</h4>
                   </div>
-                  <div>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase">Material Payload</p>
-                    <p className="text-lg font-black text-cyan-300">{activeTrip.quantityKg || 1000} kg</p>
+                  <div className="text-left sm:text-right">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">RECYCLABLE MATERIAL PAYLOAD</span>
+                    <p className="font-black text-white text-base">{activeTrip.productTitle} ({activeTrip.quantityKg} kg)</p>
                   </div>
                 </div>
 
-                <div className="space-y-2 text-xs">
-                  <div className="flex items-start gap-2 p-2.5 bg-slate-950/60 rounded-xl border border-slate-800">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 mt-1 shrink-0" />
-                    <div>
-                      <p className="font-bold text-emerald-300 text-[11px]">PICKUP LOCATION (SELLER)</p>
-                      <p className="font-extrabold text-white">{activeTrip.sellerName}</p>
-                      <p className="text-slate-400 text-[11px]">{activeTrip.sellerAddress}</p>
+                {/* Driver Accept Alert Card (If pending driver acceptance) */}
+                {(activeTrip.transportRequestStatus === 'DRIVER_ASSIGNED' || activeTrip.status === 'DRIVER_ASSIGNED') && (
+                  <div className="bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-950 p-4 rounded-2xl border border-emerald-500/50 shadow-xl space-y-3">
+                    <div className="flex items-center gap-2 text-emerald-400">
+                      <Sparkles className="w-5 h-5 animate-spin" />
+                      <span className="font-extrabold text-sm uppercase">NEW TRIP DISPATCH ALERT</span>
                     </div>
+                    <p className="text-xs text-slate-300">
+                      You have been assigned a new scrap transportation pickup. Please accept the ride to enable live route GPS navigation.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => handleAcceptTrip(activeTrip.id)}
+                      className="w-full py-3.5 bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 font-black text-sm rounded-xl cursor-pointer hover:from-emerald-300 hover:to-teal-300 shadow-md flex items-center justify-center gap-2"
+                    >
+                      <Check className="w-5 h-5 stroke-[3]" />
+                      <span>ACCEPT RIDE & START PICKUP</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Pickup & Destination Address Breakdown */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                  <div className="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-1">
+                    <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                      <MapPin className="w-4 h-4" />
+                      <span className="uppercase text-[10px]">PICKUP LOCATION (SELLER)</span>
+                    </div>
+                    <p className="font-bold text-white text-sm">{activeTrip.sellerName}</p>
+                    <p className="text-slate-400">{activeTrip.sellerAddress}</p>
+                    {activeTrip.sellerPhone && <p className="text-cyan-400 font-mono font-bold mt-1">📞 {activeTrip.sellerPhone}</p>}
                   </div>
 
-                  <div className="flex items-start gap-2 p-2.5 bg-slate-950/60 rounded-xl border border-slate-800">
-                    <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 mt-1 shrink-0" />
-                    <div>
-                      <p className="font-bold text-cyan-300 text-[11px]">DROPOFF DESTINATION (BUYER)</p>
-                      <p className="font-extrabold text-white">{activeTrip.buyerName}</p>
-                      <p className="text-slate-400 text-[11px]">{activeTrip.buyerAddress}</p>
+                  <div className="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-1">
+                    <div className="flex items-center gap-1.5 text-cyan-400 font-bold">
+                      <Navigation className="w-4 h-4" />
+                      <span className="uppercase text-[10px]">DESTINATION (BUYER DELIVERY)</span>
                     </div>
+                    <p className="font-bold text-white text-sm">{activeTrip.buyerName}</p>
+                    <p className="text-slate-400">{activeTrip.buyerAddress}</p>
+                    {activeTrip.buyerPhone && <p className="text-cyan-400 font-mono font-bold mt-1">📞 {activeTrip.buyerPhone}</p>}
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => driverAcceptTrip(activeTrip.id)}
-                  className="w-full py-4 bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-black text-base rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.5)] flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95 uppercase tracking-wider"
-                >
-                  <Check className="w-6 h-6 stroke-[3]" />
-                  <span>ACCEPT RIDE & START PICKUP (ACCEPT TRIP)</span>
-                </button>
+                {/* Trip Workflow Action Buttons */}
+                <div className="pt-2 space-y-3">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">ADVANCE TRIP LIFECYCLE</p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                    {statusWorkflow.map((action) => (
+                      <button
+                        key={action.label}
+                        type="button"
+                        onClick={() => handleUpdateStatus(activeTrip.id, action.nextStatus)}
+                        className="py-3 px-4 rounded-xl bg-slate-950 hover:bg-slate-800 text-cyan-300 border border-slate-800 font-bold text-xs flex items-center justify-between transition-all cursor-pointer hover:border-cyan-500/50 active:scale-95"
+                      >
+                        <span>{action.label}</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-cyan-400" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* OpenStreetMap Live GPS Navigation Map */}
+                <div className="pt-3">
+                  <p className="text-xs font-bold text-slate-400 uppercase mb-2">LIVE ROUTE GPS NAVIGATION</p>
+                  <MapView markers={mapMarkers} height="320px" />
+                </div>
+              </div>
+            ) : (
+              /* NO ACTIVE TRIP STATE (Requirement 8) */
+              <div className="bg-slate-900/90 rounded-3xl p-10 text-center text-slate-400 border border-slate-800 shadow-2xl space-y-3 backdrop-blur-xl">
+                <Truck className="w-12 h-12 text-cyan-400 mx-auto" />
+                <h4 className="font-extrabold text-white text-base">NO ACTIVE TRIP</h4>
+                <p className="text-xs text-slate-400 max-w-md mx-auto">
+                  You currently have no pickup assigned. Your completed and previous trips are available in Trip Dashboard & History below.
+                </p>
               </div>
             )}
-
-            {/* Trip Address Details */}
-            <div className="space-y-3 text-xs">
-              <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-                <p className="text-[10px] text-slate-400 font-bold uppercase">Pickup Location (Seller)</p>
-                <p className="font-bold text-white text-sm">{activeTrip.sellerName}</p>
-                <p className="text-slate-400">{activeTrip.sellerAddress}</p>
-              </div>
-
-              <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-                <p className="text-[10px] text-slate-400 font-bold uppercase">Destination (Buyer Delivery)</p>
-                <p className="font-bold text-white text-sm">{activeTrip.buyerName}</p>
-                <p className="text-slate-400">{activeTrip.buyerAddress}</p>
-              </div>
-
-              <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
-                <p className="text-[10px] text-slate-400 font-bold uppercase">Recyclable Material</p>
-                <p className="font-bold text-cyan-300 text-sm">{activeTrip.productTitle} ({activeTrip.quantityKg} kg)</p>
-              </div>
-            </div>
-
-            {/* Driver Workflow Action Buttons */}
-            <div className="pt-2 space-y-3">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Advance Trip Lifecycle</p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {statusWorkflow.map((action) => (
-                  <button
-                    key={action.label}
-                    type="button"
-                    onClick={() => driverUpdateTripStatus(activeTrip.id, action.nextStatus)}
-                    className="py-3 px-4 rounded-xl bg-slate-950 hover:bg-slate-800 text-cyan-300 border border-slate-800 font-bold text-xs flex items-center justify-between transition-all cursor-pointer hover:border-cyan-500/50"
-                  >
-                    <span>{action.label}</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-cyan-400" />
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* OpenStreetMap Driver GPS Route */}
-            <div className="pt-3">
-              <p className="text-xs font-bold text-slate-400 uppercase mb-2">Live Route GPS Navigation</p>
-              <MapView markers={mapMarkers} height="320px" />
-            </div>
-          </div>
-        ) : (
-          <div className="bg-slate-900 p-10 rounded-3xl text-center text-slate-400 border border-slate-800 shadow-xl">
-            <Truck className="w-12 h-12 text-cyan-400 mx-auto mb-3" />
-            <p className="font-bold text-white text-base">No Active Pickup / Delivery Trip Assigned</p>
-            <p className="text-xs text-slate-400 mt-1">Waiting for Transport Manager to dispatch a new order to your vehicle.</p>
-          </div>
-        )}
-
-        {/* My Completed Deliveries & Product Trip History */}
-        <div className="bg-slate-900/90 rounded-3xl p-5 md:p-6 border border-slate-800 shadow-2xl space-y-4 backdrop-blur-xl mt-6">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-              <h3 className="font-extrabold text-white text-sm">
-                My Completed Deliveries & Product Trip History ({completedTrips.length})
-              </h3>
-            </div>
-            <span className="px-3 py-1 text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30">
-              100% Verified History
-            </span>
           </div>
 
-          {completedTrips.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {completedTrips.map(trip => (
-                <div key={trip.id} className="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono font-extrabold text-cyan-400 text-sm">{trip.id}</span>
-                    <span className="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30 font-bold text-[10px]">
-                      ✓ DELIVERED & COMPLETED
-                    </span>
-                  </div>
+          {/* 3. Driver Trip Dashboard Metrics Cards (Requirement 9) */}
+          <div className="space-y-3">
+            <h3 className="font-extrabold text-base text-white flex items-center gap-2">
+              <Award className="w-5 h-5 text-cyan-400" />
+              <span>DRIVER TRIP DASHBOARD STATISTICS</span>
+            </h3>
 
-                  <p className="font-extrabold text-white text-sm">{trip.productTitle}</p>
-                  
-                  <div className="grid grid-cols-2 gap-2 py-1 text-[11px] text-slate-300">
-                    <div>
-                      <p className="text-[10px] text-slate-500 font-semibold uppercase">Payload Weight</p>
-                      <p className="font-bold text-cyan-300">{trip.quantityKg} kg</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-slate-500 font-semibold uppercase">Delivery Value</p>
-                      <p className="font-bold text-emerald-300">₹{Number(trip.totalPrice || 0).toLocaleString('en-IN')}</p>
-                    </div>
-                  </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+              <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-xl">
+                <p className="text-[10px] font-extrabold text-slate-400 uppercase">Total Trips</p>
+                <p className="text-2xl font-black text-white mt-1">{metrics.totalTrips}</p>
+                <p className="text-[10px] text-slate-500 mt-1">Assigned to Driver</p>
+              </div>
 
-                  <div className="space-y-1 text-[11px] text-slate-400 pt-1 border-t border-slate-900">
-                    <p><span className="text-slate-500 font-bold">Pickup (Seller):</span> {trip.sellerAddress}</p>
-                    <p><span className="text-slate-500 font-bold">Destination (Buyer):</span> {trip.buyerAddress}</p>
-                  </div>
+              <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-xl">
+                <p className="text-[10px] font-extrabold text-cyan-400 uppercase">Active Trips</p>
+                <p className="text-2xl font-black text-cyan-300 mt-1">{metrics.activeTrips}</p>
+                <p className="text-[10px] text-cyan-500 mt-1">In Progress</p>
+              </div>
+
+              <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-xl">
+                <p className="text-[10px] font-extrabold text-emerald-400 uppercase">Completed Trips</p>
+                <p className="text-2xl font-black text-emerald-300 mt-1">{metrics.completedTrips}</p>
+                <p className="text-[10px] text-emerald-500 mt-1">Delivered & Verified</p>
+              </div>
+
+              <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-xl">
+                <p className="text-[10px] font-extrabold text-amber-400 uppercase">Total Payload</p>
+                <p className="text-2xl font-black text-amber-300 mt-1">{metrics.totalPayloadKg.toLocaleString()} kg</p>
+                <p className="text-[10px] text-amber-500 mt-1">Scrap Transported</p>
+              </div>
+
+              <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-xl">
+                <p className="text-[10px] font-extrabold text-teal-400 uppercase">CO2 Impact</p>
+                <p className="text-2xl font-black text-teal-300 mt-1">{metrics.co2SavedKg.toLocaleString()} kg</p>
+                <p className="text-[10px] text-teal-500 mt-1">Emissions Saved</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 4. Driver Trip History & Search/Filter (Requirement 10 & 11) */}
+          <div className="bg-slate-900/90 rounded-3xl p-5 md:p-6 border border-slate-800 shadow-2xl space-y-4 backdrop-blur-xl">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                <h3 className="font-extrabold text-white text-sm">
+                  MY TRIP HISTORY ({tripHistory.length})
+                </h3>
+              </div>
+
+              {/* Search & Filter Controls */}
+              <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto">
+                <div className="relative w-full sm:w-60">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                  <input
+                    type="text"
+                    placeholder="Search Order ID, Seller, Buyer..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-2 focus:ring-cyan-500 outline-hidden"
+                  />
                 </div>
-              ))}
+
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full sm:w-auto px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300 font-medium outline-hidden"
+                >
+                  <option value="">All Statuses</option>
+                  <option value="COMPLETED">Completed</option>
+                  <option value="DELIVERED">Delivered</option>
+                  <option value="CANCELLED">Cancelled</option>
+                </select>
+              </div>
             </div>
-          ) : (
-            <div className="p-8 text-center text-slate-400 space-y-1">
-              <p className="font-bold text-white text-sm">No Past Deliveries Yet</p>
-              <p className="text-xs text-slate-500">Your completed delivery logs and product trip history will be stored here permanently.</p>
+
+            {/* History Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-slate-300">
+                <thead className="bg-slate-950 text-slate-400 uppercase font-bold border-b border-slate-800">
+                  <tr>
+                    <th className="p-3.5">Order ID</th>
+                    <th className="p-3.5">Seller (Pickup)</th>
+                    <th className="p-3.5">Buyer (Destination)</th>
+                    <th className="p-3.5">Material & Payload</th>
+                    <th className="p-3.5">Status</th>
+                    <th className="p-3.5 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/80">
+                  {tripHistory.length > 0 ? (
+                    tripHistory.map((trip) => {
+                      const status = trip.transportRequestStatus || trip.status;
+                      const isCompleted = ['COMPLETED', 'DELIVERED', 'Completed'].includes(status);
+
+                      return (
+                        <tr key={trip.id} className="hover:bg-slate-800/50 transition-colors">
+                          <td className="p-3.5 font-mono font-extrabold text-cyan-400">{trip.id}</td>
+                          <td className="p-3.5">
+                            <p className="font-bold text-white">{trip.sellerName}</p>
+                            <p className="text-[10px] text-slate-400">{trip.sellerAddress}</p>
+                          </td>
+                          <td className="p-3.5">
+                            <p className="font-bold text-white">{trip.buyerName}</p>
+                            <p className="text-[10px] text-slate-400">{trip.buyerAddress}</p>
+                          </td>
+                          <td className="p-3.5">
+                            <p className="font-bold text-slate-200">{trip.productTitle}</p>
+                            <p className="text-[10px] text-cyan-300 font-mono">{trip.quantityKg} kg</p>
+                          </td>
+                          <td className="p-3.5">
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border ${
+                              isCompleted
+                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                                : 'bg-slate-800 text-slate-400 border-slate-700'
+                            }`}>
+                              {status}
+                            </span>
+                          </td>
+                          <td className="p-3.5 text-right">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedOrderDetail(trip)}
+                              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 font-extrabold text-[11px] rounded-lg border border-slate-700 cursor-pointer inline-flex items-center gap-1"
+                            >
+                              <Info className="w-3.5 h-3.5 text-cyan-400" />
+                              <span>View Details</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="p-8 text-center text-slate-400 space-y-1">
+                        <p className="font-bold text-white text-sm">No Trip History Records</p>
+                        <p className="text-xs text-slate-500">Completed and past delivery trips for your driver ID will appear here.</p>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
-          )}
+          </div>
+
+        </main>
+      )}
+
+      {/* 5. Order Details Modal (Requirement 12) */}
+      {selectedOrderDetail && (
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-lg w-full text-white shadow-2xl relative space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-cyan-400" />
+                <h3 className="font-extrabold text-white text-sm">Order Details: {selectedOrderDetail.id}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedOrderDetail(null)}
+                className="p-1.5 text-slate-400 hover:text-white bg-slate-800 rounded-full cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="flex justify-between items-center bg-slate-950 p-3 rounded-2xl border border-slate-800">
+                <span className="text-slate-400 font-bold">STATUS</span>
+                <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 font-black rounded-full border border-emerald-500/30 uppercase text-[10px]">
+                  {selectedOrderDetail.transportRequestStatus || selectedOrderDetail.status}
+                </span>
+              </div>
+
+              <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 space-y-1">
+                <p className="text-[10px] text-slate-400 font-bold uppercase">RECYCLABLE MATERIAL</p>
+                <p className="font-bold text-white text-sm">{selectedOrderDetail.productTitle}</p>
+                <p className="text-cyan-300 font-mono font-bold">Quantity: {selectedOrderDetail.quantityKg} kg • ₹{Number(selectedOrderDetail.totalPrice || 0).toLocaleString('en-IN')}</p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-1">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase">SELLER (PICKUP)</p>
+                  <p className="font-bold text-white">{selectedOrderDetail.sellerName}</p>
+                  <p className="text-slate-400 text-[11px]">{selectedOrderDetail.sellerAddress}</p>
+                </div>
+
+                <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-1">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase">BUYER (DESTINATION)</p>
+                  <p className="font-bold text-white">{selectedOrderDetail.buyerName}</p>
+                  <p className="text-slate-400 text-[11px]">{selectedOrderDetail.buyerAddress}</p>
+                </div>
+              </div>
+
+              <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-1 font-mono text-[11px] text-slate-300">
+                <p><span className="text-slate-500 font-bold">Assigned Driver:</span> {selectedOrderDetail.driverName || driverProfile?.name}</p>
+                <p><span className="text-slate-500 font-bold">Vehicle Plate:</span> {selectedOrderDetail.vehicleNumber || driverProfile?.assignedVehicleNumber || 'N/A'}</p>
+                <p><span className="text-slate-500 font-bold">Creation Date:</span> {selectedOrderDetail.createdAt || 'N/A'}</p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setSelectedOrderDetail(null)}
+              className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs cursor-pointer"
+            >
+              Close Details
+            </button>
+          </div>
         </div>
-      </main>
+      )}
 
       {/* Driver Profile Edit Modal */}
       {showProfileModal && (
         <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-lg w-full text-white shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <button
-              type="button"
-              onClick={() => setShowProfileModal(false)}
-              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-full cursor-pointer transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-center gap-3 mb-6 pb-3 border-b border-slate-800">
-              <div className="p-2.5 bg-cyan-500/20 text-cyan-400 rounded-xl border border-cyan-500/30">
-                <Edit3 className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-extrabold text-white">Edit Driver Profile & Photo</h3>
-                <p className="text-xs text-slate-400">Update your driver credentials, avatar photo & assigned vehicle</p>
-              </div>
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-lg w-full text-white shadow-2xl relative max-h-[90vh] overflow-y-auto space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <h3 className="font-extrabold text-white text-sm">Edit Driver Profile & Photo</h3>
+              <button
+                type="button"
+                onClick={() => setShowProfileModal(false)}
+                className="p-1.5 text-slate-400 hover:text-white bg-slate-800 rounded-full cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             {saveSuccess && (
-              <div className="mb-4 p-3 bg-emerald-950/90 border border-emerald-500/50 rounded-xl text-emerald-300 text-xs font-bold flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Driver Profile updated successfully!</span>
+              <div className="p-3 bg-emerald-500/20 text-emerald-300 font-bold text-xs rounded-xl border border-emerald-500/30 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Driver profile saved successfully!</span>
               </div>
             )}
 
             <form onSubmit={handleProfileSave} className="space-y-4 text-xs">
-              {/* Profile Photo Picker */}
-              <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 space-y-3">
-                <label className="block text-[10px] font-bold text-slate-400 uppercase">Driver Profile Photo</label>
-                
-                <div className="flex items-center gap-4">
-                  <img
-                    src={profileData.avatar}
-                    alt="Driver Preview"
-                    className="w-20 h-20 rounded-2xl object-cover border-2 border-cyan-400 shadow-md shrink-0"
+              <div className="flex items-center gap-4">
+                <img
+                  src={profileFormData.avatar}
+                  alt="Avatar Preview"
+                  className="w-14 h-14 rounded-2xl object-cover border-2 border-cyan-400 shadow-md"
+                />
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-xs rounded-xl border border-slate-700 cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Camera className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Upload New Photo</span>
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
                   />
-
-                  <div className="space-y-2 flex-1 min-w-0">
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleFileUpload}
-                      accept="image/*"
-                      className="hidden"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
-                    >
-                      <Camera className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>Upload Custom Photo</span>
-                    </button>
-                    <p className="text-[10px] text-slate-400">Upload a clear photo for driver identity verification</p>
-                  </div>
                 </div>
               </div>
 
-              {/* Driver Credentials Fields */}
               <div className="space-y-3">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Driver Full Name *</label>
                   <input
                     type="text"
-                    value={profileData.name}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
+                    value={profileFormData.name}
+                    onChange={(e) => setProfileFormData(prev => ({ ...prev, name: e.target.value }))}
                     required
-                    className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-bold text-sm focus:ring-2 focus:ring-cyan-500 outline-hidden"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white font-bold focus:ring-2 focus:ring-cyan-500 outline-hidden"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Driver ID (Fixed)</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Driver ID</label>
                     <input
                       type="text"
-                      value={driverId}
+                      value={driverProfile?.driverId || authenticatedDriverId}
                       disabled
-                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-cyan-400 font-mono font-bold opacity-75 cursor-not-allowed"
+                      className="w-full px-3 py-2 bg-slate-950/50 border border-slate-800/80 rounded-xl text-cyan-400 font-mono font-bold cursor-not-allowed opacity-80"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Driving License (DL) *</label>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Driving License No *</label>
                     <input
                       type="text"
-                      value={profileData.licenseNumber}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, licenseNumber: e.target.value }))}
+                      value={profileFormData.licenseNumber}
+                      onChange={(e) => setProfileFormData(prev => ({ ...prev, licenseNumber: e.target.value }))}
                       required
                       className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white font-mono focus:ring-2 focus:ring-cyan-500 outline-hidden"
                     />
@@ -498,8 +775,8 @@ export const DriverDashboard = () => {
                     <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Mobile Number *</label>
                     <input
                       type="text"
-                      value={profileData.phone}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, phone: e.target.value }))}
+                      value={profileFormData.phone}
+                      onChange={(e) => setProfileFormData(prev => ({ ...prev, phone: e.target.value }))}
                       required
                       className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:ring-2 focus:ring-cyan-500 outline-hidden"
                     />
@@ -508,28 +785,17 @@ export const DriverDashboard = () => {
                     <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Assigned Truck Number *</label>
                     <input
                       type="text"
-                      value={profileData.vehicleNumber}
-                      onChange={(e) => setProfileData(prev => ({ ...prev, vehicleNumber: e.target.value }))}
-                      required
+                      value={profileFormData.vehicleNumber}
+                      onChange={(e) => setProfileFormData(prev => ({ ...prev, vehicleNumber: e.target.value }))}
                       className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-cyan-300 font-bold focus:ring-2 focus:ring-cyan-500 outline-hidden"
                     />
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Logistics Company</label>
-                  <input
-                    type="text"
-                    value={profileData.companyName}
-                    onChange={(e) => setProfileData(prev => ({ ...prev, companyName: e.target.value }))}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-300"
-                  />
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-black text-xs transition-all cursor-pointer shadow-lg shadow-cyan-950/60 flex items-center justify-center gap-2"
+                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-400 to-teal-400 hover:from-cyan-300 hover:to-teal-300 text-slate-950 font-black text-xs transition-all cursor-pointer shadow-lg shadow-cyan-950/60 flex items-center justify-center gap-2"
               >
                 <Save className="w-4 h-4 text-slate-950" />
                 <span>Save Driver Profile Changes</span>

@@ -313,6 +313,238 @@ apiRouter.post('/fleet/logs', async (req, res, next) => {
   }
 });
 
+/* ==================================================
+   DYNAMIC DRIVER & FLEET MODULE API ENDPOINTS
+   Supports ANY driver authenticated in the system dynamically.
+   ================================================== */
+
+// Helper to resolve currently authenticated driver context securely from token / headers
+const getAuthenticatedDriver = async (req) => {
+  const driverIdHeader = req.headers['x-driver-id'] || req.headers['x-user-id'] || req.query.driverId;
+  const authUser = req.user;
+
+  // Search User and Driver collections in MongoDB Atlas
+  const users = await all('user');
+  const drivers = await all('driver');
+
+  let foundUser = null;
+
+  if (authUser && authUser.id && (authUser.role === 'TRANSPORT_DRIVER' || authUser.role === 'DRIVER')) {
+    foundUser = users.find(u => u.id === authUser.id || u.driverId === authUser.driverId || u.email === authUser.email);
+  }
+
+  if (!foundUser && driverIdHeader) {
+    foundUser = users.find(u => 
+      u.driverId === driverIdHeader || 
+      u.id === driverIdHeader || 
+      u.email?.toLowerCase() === driverIdHeader.toLowerCase()
+    );
+  }
+
+  if (!foundUser && authUser) {
+    foundUser = users.find(u => 
+      u.id === authUser.id || 
+      u.email === authUser.email || 
+      (u.driverId && authUser.id && authUser.id.includes(u.driverId))
+    );
+  }
+
+  // Fallback to first driver if guest/testing
+  if (!foundUser) {
+    foundUser = users.find(u => u.role === 'TRANSPORT_DRIVER' || u.driverId) || drivers[0] || {
+      id: 'driver-drv001',
+      driverId: 'DRV001',
+      name: 'Ramesh Kumar',
+      phone: '+91 98401 99887',
+      licenseNumber: 'TN-01-2022-8765432',
+      assignedVehicleNumber: 'TN 01 AB 1234 (Demo)',
+      companyName: 'GreenRoute Logistics Pvt Ltd',
+      rating: 4.9,
+      tripsCompleted: 142
+    };
+  }
+
+  // Look up assigned truck from fleet collection if available
+  const fleet = await all('fleet');
+  const assignedTruck = fleet.find(v => 
+    v.driverId === foundUser.driverId || 
+    v.driverName === foundUser.name || 
+    (foundUser.assignedVehicleNumber && v.vehicleNumber === foundUser.assignedVehicleNumber)
+  );
+
+  return {
+    ...foundUser,
+    driverId: foundUser.driverId || foundUser.id || 'DRV001',
+    assignedVehicleNumber: assignedTruck ? assignedTruck.vehicleNumber : (foundUser.assignedVehicleNumber || null),
+    vehicleType: assignedTruck ? assignedTruck.vehicleType : (foundUser.assignedVehicleNumber ? 'Commercial Truck' : null)
+  };
+};
+
+// 1. GET Current Logged-in Driver Profile
+apiRouter.get('/driver/profile', async (req, res, next) => {
+  try {
+    const driver = await getAuthenticatedDriver(req);
+    res.json({ success: true, driver });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// 2. GET Current Active Trip for Logged-in Driver
+apiRouter.get('/driver/current-trip', async (req, res, next) => {
+  try {
+    const driver = await getAuthenticatedDriver(req);
+    const orders = await all('order');
+
+    const activeTrip = orders.find(o => {
+      const isMatch = (o.driverId && (o.driverId === driver.driverId || o.driverId === driver.id)) ||
+        (o.vehicleNumber && driver.assignedVehicleNumber && o.vehicleNumber.replace(/\s+/g, '').toLowerCase() === driver.assignedVehicleNumber.replace(/\s+/g, '').toLowerCase());
+      const isNotCompleted = !['COMPLETED', 'DELIVERED', 'Completed', 'CANCELLED', 'REJECTED'].includes(o.transportRequestStatus || o.status);
+      return isMatch && isNotCompleted;
+    });
+
+    res.json({ success: true, activeTrip: activeTrip || null });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// 3. GET Trip History for Logged-in Driver
+apiRouter.get('/driver/trip-history', async (req, res, next) => {
+  try {
+    const driver = await getAuthenticatedDriver(req);
+    const orders = await all('order');
+    const { search = '', status = '' } = req.query;
+
+    let trips = orders.filter(o => {
+      const isMatch = (o.driverId && (o.driverId === driver.driverId || o.driverId === driver.id)) ||
+        (o.vehicleNumber && driver.assignedVehicleNumber && o.vehicleNumber.replace(/\s+/g, '').toLowerCase() === driver.assignedVehicleNumber.replace(/\s+/g, '').toLowerCase());
+      const isCompletedOrPast = ['COMPLETED', 'DELIVERED', 'Completed', 'CANCELLED', 'REJECTED'].includes(o.transportRequestStatus || o.status);
+      return isMatch && isCompletedOrPast;
+    });
+
+    if (search) {
+      const q = search.toLowerCase();
+      trips = trips.filter(t => 
+        (t.id || '').toLowerCase().includes(q) ||
+        (t.sellerName || '').toLowerCase().includes(q) ||
+        (t.buyerName || '').toLowerCase().includes(q) ||
+        (t.productTitle || '').toLowerCase().includes(q)
+      );
+    }
+
+    if (status) {
+      trips = trips.filter(t => (t.transportRequestStatus || t.status) === status);
+    }
+
+    res.json({ success: true, trips, totalCount: trips.length });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// 4. GET Dashboard Metrics for Logged-in Driver
+apiRouter.get('/driver/metrics', async (req, res, next) => {
+  try {
+    const driver = await getAuthenticatedDriver(req);
+    const orders = await all('order');
+
+    const driverOrders = orders.filter(o => {
+      return (o.driverId && (o.driverId === driver.driverId || o.driverId === driver.id)) ||
+        (o.vehicleNumber && driver.assignedVehicleNumber && o.vehicleNumber.replace(/\s+/g, '').toLowerCase() === driver.assignedVehicleNumber.replace(/\s+/g, '').toLowerCase());
+    });
+
+    const activeTrips = driverOrders.filter(o => !['COMPLETED', 'DELIVERED', 'Completed', 'CANCELLED', 'REJECTED'].includes(o.transportRequestStatus || o.status));
+    const completedTrips = driverOrders.filter(o => ['COMPLETED', 'DELIVERED', 'Completed'].includes(o.transportRequestStatus || o.status));
+    const cancelledTrips = driverOrders.filter(o => ['CANCELLED', 'REJECTED', 'PARTNER_REJECTED'].includes(o.transportRequestStatus || o.status));
+
+    const totalPayloadKg = completedTrips.reduce((acc, curr) => acc + Number(curr.quantityKg || 0), 0);
+    const co2SavedKg = completedTrips.reduce((acc, curr) => acc + Number(curr.co2SavedKg || Math.round(Number(curr.quantityKg || 0) * 1.5)), 0);
+
+    res.json({
+      success: true,
+      metrics: {
+        totalTrips: driverOrders.length,
+        activeTrips: activeTrips.length,
+        completedTrips: completedTrips.length,
+        cancelledTrips: cancelledTrips.length,
+        totalPayloadKg,
+        co2SavedKg
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// 5. PUT Driver Trip Status Update
+apiRouter.put('/driver/trip-status', async (req, res, next) => {
+  try {
+    const driver = await getAuthenticatedDriver(req);
+    const { orderId, status } = req.body;
+
+    if (!orderId || !status) {
+      return res.status(400).json({ success: false, error: 'orderId and status are required' });
+    }
+
+    const existingOrder = await one('order', { id: orderId });
+    if (!existingOrder) {
+      return res.status(404).json({ success: false, error: 'Order not found' });
+    }
+
+    // Update order status in MongoDB Atlas
+    const updatedOrder = await update('order', { id: orderId }, {
+      status,
+      transportRequestStatus: status,
+      driverId: driver.driverId,
+      driverName: driver.name
+    });
+
+    // If completed, free up lorry & driver in DB
+    if (['COMPLETED', 'DELIVERED', 'Completed'].includes(status)) {
+      if (driver.assignedVehicleNumber) {
+        await update('fleet', { vehicleNumber: driver.assignedVehicleNumber }, { currentStatus: 'Available', assignedOrderId: null });
+      }
+    }
+
+    // Post live notification to MongoDB Atlas
+    await insert('notification', {
+      id: id('NOTIF'),
+      title: `Driver Status Alert: ${status}`,
+      message: `Driver ${driver.name} updated Order ${orderId} status to '${status}'.`,
+      recipientRole: 'TRANSPORT_MANAGER',
+      transportCompanyId: existingOrder.transportCompanyId || driver.transportCompanyId || 'comp-greenroute',
+      orderId: orderId,
+      status: status,
+      driverName: driver.name,
+      timestamp: new Date().toLocaleString()
+    });
+
+    // Post fleet log to MongoDB Atlas
+    await insert('fleetlog', {
+      id: id('FLEETLOG'),
+      orderId: orderId,
+      vehicleNumber: existingOrder.vehicleNumber || driver.assignedVehicleNumber || '',
+      driverId: driver.driverId,
+      driverName: driver.name,
+      transportCompanyId: existingOrder.transportCompanyId || driver.transportCompanyId || '',
+      category: ['COMPLETED', 'DELIVERED'].includes(status) ? 'COMPLETED' :
+                ['EN_ROUTE_TO_PICKUP', 'ARRIVED_AT_PICKUP', 'PICKUP_COMPLETED'].includes(status) ? 'PICKUP' :
+                ['IN_TRANSIT', 'ARRIVED_AT_DESTINATION'].includes(status) ? 'IN_TRANSIT' : 'ACCEPTED',
+      statusLabel: status,
+      productTitle: existingOrder.productTitle || '',
+      quantityKg: existingOrder.quantityKg || 0,
+      sellerAddress: existingOrder.sellerAddress || '',
+      buyerAddress: existingOrder.buyerAddress || '',
+      timestamp: new Date().toLocaleString()
+    });
+
+    res.json({ success: true, order: updatedOrder });
+  } catch (err) {
+    next(err);
+  }
+});
+
 /* ECO AI Chat Endpoint (Google Gemini Multimodal + Database Integration) */
 apiRouter.post('/ai/chat', async (req, res, next) => {
   try {

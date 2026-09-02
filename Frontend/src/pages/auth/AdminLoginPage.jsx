@@ -20,16 +20,29 @@ export const AdminLoginPage = () => {
     setErrorMsg('');
 
     const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+    const cleanKey = securityKey.trim().toUpperCase();
+
     if (cleanEmail !== 'ayisha@gmail.com') {
-      setErrorMsg("Access Denied: Admin Portal is strictly restricted to Super Admin AYISHA (ayisha@gmail.com).");
+      setErrorMsg("Access Denied: Admin Portal is strictly restricted to Super Admin AYISHA.");
       return;
     }
 
-    const res = await login('ayisha@gmail.com', password || 'ayisha123', 'ADMIN');
+    if (cleanPassword !== 'ayisha123') {
+      setErrorMsg("Invalid Admin Password! Please enter the correct password.");
+      return;
+    }
+
+    if (cleanKey !== 'AYISHA') {
+      setErrorMsg("Invalid Admin Security Key! Please enter the correct security key.");
+      return;
+    }
+
+    const res = await login('ayisha@gmail.com', 'ayisha123', 'ADMIN');
     if (res && res.success) {
       navigate('/admin/dashboard');
     } else {
-      setErrorMsg(res?.error || "Invalid Admin password or credentials.");
+      setErrorMsg(res?.error || "Invalid Admin credentials.");
     }
   };
 
@@ -57,7 +70,7 @@ export const AdminLoginPage = () => {
         <div className="mb-5 p-3 bg-slate-950/80 border border-slate-800 rounded-2xl flex items-start gap-2.5 text-xs text-slate-300">
           <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
           <p className="leading-relaxed text-[11px]">
-            <span className="font-bold text-amber-400">Super Admin Access:</span> Access strictly restricted to Super Admin AYISHA (ayisha@gmail.com).
+            <span className="font-bold text-amber-400">Super Admin Access:</span> Access strictly restricted to Super Admin AYISHA.
           </p>
         </div>
 

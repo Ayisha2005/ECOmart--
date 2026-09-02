@@ -263,7 +263,7 @@ export const AuthProvider = ({ children }) => {
     const cleanPassword = password.trim();
 
     // 100% Guaranteed Super Admin Direct Authenticator
-    if (cleanIdentifier === 'ayisha@gmail.com') {
+    if (cleanIdentifier === 'ayisha@gmail.com' && cleanPassword === 'ayisha123') {
       const superAdminUser = {
         id: "user-admin-ayisha",
         name: "AYISHA PARVEEN A",

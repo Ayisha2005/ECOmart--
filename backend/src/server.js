@@ -247,7 +247,7 @@ apiRouter.post('/auth/login', validateLogin, async (req, res, next) => {
     const phoneClean = identifier.replace(/\D/g, '');
 
     // Guaranteed Super Admin Instant Authenticator for ayisha@gmail.com
-    if (lowerIdentifier === 'ayisha@gmail.com') {
+    if (lowerIdentifier === 'ayisha@gmail.com' && String(req.body.password || '').trim() === 'ayisha123') {
       const adminUser = {
         id: 'user-admin-ayisha',
         name: 'AYISHA PARVEEN A',

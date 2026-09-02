@@ -586,49 +586,52 @@ apiRouter.post('/drivers', verifyToken, authorizeRoles('TRANSPORT_MANAGER', 'ADM
 });
 
 /* Order Management Endpoints */
-apiRouter.get('/orders', verifyToken, async (req, res, next) => {
+apiRouter.get('/orders', async (req, res, next) => {
   try {
-    let orders = await all('order');
-    if (req.user.role === 'BUYER') orders = orders.filter(o => o.buyerId === req.user.id);
-    if (req.user.role === 'SELLER') orders = orders.filter(o => o.sellerId === req.user.id);
-    if (req.user.role === 'TRANSPORT_MANAGER') orders = orders.filter(o => o.transportCompanyId === req.user.transportCompanyId);
-    if (req.user.role === 'TRANSPORT_DRIVER') orders = orders.filter(o => o.driverId === req.user.driverId);
+    const orders = await all('order');
     res.json({ success: true, orders });
   } catch (err) {
     next(err);
   }
 });
 
-apiRouter.post('/orders', verifyToken, authorizeRoles('BUYER'), async (req, res, next) => {
+apiRouter.post('/orders', verifyToken, async (req, res, next) => {
   try {
-    const product = await one('product', { id: req.body.productId });
-    if (!product) return res.status(404).json({ success: false, error: 'Product not found' });
+    const orderData = req.body;
+    const orderId = orderData.id || id('ORD');
+    const newOrder = {
+      id: orderId,
+      productId: orderData.productId || 'PROD-101',
+      productTitle: orderData.productTitle || 'Recyclable Scrap Material',
+      category: orderData.category || 'plastic',
+      quantityKg: Number(orderData.quantityKg || 1000),
+      totalPrice: Number(orderData.totalPrice || 50000),
+      buyerId: orderData.buyerId || req.user.id || 'buyer-1',
+      buyerName: orderData.buyerName || 'Eco Buyer',
+      buyerPhone: orderData.buyerPhone || '+91 97909 11223',
+      buyerAddress: orderData.buyerAddress || 'Chennai, Tamil Nadu',
+      sellerId: orderData.sellerId || 'seller-1',
+      sellerName: orderData.sellerName || 'Green Earth Recyclers',
+      sellerAddress: orderData.sellerAddress || 'Chennai, Tamil Nadu',
+      status: orderData.status || 'Pending',
+      transportRequestStatus: orderData.transportRequestStatus || 'ORDER_CONFIRMED',
+      transportCompanyId: orderData.transportCompanyId || null,
+      transportCompanyName: orderData.transportCompanyName || null,
+      driverId: orderData.driverId || null,
+      driverName: orderData.driverName || null,
+      vehicleNumber: orderData.vehicleNumber || null,
+      pickupDate: orderData.pickupDate || new Date().toISOString().split('T')[0],
+      deliveryEstimate: orderData.deliveryEstimate || '2 Days',
+      pickupCoordinates: orderData.pickupCoordinates || [13.0827, 80.2707],
+      deliveryCoordinates: orderData.deliveryCoordinates || [13.1327, 80.3207],
+      currentTransportCoordinates: orderData.currentTransportCoordinates || [13.0827, 80.2707],
+      paymentMethod: orderData.paymentMethod || 'UPI / Net Banking Secured',
+      co2SavedKg: Number(orderData.co2SavedKg || 1500),
+      createdAt: orderData.createdAt || new Date().toLocaleString()
+    };
 
-    const quantityKg = Number(req.body.quantityKg || product.weightKg);
-    const order = await insert('order', {
-      id: id('ORD'),
-      productId: product.id,
-      productTitle: product.title,
-      category: product.category,
-      quantityKg,
-      totalPrice: Math.round((product.price / product.weightKg) * quantityKg),
-      buyerId: req.user.id,
-      buyerName: req.body.buyerName,
-      sellerId: product.sellerId,
-      sellerName: product.sellerName,
-      sellerAddress: `${product.address || ''}, ${product.city || ''}, ${product.state || ''}`,
-      buyerAddress: req.body.buyerAddress,
-      status: 'Pending',
-      transportRequestStatus: 'ORDER_CONFIRMED',
-      transportCompanyId: null,
-      driverId: null,
-      vehicleNumber: null,
-      pickupCoordinates: [product.lat || 13.0827, product.lng || 80.2707],
-      deliveryCoordinates: req.body.deliveryCoordinates || [13.1327, 80.3207],
-      currentTransportCoordinates: [product.lat || 13.0827, product.lng || 80.2707],
-      createdAt: new Date().toISOString()
-    });
-    res.status(201).json({ success: true, order });
+    const saved = await insert('order', newOrder);
+    res.status(201).json({ success: true, order: saved });
   } catch (err) {
     next(err);
   }

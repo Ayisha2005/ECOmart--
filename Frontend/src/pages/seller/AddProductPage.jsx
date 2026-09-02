@@ -64,10 +64,13 @@ export const AddProductPage = () => {
         setErrorMsg("File size exceeds 10MB limit. Please upload a smaller photo.");
         return;
       }
-      const imageUrl = URL.createObjectURL(file);
-      setSelectedImage(imageUrl);
-      setImageFileName(file.name);
-      setErrorMsg('');
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result);
+        setImageFileName(file.name);
+        setErrorMsg('');
+      };
+      reader.readAsDataURL(file);
     }
   };
 

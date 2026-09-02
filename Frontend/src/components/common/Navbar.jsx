@@ -207,6 +207,42 @@ export const Navbar = ({ title = "Dashboard" }) => {
           </div>
         </div>
       )}
+
+      {/* Mobile Bottom Quick Navigation Dock (For Smartphone Users) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-slate-950/95 border-t border-slate-800/90 backdrop-blur-xl px-2 py-1.5 flex items-center justify-around text-slate-400 shadow-2xl">
+        {currentMenu.slice(0, 4).map((item) => {
+          const Icon = item.icon;
+          return (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
+                  isActive
+                    ? 'text-emerald-400 font-extrabold scale-105'
+                    : 'hover:text-slate-200'
+                }`
+              }
+            >
+              <Icon className="w-5 h-5 mb-0.5" />
+              <span className="text-[10px] tracking-tight font-bold truncate max-w-[64px] text-center">
+                {item.label.split(' ')[0]}
+              </span>
+            </NavLink>
+          );
+        })}
+
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
+            mobileMenuOpen ? 'text-emerald-400 font-extrabold scale-105' : 'hover:text-slate-200'
+          }`}
+        >
+          <Menu className="w-5 h-5 mb-0.5 text-emerald-400" />
+          <span className="text-[10px] tracking-tight font-bold">More</span>
+        </button>
+      </div>
     </>
   );
 };

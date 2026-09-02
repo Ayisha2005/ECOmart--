@@ -94,10 +94,6 @@ export const TransportLoginPage = () => {
           <p>Return to <Link to="/register" className="text-emerald-400 font-bold hover:underline">Marketplace Registration</Link></p>
         </div>
       </div>
-
-      <div className="w-full max-w-md mt-4">
-        <DemoCredentialsBox />
-      </div>
     </div>
   );
 };

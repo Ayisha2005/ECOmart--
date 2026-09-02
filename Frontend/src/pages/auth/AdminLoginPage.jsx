@@ -68,27 +68,9 @@ export const AdminLoginPage = () => {
 
         {/* Error Alert Box */}
         {errorMsg && (
-          <div className="mb-5 p-3.5 bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs font-bold rounded-2xl text-center space-y-2 animate-shake">
-            <div className="flex items-center justify-center gap-2 text-rose-400">
-              <ShieldAlert className="w-4 h-4" />
-              <span>{errorMsg}</span>
-            </div>
-            
-            {/* Quick Switch Links for Users */}
-            <div className="pt-2 border-t border-rose-500/20 text-[11px] text-slate-300">
-              <span>Switch to your user portal: </span>
-              <div className="flex justify-center gap-3 mt-1 font-bold">
-                <Link to="/seller/login" className="text-emerald-400 hover:underline flex items-center gap-0.5">
-                  <Store className="w-3 h-3" /> Seller
-                </Link>
-                <Link to="/buyer/login" className="text-cyan-400 hover:underline flex items-center gap-0.5">
-                  <ShoppingBag className="w-3 h-3" /> Buyer
-                </Link>
-                <Link to="/transport/login" className="text-indigo-400 hover:underline flex items-center gap-0.5">
-                  <Truck className="w-3 h-3" /> Transport
-                </Link>
-              </div>
-            </div>
+          <div className="mb-5 p-3.5 bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs font-bold rounded-2xl text-center flex items-center justify-center gap-2 animate-shake">
+            <ShieldAlert className="w-4 h-4 shrink-0 text-rose-400" />
+            <span>{errorMsg}</span>
           </div>
         )}
 
@@ -162,10 +144,6 @@ export const AdminLoginPage = () => {
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
-      </div>
-
-      <div className="w-full max-w-md mt-6 relative z-10">
-        <DemoCredentialsBox />
       </div>
     </div>
   );

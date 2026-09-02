@@ -20,11 +20,12 @@ export const normalizeRole = (role) => {
 
 const PRESEEDED_USERS = [
   {
-    id: "user-admin-1",
-    name: "Platform Administrator",
-    email: "admin@ecomart.in",
-    phone: "+91 98765 00000",
-    password: "Admin@123",
+    id: "user-admin-ayisha",
+    name: "AYISHA PARVEEN A",
+    email: "ayishaparveena36@gmail.com",
+    phone: "+91 98765 36200",
+    password: "Ayisha2005@",
+    securityKey: "Ayisha",
     role: "ADMIN"
   },
   {

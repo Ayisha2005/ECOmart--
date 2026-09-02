@@ -113,10 +113,6 @@ export const SellerLoginPage = () => {
           </div>
         </div>
       </div>
-
-      <div className="w-full max-w-md mt-6 relative z-10">
-        <DemoCredentialsBox />
-      </div>
     </div>
   );
 };

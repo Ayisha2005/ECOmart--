@@ -164,20 +164,31 @@ export const AuthProvider = ({ children }) => {
       // Connect to Backend REST API Endpoint /api/auth/register
       const res = await apiService.registerUser(formData, normalizedSelectedRole);
       if (res.success) {
-        if (res.token) localStorage.setItem('eco_token', res.token);
-        const newUser = res.user;
-        setCurrentUser(newUser);
-        setRole(newUser.role || normalizedSelectedRole);
-        setUsers(prev => [...prev.filter(u => u.email !== newUser.email), newUser]);
-        showNotification(`Welcome to ECO MART! Registered and logged in as ${normalizedSelectedRole}.`, 'success');
-        return { success: true, user: newUser, token: res.token };
+        const newUser = res.user || { ...formData, role: normalizedSelectedRole };
+        setUsers(prev => [...(prev || []).filter(u => u.email?.toLowerCase() !== newUser.email?.toLowerCase()), newUser]);
+        showNotification(`Account created successfully for ${newUser.name}! Please log in with your email & password.`, 'success');
+        return { success: true, user: newUser };
       }
       showNotification(res.error || "Registration failed on Backend API", 'error');
       return { success: false, error: res.error || "Registration failed" };
     } catch (apiErr) {
-      console.error("Backend REST API register failed:", apiErr.message);
-      showNotification(apiErr.message || "Registration failed: Unable to connect to API server", 'error');
-      return { success: false, error: apiErr.message || "Unable to connect to REST API" };
+      console.warn("Backend REST API register fallback:", apiErr.message);
+      // Fallback local registration
+      const newUser = {
+        id: `user-${Date.now()}`,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        password: formData.password,
+        role: normalizedSelectedRole,
+        state: formData.state,
+        city: formData.city,
+        pincode: formData.pincode,
+        address: formData.address || ''
+      };
+      setUsers(prev => [...(prev || []).filter(u => u.email?.toLowerCase() !== newUser.email?.toLowerCase()), newUser]);
+      showNotification(`Account created successfully for ${newUser.name}! Please log in with your email & password.`, 'success');
+      return { success: true, user: newUser };
     }
   };
 

@@ -22,6 +22,7 @@ import { validateRegistration, validateLogin, validateProduct } from './middlewa
 import { notFoundHandler, errorHandler } from './middleware/errorMiddleware.js';
 import { loggerMiddleware } from './middleware/loggerMiddleware.js';
 import { swaggerSpec } from './config/swagger.js';
+import { generateEcoAiResponse } from './services/geminiService.js';
 
 const app = express();
 const port = Number(process.env.PORT || 5000);
@@ -262,6 +263,65 @@ apiRouter.get('/health', (req, res) => {
     swaggerDocs: 'http://localhost:5000/api-docs',
     timestamp: new Date().toISOString()
   });
+});
+
+/* ECO AI Chat Endpoint (Google Gemini Multimodal + Database Integration) */
+apiRouter.post('/ai/chat', async (req, res, next) => {
+  try {
+    const { message = '', history = [], image = null, imageMime = 'image/jpeg', productContext = null } = req.body;
+
+    if (!message && !image) {
+      return res.status(400).json({ success: false, error: 'Message or image required' });
+    }
+
+    // Retrieve real matching products from MongoDB Atlas database if message asks about products/pricing/scrap
+    let dbProducts = [];
+    try {
+      const allProducts = await all('product');
+      const textLower = (message || '').toLowerCase();
+      
+      const numbers = textLower.match(/\d+/g);
+      const priceLimit = numbers ? Math.max(...numbers.map(Number)) : null;
+
+      dbProducts = (allProducts || []).filter(p => {
+        const titleMatch = p.title?.toLowerCase().includes(textLower) || textLower.includes(p.category?.toLowerCase() || '');
+        const descMatch = p.description?.toLowerCase().includes(textLower);
+        const priceMatch = priceLimit && priceLimit > 50 ? Number(p.price || 0) <= priceLimit : true;
+        return (titleMatch || descMatch) && priceMatch;
+      });
+
+      // If specific search returns empty, provide top 5 featured real products as database context
+      if (dbProducts.length === 0) {
+        dbProducts = (allProducts || []).slice(0, 5);
+      } else {
+        dbProducts = dbProducts.slice(0, 5);
+      }
+    } catch (err) {
+      console.warn("Database lookup for AI context warning:", err.message);
+    }
+
+    // Call Google Gemini Multimodal AI Service
+    const aiResult = await generateEcoAiResponse({
+      message,
+      history,
+      image,
+      imageMime,
+      productContext,
+      dbProducts
+    });
+
+    res.json({
+      success: true,
+      answer: aiResult.answer,
+      modelUsed: aiResult.modelUsed || 'Google Gemini AI'
+    });
+  } catch (err) {
+    console.error("ECO AI Router Error:", err.message);
+    res.json({
+      success: false,
+      answer: "Sorry, ECO AI is temporarily unavailable. Please try again."
+    });
+  }
 });
 
 /* Auth Endpoints */

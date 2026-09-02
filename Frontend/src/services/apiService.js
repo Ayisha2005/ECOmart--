@@ -139,7 +139,13 @@ export const apiService = {
   }),
 
   // Dashboard & Metrics API
-  getDashboardMetrics: () => fetchAPI('/dashboard')
+  getDashboardMetrics: () => fetchAPI('/dashboard'),
+
+  // ECO AI Chat API (Google Gemini Multimodal + Database Context)
+  sendAiChat: (chatPayload) => fetchAPI('/ai/chat', {
+    method: 'POST',
+    body: JSON.stringify(chatPayload)
+  })
 };
 
 export default apiService;

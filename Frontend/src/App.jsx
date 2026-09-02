@@ -5,7 +5,7 @@ import { DataProvider } from './context/DataContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import NotificationToast from './components/common/NotificationToast';
 import ErrorBoundary from './components/common/ErrorBoundary';
-import GoogleEcoAiAssistant from './components/common/GoogleEcoAiAssistant';
+import EcoAiChatbot from './components/common/EcoAiChatbot';
 
 // Auth Pages
 import RegisterPage from './pages/auth/RegisterPage';
@@ -428,7 +428,7 @@ export const App = () => {
               {/* Catch-All Route ALWAYS opens Registration Page */}
               <Route path="*" element={<Navigate to="/register" replace />} />
             </Routes>
-            <GoogleEcoAiAssistant />
+            <EcoAiChatbot />
           </BrowserRouter>
         </DataProvider>
       </AuthProvider>

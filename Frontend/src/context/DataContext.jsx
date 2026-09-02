@@ -205,6 +205,12 @@ export const DataProvider = ({ children }) => {
     showNotification("Product listing deleted.", 'info');
   };
 
+  const updateProductStatus = (prodId, status) => {
+    setProducts(prev => (prev || []).map(p => p.id === prodId ? { ...p, status, approvalStatus: status } : p));
+    apiService.updateProduct(prodId, { status, approvalStatus: status }).catch(err => console.warn("API product update status error:", err.message));
+    showNotification(`Listing ${prodId} status updated to ${status}!`, status === 'APPROVED' ? 'success' : 'info');
+  };
+
   // Admin Partnership Onboarding with REST API Sync
   const addPartnerCompany = (partnerData) => {
     const partnerId = `comp-${Date.now()}`;
@@ -460,6 +466,7 @@ export const DataProvider = ({ children }) => {
       appNotifications,
       addProduct,
       deleteProduct,
+      updateProductStatus,
       addPartnerCompany,
       updatePartnerStatus,
       addFleetVehicle,

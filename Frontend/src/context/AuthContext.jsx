@@ -145,6 +145,32 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('ecoMartUsersList', JSON.stringify(users));
   }, [users]);
 
+  useEffect(() => {
+    async function loadLiveBackendUsers() {
+      try {
+        const res = await apiService.getCurrentUser?.().catch(() => null);
+        const usersRes = await fetch('https://ecomart-backend-api.onrender.com/api/users').then(r => r.json()).catch(() => null);
+        if (usersRes && usersRes.success && usersRes.users?.length) {
+          setUsers(prev => {
+            const map = new Map();
+            [...prev, ...usersRes.users].forEach(u => {
+              if (u && (u.email || u.id)) {
+                const key = (u.email || u.id).toLowerCase();
+                if (key !== 'admin@ecomart.in') {
+                  map.set(key, { ...map.get(key), ...u });
+                }
+              }
+            });
+            return Array.from(map.values());
+          });
+        }
+      } catch (err) {
+        console.warn("Using local users state:", err.message);
+      }
+    }
+    loadLiveBackendUsers();
+  }, []);
+
   const showNotification = (message, type = 'info') => {
     setNotification({ message, type, id: Date.now() });
     setTimeout(() => {

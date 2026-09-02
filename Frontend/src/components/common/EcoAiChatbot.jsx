@@ -135,30 +135,30 @@ export const EcoAiChatbot = ({ currentProduct = null }) => {
   };
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 font-sans">
-      {/* Floating Toggle Button */}
+    <div className="fixed bottom-18 md:bottom-6 right-3 sm:right-6 z-50 font-sans">
+      {/* Compact Floating Toggle Button */}
       {!isOpen && (
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="group relative flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white font-extrabold text-sm rounded-full shadow-[0_10px_30px_rgba(16,185,129,0.4)] hover:shadow-[0_15px_40px_rgba(16,185,129,0.6)] transition-all transform hover:scale-105 active:scale-95 cursor-pointer border border-emerald-300/40"
+          className="group relative flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white font-extrabold text-xs rounded-full shadow-[0_8px_25px_rgba(16,185,129,0.4)] hover:shadow-[0_12px_35px_rgba(16,185,129,0.6)] transition-all transform hover:scale-105 active:scale-95 cursor-pointer border border-emerald-300/40"
         >
           <div className="relative">
-            <Bot className="w-5 h-5 text-emerald-100 group-hover:rotate-12 transition-transform" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping" />
+            <Bot className="w-4 h-4 text-emerald-100 group-hover:rotate-12 transition-transform" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-400 rounded-full animate-ping" />
           </div>
-          <span>🤖 ECO AI</span>
-          <span className="px-2 py-0.5 text-[10px] font-black bg-emerald-950/80 text-emerald-300 rounded-full border border-emerald-400/40 uppercase tracking-wider">
+          <span className="font-extrabold tracking-wide">ECO AI</span>
+          <span className="px-1.5 py-0.2 text-[9px] font-black bg-emerald-950/90 text-emerald-300 rounded-full border border-emerald-400/40 uppercase">
             Gemini
           </span>
         </button>
       )}
 
-      {/* Chatbot Window */}
+      {/* Compact Chatbot Window */}
       {isOpen && (
-        <div className="w-[calc(100vw-2.5rem)] sm:w-96 h-[520px] max-h-[85vh] bg-slate-950 text-white rounded-3xl border border-emerald-500/40 shadow-2xl flex flex-col overflow-hidden animate-fadeIn backdrop-blur-xl">
+        <div className="w-[calc(100vw-2rem)] sm:w-80 h-[430px] max-h-[70vh] bg-slate-950 text-white rounded-3xl border border-emerald-500/40 shadow-2xl flex flex-col overflow-hidden animate-fadeIn backdrop-blur-xl">
           {/* Header */}
-          <div className="p-3.5 bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 border-b border-emerald-500/30 flex items-center justify-between shrink-0">
+          <div className="p-3 bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 border-b border-emerald-500/30 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
               <div className="p-2 bg-emerald-500/20 rounded-xl border border-emerald-500/30 text-emerald-400">
                 <Bot className="w-5 h-5" />

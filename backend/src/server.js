@@ -991,6 +991,18 @@ apiRouter.post('/orders', async (req, res, next) => {
     };
 
     const saved = await insert('order', newOrder);
+
+    // Create persistent Admin Notification for newly placed Buyer order
+    await insert('notification', {
+      id: id('NOTIF'),
+      title: 'New Buyer Order Received',
+      message: `Buyer ${saved.buyerName} placed Order ${saved.id} for ${saved.productTitle} (${saved.quantityKg} kg). Admin approval required.`,
+      recipientRole: 'ADMIN',
+      orderId: saved.id,
+      status: saved.status,
+      timestamp: new Date().toLocaleString()
+    });
+
     res.status(201).json({ success: true, order: saved });
   } catch (err) {
     next(err);
@@ -1022,6 +1034,19 @@ apiRouter.patch('/orders/:id/assign-partner', verifyToken, authorizeRoles('ADMIN
       transportCompanyId: partner.id,
       transportCompanyName: partner.companyName
     });
+
+    // Notify Transport Manager of newly assigned order
+    await insert('notification', {
+      id: id('NOTIF'),
+      title: 'New Transportation Request',
+      message: `Admin assigned Order ${order.id} (${order.productTitle}) to ${partner.companyName}. Manual partner acceptance required.`,
+      recipientRole: 'TRANSPORT_MANAGER',
+      transportCompanyId: partner.id,
+      orderId: order.id,
+      status: 'TRANSPORT_REQUEST_SENT',
+      timestamp: new Date().toLocaleString()
+    });
+
     res.json({ success: true, order });
   } catch (err) {
     next(err);

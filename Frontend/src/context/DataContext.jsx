@@ -318,7 +318,14 @@ export const DataProvider = ({ children }) => {
 
     apiService.createOrder(newOrder).catch(err => console.warn("API order create error:", err.message));
 
-    showNotification(`Order ${newOrder.id} placed! Waiting for Seller confirmation.`, 'success');
+    // Send Live Notification Alert to Admin
+    addNotificationAlert(
+      "New Buyer Order Placed",
+      `Buyer ${buyer?.name || 'Eco Buyer'} placed Order ${newOrder.id} for ${newOrder.productTitle} (${newOrder.quantityKg} kg). Admin manual approval required.`,
+      "ADMIN"
+    );
+
+    showNotification(`Order ${newOrder.id} placed! Notification sent to Admin for approval.`, 'success');
     return newOrder;
   };
 
@@ -349,7 +356,37 @@ export const DataProvider = ({ children }) => {
     showNotification(`Order ${orderId} status: ${newStatus}`, 'info');
   };
 
-  // Step 1: ECO MART Admin assigns 3rd Party Transportation Partner COMPANY (NOT driver)
+  // Step 1a: ECO MART Admin accepts Buyer Order
+  const adminAcceptOrder = (orderId) => {
+    updateOrderStatus(orderId, "ADMIN_ACCEPTED", {
+      transportRequestStatus: "ADMIN_ACCEPTED"
+    });
+
+    addNotificationAlert(
+      "Admin Accepted Order",
+      `ECO MART Admin approved Order ${orderId}. Pending partner assignment.`,
+      "ADMIN"
+    );
+
+    showNotification(`Order ${orderId} accepted by Admin! Please assign a Transportation Partner.`, 'success');
+  };
+
+  // Step 1b: ECO MART Admin rejects Buyer Order
+  const adminRejectOrder = (orderId) => {
+    updateOrderStatus(orderId, "ADMIN_REJECTED", {
+      transportRequestStatus: "ADMIN_REJECTED"
+    });
+
+    addNotificationAlert(
+      "Admin Rejected Order",
+      `ECO MART Admin rejected Order ${orderId}.`,
+      "BUYER"
+    );
+
+    showNotification(`Order ${orderId} rejected by Admin.`, 'info');
+  };
+
+  // Step 1c: ECO MART Admin assigns 3rd Party Transportation Partner COMPANY (NOT driver)
   const assignPartnerToOrder = (orderId, transportCompanyId) => {
     const partner = (partners || []).find(p => p.id === transportCompanyId);
     const compName = partner ? partner.companyName : "GreenRoute Logistics Pvt Ltd";
@@ -430,10 +467,10 @@ export const DataProvider = ({ children }) => {
     addNotificationAlert(
       "Driver & Vehicle Dispatched",
       `Driver ${driver?.name || driverId} with Vehicle ${vehicleNumber} assigned to Order ${orderId}. Status set to ON DELIVERY.`,
-      "ADMIN"
+      "TRANSPORT_DRIVER"
     );
 
-    showNotification(`Order ${orderId} assigned to Driver ${driver?.name || driverId}! Driver status updated to ON DELIVERY.`, 'success');
+    showNotification(`Order ${orderId} assigned to Driver ${driver?.name || driverId}! Ride request sent to driver app.`, 'success');
   };
 
   // Step 4: Driver Accepts Assigned Trip
@@ -461,6 +498,33 @@ export const DataProvider = ({ children }) => {
     );
 
     showNotification(`Trip for Order ${orderId} accepted! Status set to IN TRANSIT.`, 'success');
+  };
+
+  // Step 4b: Driver Declines / Rejects Assigned Trip (Ola / Rapido style)
+  const driverRejectTrip = (orderId) => {
+    const ord = (orders || []).find(o => o.id === orderId);
+
+    updateOrderStatus(orderId, "DRIVER_REJECTED", {
+      transportRequestStatus: "DRIVER_REJECTED",
+      driverId: null,
+      driverName: null,
+      vehicleNumber: null
+    });
+
+    if (ord && ord.driverId) {
+      setCompanyDrivers(prev => (prev || []).map(d => 
+        (d.driverId === ord.driverId || d.id === ord.driverId) ? { ...d, status: "Available" } : d
+      ));
+    }
+
+    addNotificationAlert(
+      "Driver Declined Trip",
+      `Driver declined assigned ride for Order ${orderId}. Reverted to Transport Manager queue for re-assignment.`,
+      "TRANSPORT_MANAGER",
+      ord?.transportCompanyId
+    );
+
+    showNotification(`Ride request for Order ${orderId} declined. Sent back to Transport Manager.`, 'info');
   };
 
   // Step 5: Driver Advances Trip Lifecycle
@@ -510,7 +574,7 @@ export const DataProvider = ({ children }) => {
     if (['COMPLETED', 'DELIVERED', 'Completed'].includes(nextStatus)) {
       if (ord && ord.driverId) {
         setCompanyDrivers(prev => (prev || []).map(d => 
-          (d.driverId === ord.driverId || d.id === ord.driverId) ? { ...d, status: "AVAILABLE" } : d
+          (d.driverId === ord.driverId || d.id === ord.driverId) ? { ...d, status: "Available" } : d
         ));
       }
       if (ord && ord.vehicleNumber) {
@@ -541,11 +605,14 @@ export const DataProvider = ({ children }) => {
       addCompanyDriver,
       placeOrder,
       updateOrderStatus,
+      adminAcceptOrder,
+      adminRejectOrder,
       assignPartnerToOrder,
       partnerAcceptOrder,
       partnerRejectOrder,
       assignDriverAndVehicleToOrder,
       driverAcceptTrip,
+      driverRejectTrip,
       driverUpdateTripStatus,
       addNotificationAlert
     }}>

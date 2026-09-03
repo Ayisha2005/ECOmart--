@@ -9,7 +9,7 @@ import { Clock, Check, X, MapPin, Truck, Sparkles, Navigation, AlertCircle } fro
 
 export const DriverRequestsPage = () => {
   const { currentUser } = useAuth();
-  const { orders, driverAcceptTrip, driverUpdateTripStatus } = useData();
+  const { orders, driverAcceptTrip, driverRejectTrip, driverUpdateTripStatus } = useData();
   const navigate = useNavigate();
 
   const authenticatedDriverId = currentUser?.driverId || currentUser?.transportId || currentUser?.id || 'DRV001';
@@ -24,7 +24,7 @@ export const DriverRequestsPage = () => {
       const assignedOrders = (orders || []).filter(o => {
         const isMatch = (o.driverId && (o.driverId === authenticatedDriverId || o.driverId === currentUser?.id)) ||
           (o.vehicleNumber && currentUser?.assignedVehicleNumber && o.vehicleNumber.replace(/\s+/g, '').toLowerCase() === currentUser.assignedVehicleNumber.replace(/\s+/g, '').toLowerCase());
-        const isPending = (o.transportRequestStatus === 'DRIVER_ASSIGNED' || o.status === 'DRIVER_ASSIGNED' || o.status === 'PARTNER_ACCEPTED');
+        const isPending = (o.transportRequestStatus === 'DRIVER_ASSIGNED' || o.status === 'DRIVER_ASSIGNED');
         return isMatch && isPending;
       });
 
@@ -56,10 +56,12 @@ export const DriverRequestsPage = () => {
 
   const handleReject = async (orderId) => {
     try {
-      if (driverUpdateTripStatus) {
-        driverUpdateTripStatus(orderId, 'PARTNER_REJECTED');
+      if (driverRejectTrip) {
+        driverRejectTrip(orderId);
+      } else if (driverUpdateTripStatus) {
+        driverUpdateTripStatus(orderId, 'DRIVER_REJECTED');
       } else {
-        await apiService.updateDriverTripStatus(orderId, 'PARTNER_REJECTED');
+        await apiService.updateDriverTripStatus(orderId, 'DRIVER_REJECTED');
       }
       fetchRequests();
     } catch (err) {

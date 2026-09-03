@@ -95,6 +95,31 @@ export const AdminDashboard = () => {
             </div>
           </div>
 
+          {/* Pending Buyer Orders Notification Alert Banner */}
+          {safeOrders.filter(o => ['Pending', 'ORDER_CONFIRMED', 'ORDER_PLACED'].includes(o?.transportRequestStatus || o?.status)).length > 0 && (
+            <div className="bg-gradient-to-r from-amber-950/80 via-amber-900/60 to-slate-900 border border-amber-500/40 rounded-2xl p-4 flex items-center justify-between gap-4 text-white shadow-xl animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-amber-500/20 text-amber-400 rounded-xl border border-amber-500/30">
+                  <ShoppingCart className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-sm text-amber-300">
+                    {safeOrders.filter(o => ['Pending', 'ORDER_CONFIRMED', 'ORDER_PLACED'].includes(o?.transportRequestStatus || o?.status)).length} New Buyer Order(s) Awaiting Admin Approval
+                  </h4>
+                  <p className="text-xs text-amber-200/80">
+                    Buyers have placed new orders. Admin manual acceptance and Transport Manager assignment required.
+                  </p>
+                </div>
+              </div>
+              <Link
+                to="/admin/orders"
+                className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs rounded-xl shrink-0 cursor-pointer shadow-md"
+              >
+                Review Orders &rarr;
+              </Link>
+            </div>
+          )}
+
           {/* Metrics Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-slate-900/90 p-5 rounded-2xl border border-slate-800 shadow-xl flex items-center justify-between backdrop-blur-xl">

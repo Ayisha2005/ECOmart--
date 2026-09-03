@@ -5,7 +5,7 @@ import Navbar from '../../components/common/Navbar';
 import { ShoppingCart, Truck, CheckCircle2, Clock, Send, Building2 } from 'lucide-react';
 
 export const AdminOrders = () => {
-  const { orders = [], updateOrderStatus, partners = [], assignPartnerToOrder } = useData();
+  const { orders = [], updateOrderStatus, adminAcceptOrder, adminRejectOrder, partners = [], assignPartnerToOrder } = useData();
 
   const [selectedOrderForAssign, setSelectedOrderForAssign] = useState(null);
   const [selectedPartnerId, setSelectedPartnerId] = useState('');
@@ -34,7 +34,7 @@ export const AdminOrders = () => {
                 <span>Pan-India Marketplace Orders & Partner Dispatch</span>
               </h2>
               <p className="text-xs text-slate-400 mt-1">
-                Assign orders to 3rd-party Transportation Partner Companies. Monitor partner responses, driver dispatches, and live delivery status.
+                Manually accept or reject buyer orders, then assign accepted orders to 3rd-party Transportation Partner Managers.
               </p>
             </div>
           </div>
@@ -51,62 +51,96 @@ export const AdminOrders = () => {
                     <th className="p-4">Assigned Partner Company</th>
                     <th className="p-4">Driver & Lorry (Read-Only)</th>
                     <th className="p-4">Request Status</th>
-                    <th className="p-4 text-right">Assign Partner</th>
+                    <th className="p-4 text-right">Admin Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {(orders || []).map((ord) => (
-                    <tr key={ord.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="p-4 font-mono font-extrabold text-cyan-700">{ord.id}</td>
-                      <td className="p-4">
-                        <p className="font-bold text-slate-900">{ord.productTitle}</p>
-                        <p className="text-[10px] text-slate-400 font-bold">{ord.quantityKg} kg • ₹{ord.totalPrice}</p>
-                      </td>
-                      <td className="p-4 font-medium text-slate-800">{ord.sellerName}</td>
-                      <td className="p-4 font-medium text-slate-800">{ord.buyerName}</td>
-                      <td className="p-4 font-bold text-slate-900">
-                        {ord.transportCompanyName || 'Unassigned'}
-                      </td>
-                      <td className="p-4">
-                        {ord.driverName ? (
-                          <div>
-                            <p className="font-bold text-slate-800">{ord.driverName}</p>
-                            <p className="font-mono text-[10px] text-cyan-700 font-bold">{ord.vehicleNumber}</p>
+                  {(orders || []).map((ord) => {
+                    const reqStatus = ord.transportRequestStatus || ord.status;
+                    const isPendingAdmin = ['Pending', 'ORDER_CONFIRMED', 'ORDER_PLACED'].includes(reqStatus);
+                    const isAdminAccepted = reqStatus === 'ADMIN_ACCEPTED';
+                    const isRejected = ['ADMIN_REJECTED', 'PARTNER_REJECTED'].includes(reqStatus);
+
+                    return (
+                      <tr key={ord.id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="p-4 font-mono font-extrabold text-cyan-700">{ord.id}</td>
+                        <td className="p-4">
+                          <p className="font-bold text-slate-900">{ord.productTitle}</p>
+                          <p className="text-[10px] text-slate-400 font-bold">{ord.quantityKg} kg • ₹{ord.totalPrice}</p>
+                        </td>
+                        <td className="p-4 font-medium text-slate-800">{ord.sellerName}</td>
+                        <td className="p-4 font-medium text-slate-800">{ord.buyerName}</td>
+                        <td className="p-4 font-bold text-slate-900">
+                          {ord.transportCompanyName || 'Unassigned'}
+                        </td>
+                        <td className="p-4">
+                          {ord.driverName ? (
+                            <div>
+                              <p className="font-bold text-slate-800">{ord.driverName}</p>
+                              <p className="font-mono text-[10px] text-cyan-700 font-bold">{ord.vehicleNumber}</p>
+                            </div>
+                          ) : (
+                            <span className="text-slate-400 font-medium text-[11px]">Not Dispatched Yet</span>
+                          )}
+                        </td>
+                        <td className="p-4">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                            isPendingAdmin
+                              ? 'bg-amber-100 text-amber-800 animate-pulse'
+                              : isAdminAccepted
+                              ? 'bg-blue-100 text-blue-800'
+                              : ord.transportRequestStatus === 'TRANSPORT_REQUEST_SENT'
+                              ? 'bg-purple-100 text-purple-800'
+                              : ord.transportRequestStatus === 'PARTNER_ACCEPTED'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : isRejected
+                              ? 'bg-rose-100 text-rose-800'
+                              : ord.transportRequestStatus === 'DRIVER_ASSIGNED'
+                              ? 'bg-cyan-100 text-cyan-800'
+                              : 'bg-slate-100 text-slate-800'
+                          }`}>
+                            {reqStatus}
+                          </span>
+                        </td>
+                        <td className="p-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {isPendingAdmin ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => adminRejectOrder(ord.id)}
+                                  className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg border border-rose-200 cursor-pointer"
+                                >
+                                  Reject
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => adminAcceptOrder(ord.id)}
+                                  className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-lg cursor-pointer shadow-xs"
+                                >
+                                  Accept Order
+                                </button>
+                              </>
+                            ) : null}
+
+                            {(!ord.transportCompanyId || isPendingAdmin || isAdminAccepted || reqStatus === 'PARTNER_REJECTED') && !isRejected && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedOrderForAssign(ord);
+                                  setSelectedPartnerId(partners[0]?.id || '');
+                                }}
+                                className="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl cursor-pointer flex items-center gap-1"
+                              >
+                                <Send className="w-3 h-3 text-cyan-400" />
+                                <span>Assign Transport Manager</span>
+                              </button>
+                            )}
                           </div>
-                        ) : (
-                          <span className="text-slate-400 font-medium text-[11px]">Not Dispatched Yet</span>
-                        )}
-                      </td>
-                      <td className="p-4">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                          ord.transportRequestStatus === 'TRANSPORT_REQUEST_SENT'
-                            ? 'bg-amber-100 text-amber-800'
-                            : ord.transportRequestStatus === 'PARTNER_ACCEPTED'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : ord.transportRequestStatus === 'PARTNER_REJECTED'
-                            ? 'bg-rose-100 text-rose-800'
-                            : ord.transportRequestStatus === 'DRIVER_ASSIGNED'
-                            ? 'bg-cyan-100 text-cyan-800'
-                            : 'bg-slate-100 text-slate-800'
-                        }`}>
-                          {ord.transportRequestStatus || ord.status}
-                        </span>
-                      </td>
-                      <td className="p-4 text-right">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedOrderForAssign(ord);
-                            setSelectedPartnerId(partners[0]?.id || '');
-                          }}
-                          className="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl cursor-pointer flex items-center gap-1 ml-auto"
-                        >
-                          <Send className="w-3 h-3 text-cyan-400" />
-                          <span>Assign Partner Company</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

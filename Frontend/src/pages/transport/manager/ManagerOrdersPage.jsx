@@ -26,6 +26,7 @@ export const ManagerOrdersPage = () => {
     o.transportRequestStatus === 'ORDER_CONFIRMED'
   );
   const myDrivers = (companyDrivers || []).filter(d => d.transportCompanyId === companyId || !d.transportCompanyId);
+  const availableDrivers = myDrivers.filter(d => !d.status || d.status === 'Available' || d.status === 'AVAILABLE');
   const myVehicles = (fleetVehicles || []).filter(v => v.transportCompanyId === companyId || !v.transportCompanyId);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -154,6 +155,7 @@ export const ManagerOrdersPage = () => {
                       const reqStatus = ord.transportRequestStatus || ord.status;
                       const isPendingSent = reqStatus === 'TRANSPORT_REQUEST_SENT';
                       const isAcceptedPendingDispatch = reqStatus === 'PARTNER_ACCEPTED';
+                      const isDriverRejected = reqStatus === 'DRIVER_REJECTED';
 
                       return (
                         <tr key={ord.id} className="hover:bg-slate-800/50 transition-colors">
@@ -176,6 +178,7 @@ export const ManagerOrdersPage = () => {
                             <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase border ${
                               isPendingSent ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse' :
                               isAcceptedPendingDispatch ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' :
+                              isDriverRejected ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 animate-bounce' :
                               'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
                             }`}>
                               {reqStatus}
@@ -200,18 +203,18 @@ export const ManagerOrdersPage = () => {
                                   <span>Accept Order</span>
                                 </button>
                               </div>
-                            ) : isAcceptedPendingDispatch ? (
+                            ) : (isAcceptedPendingDispatch || isDriverRejected) ? (
                               <button
                                 type="button"
                                 onClick={() => {
                                   setSelectedOrderForDispatch(ord);
-                                  setSelectedDriverId(myDrivers[0]?.driverId || '');
+                                  setSelectedDriverId(availableDrivers[0]?.driverId || myDrivers[0]?.driverId || '');
                                   setSelectedVehicleNumber(myVehicles[0]?.vehicleNumber || '');
                                 }}
                                 className="px-3 py-1.5 bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 font-extrabold rounded-xl cursor-pointer flex items-center gap-1 shadow-md"
                               >
                                 <Send className="w-3.5 h-3.5" />
-                                <span>Assign Driver & Lorry</span>
+                                <span>{isDriverRejected ? 'Re-assign Available Driver' : 'Assign Driver & Lorry'}</span>
                               </button>
                             ) : (
                               <span className="text-xs font-semibold text-slate-400">Dispatched</span>

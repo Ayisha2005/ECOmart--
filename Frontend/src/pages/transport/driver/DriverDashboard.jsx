@@ -18,6 +18,7 @@ import {
   MapPin,
   ArrowRight,
   Check,
+  X,
   Search,
   Filter,
   Info,
@@ -30,7 +31,7 @@ import {
 
 export const DriverDashboard = () => {
   const { currentUser } = useAuth();
-  const { orders, driverAcceptTrip, driverUpdateTripStatus } = useData();
+  const { orders, driverAcceptTrip, driverRejectTrip, driverUpdateTripStatus } = useData();
   const navigate = useNavigate();
 
   // Authenticated Driver Identity
@@ -146,6 +147,20 @@ export const DriverDashboard = () => {
       navigate('/transport/driver/navigation');
     } catch (err) {
       console.error("Failed to accept ride:", err);
+    }
+  };
+
+  // Handle Reject/Decline Ride Action
+  const handleRejectRide = async (orderId) => {
+    try {
+      if (driverRejectTrip) {
+        driverRejectTrip(orderId);
+      } else {
+        await apiService.updateDriverTripStatus(orderId, 'DRIVER_REJECTED');
+      }
+      fetchDashboardData();
+    } catch (err) {
+      console.error("Failed to reject ride:", err);
     }
   };
 
@@ -315,16 +330,27 @@ export const DriverDashboard = () => {
                           <span className="font-extrabold text-sm uppercase">NEW ASSIGNED RIDE DISPATCH</span>
                         </div>
                         <p className="text-xs text-slate-300">
-                          You have been assigned a new scrap transportation pickup. Accept ride to enable live route GPS navigation.
+                          You have been assigned a new scrap transportation pickup. Accept ride to enable live route GPS navigation or decline to reassign.
                         </p>
-                        <button
-                          type="button"
-                          onClick={() => handleAcceptRide(currentAssignedOrder.id)}
-                          className="w-full py-3.5 bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 font-black text-sm rounded-xl cursor-pointer hover:from-emerald-300 hover:to-teal-300 shadow-md flex items-center justify-center gap-2"
-                        >
-                          <Check className="w-5 h-5 stroke-[3]" />
-                          <span>ACCEPT RIDE & OPEN GPS MAP NAVIGATION</span>
-                        </button>
+                        <div className="flex flex-col sm:flex-row gap-3 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => handleRejectRide(currentAssignedOrder.id)}
+                            className="w-full sm:w-1/3 py-3 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-extrabold text-xs rounded-xl border border-rose-500/30 transition-all cursor-pointer flex items-center justify-center gap-2"
+                          >
+                            <X className="w-4 h-4 text-rose-400" />
+                            <span>DECLINE RIDE</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleAcceptRide(currentAssignedOrder.id)}
+                            className="w-full sm:w-2/3 py-3 bg-gradient-to-r from-emerald-400 to-teal-400 text-slate-950 font-black text-xs rounded-xl cursor-pointer hover:from-emerald-300 hover:to-teal-300 shadow-md flex items-center justify-center gap-2"
+                          >
+                            <Check className="w-5 h-5 stroke-[3]" />
+                            <span>ACCEPT RIDE & OPEN GPS MAP NAVIGATION</span>
+                          </button>
+                        </div>
                       </div>
                     )}
 

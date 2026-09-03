@@ -27,15 +27,26 @@ const DRIVER_AVATAR_PRESETS = [
 
 export const ManagerDriversPage = () => {
   const { currentUser } = useAuth();
-  const { companyDrivers = [], fleetVehicles = [], orders = [], addCompanyDriver } = useData();
+  const { companyDrivers = [], fleetVehicles = [], orders = [], addCompanyDriver, assignDriverAndVehicleToOrder } = useData();
 
   const companyId = currentUser?.transportCompanyId || 'comp-greenroute';
+  const companyNameClean = (currentUser?.companyName || 'greenroute').toLowerCase();
+
   const myDrivers = (companyDrivers || []).filter(d => d.transportCompanyId === companyId || !d.transportCompanyId);
   const myVehicles = (fleetVehicles || []).filter(v => v.transportCompanyId === companyId || !v.transportCompanyId);
+
+  const assignableOrders = (orders || []).filter(o => 
+    (o.transportCompanyId === companyId || (o.transportCompanyName && o.transportCompanyName.toLowerCase().includes(companyNameClean))) &&
+    ['PARTNER_ACCEPTED', 'DRIVER_REJECTED', 'TRANSPORT_REQUEST_SENT'].includes(o.transportRequestStatus || o.status)
+  );
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDriver, setSelectedDriver] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
+
+  const [selectedDriverForAssign, setSelectedDriverForAssign] = useState(null);
+  const [assignOrderId, setAssignOrderId] = useState('');
+  const [assignVehicleNumber, setAssignVehicleNumber] = useState('');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -68,6 +79,16 @@ export const ManagerDriversPage = () => {
     setShowAddModal(false);
   };
 
+  const handleAssignOrderSubmit = (e) => {
+    e.preventDefault();
+    if (!selectedDriverForAssign || !assignOrderId || !assignVehicleNumber) return;
+
+    assignDriverAndVehicleToOrder(assignOrderId, selectedDriverForAssign.driverId || selectedDriverForAssign.id, assignVehicleNumber);
+    setSelectedDriverForAssign(null);
+    setAssignOrderId('');
+    setAssignVehicleNumber('');
+  };
+
   return (
     <div className="flex h-screen bg-slate-950 text-white overflow-hidden font-sans">
       <ManagerSidebar />
@@ -86,7 +107,7 @@ export const ManagerDriversPage = () => {
                 <h2 className="text-xl font-extrabold tracking-wide">Company Drivers & Personnel Directory</h2>
               </div>
               <p className="text-xs text-slate-300">
-                Manage drivers, verify licenses, track assigned lorries, active trip statuses, and onboarding for {currentUser?.companyName}.
+                Manage drivers, assign marketplace orders directly to drivers, verify licenses, and track fleet trips for {currentUser?.companyName}.
               </p>
             </div>
 
@@ -119,7 +140,7 @@ export const ManagerDriversPage = () => {
               </span>
             </div>
 
-            {/* Drivers Directory Table (Requirement 4) */}
+            {/* Drivers Directory Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-300">
                 <thead className="bg-slate-950 text-slate-400 uppercase font-bold border-b border-slate-800">
@@ -131,7 +152,7 @@ export const ManagerDriversPage = () => {
                     <th className="p-3.5">ASSIGNED VEHICLE</th>
                     <th className="p-3.5">CURRENT ACTIVE TRIP</th>
                     <th className="p-3.5">STATUS</th>
-                    <th className="p-3.5 text-right">ACTION</th>
+                    <th className="p-3.5 text-right">MANUAL ACTIONS</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/80">
@@ -205,14 +226,29 @@ export const ManagerDriversPage = () => {
                           </td>
 
                           <td className="p-3.5 text-right">
-                            <button
-                              type="button"
-                              onClick={() => setSelectedDriver(driver)}
-                              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 font-extrabold text-[11px] rounded-lg border border-slate-700 transition-colors cursor-pointer inline-flex items-center gap-1"
-                            >
-                              <UserCheck className="w-3.5 h-3.5 text-cyan-400" />
-                              <span>View Profile</span>
-                            </button>
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedDriverForAssign(driver);
+                                  setAssignOrderId(assignableOrders[0]?.id || '');
+                                  setAssignVehicleNumber(driver.assignedVehicleNumber || myVehicles[0]?.vehicleNumber || '');
+                                }}
+                                className="px-3 py-1.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-extrabold text-[11px] rounded-lg border border-cyan-500/30 transition-colors cursor-pointer inline-flex items-center gap-1"
+                              >
+                                <Package className="w-3.5 h-3.5 text-cyan-400" />
+                                <span>Assign Order</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => setSelectedDriver(driver)}
+                                className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[11px] rounded-lg border border-slate-700 transition-colors cursor-pointer inline-flex items-center gap-1"
+                              >
+                                <UserCheck className="w-3.5 h-3.5 text-slate-400" />
+                                <span>Profile</span>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -345,6 +381,80 @@ export const ManagerDriversPage = () => {
                   className="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 font-extrabold hover:from-cyan-300 hover:to-teal-300 cursor-pointer shadow-md"
                 >
                   Onboard Driver
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Assign Order Directly to Driver */}
+      {selectedDriverForAssign && (
+        <div className="fixed inset-0 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full text-white shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <h3 className="font-extrabold text-white text-sm">Assign Order to {selectedDriverForAssign.name}</h3>
+              <button onClick={() => setSelectedDriverForAssign(null)} className="p-1 text-slate-400 hover:text-white bg-slate-800 rounded-full cursor-pointer">✕</button>
+            </div>
+
+            <form onSubmit={handleAssignOrderSubmit} className="space-y-3 text-xs">
+              <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
+                <p className="font-bold text-slate-300">Target Driver:</p>
+                <p className="font-black text-cyan-400">{selectedDriverForAssign.name} ({selectedDriverForAssign.driverId || selectedDriverForAssign.id})</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Phone: {selectedDriverForAssign.phone}</p>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-300 mb-1">Select Marketplace Order *</label>
+                <select
+                  value={assignOrderId}
+                  onChange={(e) => setAssignOrderId(e.target.value)}
+                  required
+                  className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl font-medium text-white focus:ring-2 focus:ring-cyan-500 outline-hidden"
+                >
+                  <option value="">-- Choose Order --</option>
+                  {assignableOrders.map(o => (
+                    <option key={o.id} value={o.id}>
+                      {o.id} - {o.productTitle} ({o.quantityKg} kg)
+                    </option>
+                  ))}
+                </select>
+                {assignableOrders.length === 0 && (
+                  <p className="text-[10px] text-amber-400 mt-1">No pending orders available for dispatch. Check back when admin assigns new orders.</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-300 mb-1">Select Lorry / Truck *</label>
+                <select
+                  value={assignVehicleNumber}
+                  onChange={(e) => setAssignVehicleNumber(e.target.value)}
+                  required
+                  className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl font-mono text-cyan-300 focus:ring-2 focus:ring-cyan-500 outline-hidden"
+                >
+                  <option value="">-- Select Lorry --</option>
+                  {myVehicles.map(v => (
+                    <option key={v.id} value={v.vehicleNumber}>
+                      {v.vehicleNumber} ({v.vehicleType})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="pt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedDriverForAssign(null)}
+                  className="w-1/2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!assignOrderId || !assignVehicleNumber}
+                  className="w-1/2 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 font-extrabold hover:from-cyan-300 hover:to-teal-300 cursor-pointer shadow-md disabled:opacity-50"
+                >
+                  Confirm Dispatch
                 </button>
               </div>
             </form>

@@ -947,13 +947,13 @@ apiRouter.post('/drivers', verifyToken, authorizeRoles('TRANSPORT_MANAGER', 'ADM
 apiRouter.get('/orders', async (req, res, next) => {
   try {
     const orders = await all('order');
-    res.json({ success: true, orders });
+    res.json({ success: true, orders: orders || [] });
   } catch (err) {
     next(err);
   }
 });
 
-apiRouter.post('/orders', verifyToken, async (req, res, next) => {
+apiRouter.post('/orders', async (req, res, next) => {
   try {
     const orderData = req.body;
     const orderId = orderData.id || id('ORD');
@@ -964,12 +964,14 @@ apiRouter.post('/orders', verifyToken, async (req, res, next) => {
       category: orderData.category || 'plastic',
       quantityKg: Number(orderData.quantityKg || 1000),
       totalPrice: Number(orderData.totalPrice || 50000),
-      buyerId: orderData.buyerId || req.user.id || 'buyer-1',
-      buyerName: orderData.buyerName || 'Eco Buyer',
+      buyerId: orderData.buyerId || 'user-buyer-1',
+      buyerName: orderData.buyerName || 'Anand Polymers India',
+      buyerEmail: orderData.buyerEmail || 'buyer@ecomart.in',
       buyerPhone: orderData.buyerPhone || '+91 97909 11223',
       buyerAddress: orderData.buyerAddress || 'Chennai, Tamil Nadu',
-      sellerId: orderData.sellerId || 'seller-1',
-      sellerName: orderData.sellerName || 'Green Earth Recyclers',
+      sellerId: orderData.sellerId || 'user-seller-1',
+      sellerName: orderData.sellerName || 'Green Earth Recyclers Pvt Ltd',
+      sellerEmail: orderData.sellerEmail || 'seller@ecomart.in',
       sellerAddress: orderData.sellerAddress || 'Chennai, Tamil Nadu',
       status: orderData.status || 'Pending',
       transportRequestStatus: orderData.transportRequestStatus || 'ORDER_CONFIRMED',
@@ -995,7 +997,7 @@ apiRouter.post('/orders', verifyToken, async (req, res, next) => {
   }
 });
 
-apiRouter.patch('/orders/:id/status', verifyToken, async (req, res, next) => {
+apiRouter.patch('/orders/:id/status', async (req, res, next) => {
   try {
     const changes = { status: req.body.status, transportRequestStatus: req.body.transportRequestStatus || req.body.status, ...req.body };
     const order = await update('order', { id: req.params.id }, changes);

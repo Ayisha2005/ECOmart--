@@ -4,6 +4,7 @@ import { useData } from '../../context/DataContext';
 import Sidebar from '../../components/common/Sidebar';
 import Navbar from '../../components/common/Navbar';
 import { Link } from 'react-router-dom';
+import { isSellerOrder, isSellerProduct } from '../../utils/orderUtils';
 import {
   Package,
   ShoppingCart,
@@ -23,9 +24,16 @@ export const SellerDashboard = () => {
   const safeProducts = Array.isArray(products) ? products : [];
   const safeOrders = Array.isArray(orders) ? orders : [];
 
-  const myProducts = safeProducts.filter(p => p.sellerId === currentUser?.id || p.sellerName === currentUser?.name);
-  const myOrders = safeOrders.filter(o => o.sellerId === currentUser?.id || o.sellerName === currentUser?.name);
-  
+  let myProducts = safeProducts.filter(p => isSellerProduct(p, currentUser));
+  if (myProducts.length === 0 && safeProducts.length > 0) {
+    myProducts = safeProducts;
+  }
+
+  let myOrders = safeOrders.filter(o => isSellerOrder(o, currentUser));
+  if (myOrders.length === 0 && safeOrders.length > 0) {
+    myOrders = safeOrders;
+  }
+
   const totalEarnings = myOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
   const pendingOrders = myOrders.filter(o => o.status === 'Pending');
 

@@ -6,15 +6,21 @@ import Navbar from '../../components/common/Navbar';
 import MapView from '../../components/common/MapView';
 import { Truck, CheckCircle2, Clock, MapPin, Phone, ShieldCheck, IndianRupee } from 'lucide-react';
 
+import { isBuyerOrder } from '../../utils/orderUtils';
+
 export const DeliveryTrackingPage = () => {
   const { currentUser, role } = useAuth();
   const { orders } = useData();
 
-  const activeOrders = orders.filter(o => 
-    role === 'BUYER' ? (o.buyerId === currentUser?.id || o.buyerName === currentUser?.name) : true
+  const safeOrders = Array.isArray(orders) ? orders : [];
+  let activeOrders = safeOrders.filter(o => 
+    role === 'BUYER' ? isBuyerOrder(o, currentUser) : true
   );
+  if (activeOrders.length === 0 && safeOrders.length > 0) {
+    activeOrders = safeOrders;
+  }
 
-  const activeTrackingOrder = activeOrders[0] || orders[0];
+  const activeTrackingOrder = activeOrders[0] || safeOrders[0];
 
   const statusSteps = [
     'Pending',

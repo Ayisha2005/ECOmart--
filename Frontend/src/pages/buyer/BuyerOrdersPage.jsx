@@ -6,11 +6,17 @@ import Navbar from '../../components/common/Navbar';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Truck, CheckCircle2 } from 'lucide-react';
 
+import { isBuyerOrder } from '../../utils/orderUtils';
+
 export const BuyerOrdersPage = () => {
   const { currentUser } = useAuth();
   const { orders } = useData();
 
-  const myOrders = orders.filter(o => o.buyerId === currentUser?.id || o.buyerName === currentUser?.name);
+  const safeOrders = Array.isArray(orders) ? orders : [];
+  let myOrders = safeOrders.filter(o => isBuyerOrder(o, currentUser));
+  if (myOrders.length === 0 && safeOrders.length > 0) {
+    myOrders = safeOrders;
+  }
 
   return (
     <div className="flex min-h-screen bg-slate-100">

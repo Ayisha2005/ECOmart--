@@ -6,11 +6,17 @@ import Navbar from '../../components/common/Navbar';
 import { Link } from 'react-router-dom';
 import { Package, PlusCircle, Trash2, Edit3, Eye } from 'lucide-react';
 
+import { isSellerProduct } from '../../utils/orderUtils';
+
 export const SellerListingsPage = () => {
   const { currentUser } = useAuth();
   const { products, deleteProduct } = useData();
 
-  const myProducts = products.filter(p => p.sellerId === currentUser?.id || p.sellerName === currentUser?.name);
+  const safeProducts = Array.isArray(products) ? products : [];
+  let myProducts = safeProducts.filter(p => isSellerProduct(p, currentUser));
+  if (myProducts.length === 0 && safeProducts.length > 0) {
+    myProducts = safeProducts;
+  }
 
   return (
     <div className="flex min-h-screen bg-slate-100">

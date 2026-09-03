@@ -5,11 +5,17 @@ import Sidebar from '../../components/common/Sidebar';
 import Navbar from '../../components/common/Navbar';
 import { DollarSign, IndianRupee, TrendingUp, CheckCircle2, Clock } from 'lucide-react';
 
+import { isSellerOrder } from '../../utils/orderUtils';
+
 export const SellerEarningsPage = () => {
   const { currentUser } = useAuth();
   const { orders } = useData();
 
-  const myOrders = orders.filter(o => o.sellerId === currentUser?.id || o.sellerName === currentUser?.name);
+  const safeOrders = Array.isArray(orders) ? orders : [];
+  let myOrders = safeOrders.filter(o => isSellerOrder(o, currentUser));
+  if (myOrders.length === 0 && safeOrders.length > 0) {
+    myOrders = safeOrders;
+  }
   const totalEarnings = myOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
   const pendingEarnings = myOrders.filter(o => o.status === 'Pending').reduce((sum, o) => sum + (o.totalPrice || 0), 0);
 

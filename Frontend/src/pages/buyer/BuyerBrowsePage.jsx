@@ -24,12 +24,12 @@ export const BuyerBrowsePage = () => {
   const categoriesList = ECO_CATEGORIES || [];
 
   const filteredProducts = (products || []).filter(p => {
-    const isApproved = p?.approvalStatus === 'APPROVED';
+    const isNotRejected = p?.approvalStatus !== 'REJECTED' && p?.status !== 'REJECTED';
     const title = (p?.title || '').toLowerCase();
     const desc = (p?.description || '').toLowerCase();
     const matchesSearch = title.includes(search.toLowerCase()) || desc.includes(search.toLowerCase());
     const matchesCat = selectedCat === 'all' || p?.category === selectedCat;
-    return isApproved && matchesSearch && matchesCat;
+    return isNotRejected && matchesSearch && matchesCat;
   });
 
   const getProductImage = (prod) => {
